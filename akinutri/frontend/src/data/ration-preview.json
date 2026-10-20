@@ -1,0 +1,1143 @@
+{
+  "version": 1,
+  "knowledge_sha256": "6482e01912f0b726991b3600b489cb3d6f242621760d860138a7e850b5a2f6f8",
+  "knowledge_version": "0.1.0",
+  "equation_id": "NASEM2021-2-1",
+  "assumptions": {
+    "estado": "lactacao",
+    "producao_l_dia": 35,
+    "dias_lactacao": 100,
+    "sistema": "tmr",
+    "particula_adequada": true,
+    "milho_seco_predominante": true,
+    "peso_kg": 650,
+    "escore_corporal": 3,
+    "fracao_multiparas": 1,
+    "energia_referencia_mcal_kg": 0.7,
+    "corrected_milk_is_not_raw_liters": true
+  },
+  "prices": [
+    {
+      "name": "Silagem de milho",
+      "price": 0.32
+    },
+    {
+      "name": "Feno de capim",
+      "price": 0.95
+    },
+    {
+      "name": "Milho seco moido",
+      "price": 1.25
+    },
+    {
+      "name": "Farelo de soja",
+      "price": 2.2
+    },
+    {
+      "name": "Farelo de trigo",
+      "price": 1.1
+    },
+    {
+      "name": "Mistura mineral DEMO",
+      "price": 4.0
+    },
+    {
+      "name": "Calcario calcitico DEMO",
+      "price": 0.7
+    }
+  ],
+  "scenarios": [
+    {
+      "milk_corrected_kg_day": 20,
+      "status": "atende_perfil_demo",
+      "totals": {
+        "ms_kg": 20.257749543526778,
+        "pb_pct": 17.0,
+        "fdn_pct": 35.98535010430146,
+        "amido_pct": 25.45104716016657,
+        "el_mcal_kg": 1.5999999999999999,
+        "ca_pct": 0.6499999999999999,
+        "p_pct": 0.32000000000000006,
+        "fdn_volumoso_pct": 32.134588311690166,
+        "custo_animal_dia": 26.085206865612086
+      },
+      "items": [
+        {
+          "name": "Silagem de milho",
+          "kg_mn": 41.331710584289674,
+          "kg_ms": 14.466098704501384
+        },
+        {
+          "name": "Milho seco moido",
+          "kg_mn": 1.079168140283298,
+          "kg_ms": 0.9496679634493023
+        },
+        {
+          "name": "Farelo de soja",
+          "kg_mn": 5.126356927133722,
+          "kg_ms": 4.5624576651490125
+        },
+        {
+          "name": "Farelo de trigo",
+          "kg_mn": 0.073230205270843,
+          "kg_ms": 0.06517488269105026
+        },
+        {
+          "name": "Calcario calcitico DEMO",
+          "kg_mn": 0.2165154825616438,
+          "kg_ms": 0.21435032773602736
+        }
+      ]
+    },
+    {
+      "milk_corrected_kg_day": 21,
+      "status": "atende_perfil_demo",
+      "totals": {
+        "ms_kg": 20.470878678082684,
+        "pb_pct": 17.0,
+        "fdn_pct": 35.98535010430147,
+        "amido_pct": 25.45104716016657,
+        "el_mcal_kg": 1.5999999999999999,
+        "ca_pct": 0.6499999999999999,
+        "p_pct": 0.32,
+        "fdn_volumoso_pct": 32.134588311690166,
+        "custo_animal_dia": 26.359645916802553
+      },
+      "items": [
+        {
+          "name": "Silagem de milho",
+          "kg_mn": 41.766556107856715,
+          "kg_ms": 14.61829463774985
+        },
+        {
+          "name": "Milho seco moido",
+          "kg_mn": 1.0905219272024564,
+          "kg_ms": 0.9596592959381617
+        },
+        {
+          "name": "Farelo de soja",
+          "kg_mn": 5.180290658171175,
+          "kg_ms": 4.610458685772346
+        },
+        {
+          "name": "Farelo de trigo",
+          "kg_mn": 0.07400065068676512,
+          "kg_ms": 0.06586057911122095
+        },
+        {
+          "name": "Calcario calcitico DEMO",
+          "kg_mn": 0.21879341364758037,
+          "kg_ms": 0.21660547951110456
+        }
+      ]
+    },
+    {
+      "milk_corrected_kg_day": 22,
+      "status": "atende_perfil_demo",
+      "totals": {
+        "ms_kg": 20.684007812638594,
+        "pb_pct": 17.0,
+        "fdn_pct": 35.98535010430147,
+        "amido_pct": 25.451047160166574,
+        "el_mcal_kg": 1.6000000000000003,
+        "ca_pct": 0.6499999999999999,
+        "p_pct": 0.3199999999999999,
+        "fdn_volumoso_pct": 32.13458831169018,
+        "custo_animal_dia": 26.63408496799303
+      },
+      "items": [
+        {
+          "name": "Silagem de milho",
+          "kg_mn": 42.20140163142378,
+          "kg_ms": 14.770490570998323
+        },
+        {
+          "name": "Milho seco moido",
+          "kg_mn": 1.1018757141216153,
+          "kg_ms": 0.9696506284270215
+        },
+        {
+          "name": "Farelo de soja",
+          "kg_mn": 5.234224389208632,
+          "kg_ms": 4.658459706395682
+        },
+        {
+          "name": "Farelo de trigo",
+          "kg_mn": 0.07477109610268225,
+          "kg_ms": 0.0665462755313872
+        },
+        {
+          "name": "Calcario calcitico DEMO",
+          "kg_mn": 0.22107134473351697,
+          "kg_ms": 0.2188606312861818
+        }
+      ]
+    },
+    {
+      "milk_corrected_kg_day": 23,
+      "status": "atende_perfil_demo",
+      "totals": {
+        "ms_kg": 20.897136947194504,
+        "pb_pct": 17.0,
+        "fdn_pct": 35.98535010430147,
+        "amido_pct": 25.45104716016657,
+        "el_mcal_kg": 1.6,
+        "ca_pct": 0.6499999999999998,
+        "p_pct": 0.3199999999999999,
+        "fdn_volumoso_pct": 32.13458831169018,
+        "custo_animal_dia": 26.908524019183506
+      },
+      "items": [
+        {
+          "name": "Silagem de milho",
+          "kg_mn": 42.63624715499082,
+          "kg_ms": 14.922686504246787
+        },
+        {
+          "name": "Milho seco moido",
+          "kg_mn": 1.1132295010407736,
+          "kg_ms": 0.9796419609158807
+        },
+        {
+          "name": "Farelo de soja",
+          "kg_mn": 5.288158120246086,
+          "kg_ms": 4.706460727019017
+        },
+        {
+          "name": "Farelo de trigo",
+          "kg_mn": 0.07554154151860687,
+          "kg_ms": 0.06723197195156011
+        },
+        {
+          "name": "Calcario calcitico DEMO",
+          "kg_mn": 0.22334927581945352,
+          "kg_ms": 0.221115783061259
+        }
+      ]
+    },
+    {
+      "milk_corrected_kg_day": 24,
+      "status": "atende_perfil_demo",
+      "totals": {
+        "ms_kg": 21.110266081750403,
+        "pb_pct": 17.0,
+        "fdn_pct": 35.98535010430147,
+        "amido_pct": 25.451047160166574,
+        "el_mcal_kg": 1.6,
+        "ca_pct": 0.6499999999999998,
+        "p_pct": 0.3199999999999999,
+        "fdn_volumoso_pct": 32.13458831169018,
+        "custo_animal_dia": 27.182963070373965
+      },
+      "items": [
+        {
+          "name": "Silagem de milho",
+          "kg_mn": 43.07109267855785,
+          "kg_ms": 15.074882437495246
+        },
+        {
+          "name": "Milho seco moido",
+          "kg_mn": 1.124583287959932,
+          "kg_ms": 0.9896332934047402
+        },
+        {
+          "name": "Farelo de soja",
+          "kg_mn": 5.342091851283539,
+          "kg_ms": 4.75446174764235
+        },
+        {
+          "name": "Farelo de trigo",
+          "kg_mn": 0.07631198693452898,
+          "kg_ms": 0.0679176683717308
+        },
+        {
+          "name": "Calcario calcitico DEMO",
+          "kg_mn": 0.2256272069053901,
+          "kg_ms": 0.2233709348363362
+        }
+      ]
+    },
+    {
+      "milk_corrected_kg_day": 25,
+      "status": "atende_perfil_demo",
+      "totals": {
+        "ms_kg": 21.323395216306313,
+        "pb_pct": 16.999999999999996,
+        "fdn_pct": 35.98535010430147,
+        "amido_pct": 25.451047160166574,
+        "el_mcal_kg": 1.6000000000000003,
+        "ca_pct": 0.6499999999999999,
+        "p_pct": 0.31999999999999984,
+        "fdn_volumoso_pct": 32.13458831169018,
+        "custo_animal_dia": 27.457402121564442
+      },
+      "items": [
+        {
+          "name": "Silagem de milho",
+          "kg_mn": 43.50593820212489,
+          "kg_ms": 15.227078370743712
+        },
+        {
+          "name": "Milho seco moido",
+          "kg_mn": 1.135937074879091,
+          "kg_ms": 0.9996246258936
+        },
+        {
+          "name": "Farelo de soja",
+          "kg_mn": 5.396025582320993,
+          "kg_ms": 4.802462768265683
+        },
+        {
+          "name": "Farelo de trigo",
+          "kg_mn": 0.0770824323504536,
+          "kg_ms": 0.06860336479190371
+        },
+        {
+          "name": "Calcario calcitico DEMO",
+          "kg_mn": 0.22790513799132672,
+          "kg_ms": 0.22562608661141348
+        }
+      ]
+    },
+    {
+      "milk_corrected_kg_day": 26,
+      "status": "atende_perfil_demo",
+      "totals": {
+        "ms_kg": 21.53652435086221,
+        "pb_pct": 17.0,
+        "fdn_pct": 35.98535010430146,
+        "amido_pct": 25.451047160166578,
+        "el_mcal_kg": 1.6,
+        "ca_pct": 0.6499999999999999,
+        "p_pct": 0.31999999999999984,
+        "fdn_volumoso_pct": 32.13458831169017,
+        "custo_animal_dia": 27.7318411727549
+      },
+      "items": [
+        {
+          "name": "Silagem de milho",
+          "kg_mn": 43.940783725691915,
+          "kg_ms": 15.379274303992169
+        },
+        {
+          "name": "Milho seco moido",
+          "kg_mn": 1.1472908617982491,
+          "kg_ms": 1.0096159583824593
+        },
+        {
+          "name": "Farelo de soja",
+          "kg_mn": 5.449959313358446,
+          "kg_ms": 4.850463788889017
+        },
+        {
+          "name": "Farelo de trigo",
+          "kg_mn": 0.07785287776637323,
+          "kg_ms": 0.06928906121207218
+        },
+        {
+          "name": "Calcario calcitico DEMO",
+          "kg_mn": 0.23018306907726324,
+          "kg_ms": 0.2278812383864906
+        }
+      ]
+    },
+    {
+      "milk_corrected_kg_day": 27,
+      "status": "atende_perfil_demo",
+      "totals": {
+        "ms_kg": 21.74965348541812,
+        "pb_pct": 17.0,
+        "fdn_pct": 35.98535010430147,
+        "amido_pct": 25.451047160166578,
+        "el_mcal_kg": 1.6,
+        "ca_pct": 0.6499999999999999,
+        "p_pct": 0.31999999999999995,
+        "fdn_volumoso_pct": 32.13458831169017,
+        "custo_animal_dia": 28.00628022394538
+      },
+      "items": [
+        {
+          "name": "Silagem de milho",
+          "kg_mn": 44.37562924925896,
+          "kg_ms": 15.531470237240635
+        },
+        {
+          "name": "Milho seco moido",
+          "kg_mn": 1.1586446487174078,
+          "kg_ms": 1.0196072908713187
+        },
+        {
+          "name": "Farelo de soja",
+          "kg_mn": 5.503893044395901,
+          "kg_ms": 4.898464809512351
+        },
+        {
+          "name": "Farelo de trigo",
+          "kg_mn": 0.07862332318230035,
+          "kg_ms": 0.06997475763224731
+        },
+        {
+          "name": "Calcario calcitico DEMO",
+          "kg_mn": 0.23246100016319987,
+          "kg_ms": 0.23013639016156787
+        }
+      ]
+    },
+    {
+      "milk_corrected_kg_day": 28,
+      "status": "atende_perfil_demo",
+      "totals": {
+        "ms_kg": 21.962782619974018,
+        "pb_pct": 17.0,
+        "fdn_pct": 35.98535010430146,
+        "amido_pct": 25.451047160166574,
+        "el_mcal_kg": 1.6,
+        "ca_pct": 0.6499999999999999,
+        "p_pct": 0.31999999999999984,
+        "fdn_volumoso_pct": 32.13458831169017,
+        "custo_animal_dia": 28.28071927513584
+      },
+      "items": [
+        {
+          "name": "Silagem de milho",
+          "kg_mn": 44.810474772825984,
+          "kg_ms": 15.683666170489094
+        },
+        {
+          "name": "Milho seco moido",
+          "kg_mn": 1.1699984356365662,
+          "kg_ms": 1.0295986233601784
+        },
+        {
+          "name": "Farelo de soja",
+          "kg_mn": 5.5578267754333535,
+          "kg_ms": 4.9464658301356845
+        },
+        {
+          "name": "Farelo de trigo",
+          "kg_mn": 0.07939376859821996,
+          "kg_ms": 0.07066045405241578
+        },
+        {
+          "name": "Calcario calcitico DEMO",
+          "kg_mn": 0.23473893124913642,
+          "kg_ms": 0.23239154193664505
+        }
+      ]
+    },
+    {
+      "milk_corrected_kg_day": 29,
+      "status": "atende_perfil_demo",
+      "totals": {
+        "ms_kg": 22.175911754529928,
+        "pb_pct": 17.0,
+        "fdn_pct": 35.98535010430147,
+        "amido_pct": 25.451047160166574,
+        "el_mcal_kg": 1.5999999999999999,
+        "ca_pct": 0.6499999999999998,
+        "p_pct": 0.3199999999999999,
+        "fdn_volumoso_pct": 32.13458831169017,
+        "custo_animal_dia": 28.55515832632631
+      },
+      "items": [
+        {
+          "name": "Silagem de milho",
+          "kg_mn": 45.245320296393025,
+          "kg_ms": 15.83586210373756
+        },
+        {
+          "name": "Milho seco moido",
+          "kg_mn": 1.1813522225557247,
+          "kg_ms": 1.0395899558490378
+        },
+        {
+          "name": "Farelo de soja",
+          "kg_mn": 5.611760506470808,
+          "kg_ms": 4.994466850759019
+        },
+        {
+          "name": "Farelo de trigo",
+          "kg_mn": 0.08016421401414457,
+          "kg_ms": 0.07134615047258867
+        },
+        {
+          "name": "Calcario calcitico DEMO",
+          "kg_mn": 0.237016862335073,
+          "kg_ms": 0.23464669371172228
+        }
+      ]
+    },
+    {
+      "milk_corrected_kg_day": 30,
+      "status": "atende_perfil_demo",
+      "totals": {
+        "ms_kg": 22.389040889085827,
+        "pb_pct": 17.0,
+        "fdn_pct": 35.98535010430146,
+        "amido_pct": 25.45104716016657,
+        "el_mcal_kg": 1.5999999999999999,
+        "ca_pct": 0.65,
+        "p_pct": 0.3199999999999999,
+        "fdn_volumoso_pct": 32.13458831169017,
+        "custo_animal_dia": 28.829597377516777
+      },
+      "items": [
+        {
+          "name": "Silagem de milho",
+          "kg_mn": 45.68016581996005,
+          "kg_ms": 15.988058036986017
+        },
+        {
+          "name": "Milho seco moido",
+          "kg_mn": 1.1927060094748834,
+          "kg_ms": 1.0495812883378974
+        },
+        {
+          "name": "Farelo de soja",
+          "kg_mn": 5.665694237508261,
+          "kg_ms": 5.042467871382353
+        },
+        {
+          "name": "Farelo de trigo",
+          "kg_mn": 0.0809346594300667,
+          "kg_ms": 0.07203184689275936
+        },
+        {
+          "name": "Calcario calcitico DEMO",
+          "kg_mn": 0.23929479342100957,
+          "kg_ms": 0.2369018454867995
+        }
+      ]
+    },
+    {
+      "milk_corrected_kg_day": 31,
+      "status": "atende_perfil_demo",
+      "totals": {
+        "ms_kg": 22.602170023641733,
+        "pb_pct": 16.999999999999996,
+        "fdn_pct": 35.98535010430146,
+        "amido_pct": 25.45104716016657,
+        "el_mcal_kg": 1.5999999999999999,
+        "ca_pct": 0.65,
+        "p_pct": 0.31999999999999984,
+        "fdn_volumoso_pct": 32.13458831169017,
+        "custo_animal_dia": 29.104036428707246
+      },
+      "items": [
+        {
+          "name": "Silagem de milho",
+          "kg_mn": 46.115011343527094,
+          "kg_ms": 16.140253970234482
+        },
+        {
+          "name": "Milho seco moido",
+          "kg_mn": 1.2040597963940418,
+          "kg_ms": 1.0595726208267569
+        },
+        {
+          "name": "Farelo de soja",
+          "kg_mn": 5.719627968545716,
+          "kg_ms": 5.090468892005687
+        },
+        {
+          "name": "Farelo de trigo",
+          "kg_mn": 0.08170510484598882,
+          "kg_ms": 0.07271754331293005
+        },
+        {
+          "name": "Calcario calcitico DEMO",
+          "kg_mn": 0.24157272450694617,
+          "kg_ms": 0.23915699726187672
+        }
+      ]
+    },
+    {
+      "milk_corrected_kg_day": 32,
+      "status": "atende_perfil_demo",
+      "totals": {
+        "ms_kg": 22.81529915819763,
+        "pb_pct": 17.0,
+        "fdn_pct": 35.98535010430146,
+        "amido_pct": 25.451047160166567,
+        "el_mcal_kg": 1.6,
+        "ca_pct": 0.65,
+        "p_pct": 0.3199999999999999,
+        "fdn_volumoso_pct": 32.13458831169017,
+        "custo_animal_dia": 29.378475479897705
+      },
+      "items": [
+        {
+          "name": "Silagem de milho",
+          "kg_mn": 46.54985686709411,
+          "kg_ms": 16.292449903482936
+        },
+        {
+          "name": "Milho seco moido",
+          "kg_mn": 1.2154135833132003,
+          "kg_ms": 1.0695639533156163
+        },
+        {
+          "name": "Farelo de soja",
+          "kg_mn": 5.7735616995831665,
+          "kg_ms": 5.138469912629018
+        },
+        {
+          "name": "Farelo de trigo",
+          "kg_mn": 0.08247555026191344,
+          "kg_ms": 0.07340323973310296
+        },
+        {
+          "name": "Calcario calcitico DEMO",
+          "kg_mn": 0.24385065559288271,
+          "kg_ms": 0.24141214903695388
+        }
+      ]
+    },
+    {
+      "milk_corrected_kg_day": 33,
+      "status": "atende_perfil_demo",
+      "totals": {
+        "ms_kg": 23.028428292753535,
+        "pb_pct": 17.0,
+        "fdn_pct": 35.98535010430147,
+        "amido_pct": 25.451047160166574,
+        "el_mcal_kg": 1.6,
+        "ca_pct": 0.65,
+        "p_pct": 0.31999999999999995,
+        "fdn_volumoso_pct": 32.13458831169017,
+        "custo_animal_dia": 29.65291453108818
+      },
+      "items": [
+        {
+          "name": "Silagem de milho",
+          "kg_mn": 46.98470239066115,
+          "kg_ms": 16.4446458367314
+        },
+        {
+          "name": "Milho seco moido",
+          "kg_mn": 1.226767370232359,
+          "kg_ms": 1.079555285804476
+        },
+        {
+          "name": "Farelo de soja",
+          "kg_mn": 5.827495430620622,
+          "kg_ms": 5.1864709332523535
+        },
+        {
+          "name": "Farelo de trigo",
+          "kg_mn": 0.08324599567783805,
+          "kg_ms": 0.07408893615327587
+        },
+        {
+          "name": "Calcario calcitico DEMO",
+          "kg_mn": 0.24612858667881932,
+          "kg_ms": 0.2436673008120311
+        }
+      ]
+    },
+    {
+      "milk_corrected_kg_day": 34,
+      "status": "atende_perfil_demo",
+      "totals": {
+        "ms_kg": 23.24155742730944,
+        "pb_pct": 17.0,
+        "fdn_pct": 35.98535010430147,
+        "amido_pct": 25.451047160166574,
+        "el_mcal_kg": 1.5999999999999999,
+        "ca_pct": 0.6499999999999999,
+        "p_pct": 0.31999999999999995,
+        "fdn_volumoso_pct": 32.134588311690166,
+        "custo_animal_dia": 29.92735358227865
+      },
+      "items": [
+        {
+          "name": "Silagem de milho",
+          "kg_mn": 47.419547914228176,
+          "kg_ms": 16.59684176997986
+        },
+        {
+          "name": "Milho seco moido",
+          "kg_mn": 1.2381211571515172,
+          "kg_ms": 1.089546618293335
+        },
+        {
+          "name": "Farelo de soja",
+          "kg_mn": 5.881429161658075,
+          "kg_ms": 5.234471953875687
+        },
+        {
+          "name": "Farelo de trigo",
+          "kg_mn": 0.08401644109376268,
+          "kg_ms": 0.07477463257344878
+        },
+        {
+          "name": "Calcario calcitico DEMO",
+          "kg_mn": 0.24840651776475584,
+          "kg_ms": 0.2459224525871083
+        }
+      ]
+    },
+    {
+      "milk_corrected_kg_day": 35,
+      "status": "atende_perfil_demo",
+      "totals": {
+        "ms_kg": 23.45468656186535,
+        "pb_pct": 17.0,
+        "fdn_pct": 35.98535010430146,
+        "amido_pct": 25.451047160166567,
+        "el_mcal_kg": 1.6,
+        "ca_pct": 0.6499999999999999,
+        "p_pct": 0.32,
+        "fdn_volumoso_pct": 32.134588311690166,
+        "custo_animal_dia": 30.201792633469122
+      },
+      "items": [
+        {
+          "name": "Silagem de milho",
+          "kg_mn": 47.854393437795224,
+          "kg_ms": 16.74903770322833
+        },
+        {
+          "name": "Milho seco moido",
+          "kg_mn": 1.249474944070676,
+          "kg_ms": 1.099537950782195
+        },
+        {
+          "name": "Farelo de soja",
+          "kg_mn": 5.93536289269553,
+          "kg_ms": 5.282472974499022
+        },
+        {
+          "name": "Farelo de trigo",
+          "kg_mn": 0.0847868865096848,
+          "kg_ms": 0.07546032899361947
+        },
+        {
+          "name": "Calcario calcitico DEMO",
+          "kg_mn": 0.25068444885069247,
+          "kg_ms": 0.24817760436218553
+        }
+      ]
+    },
+    {
+      "milk_corrected_kg_day": 36,
+      "status": "atende_perfil_demo",
+      "totals": {
+        "ms_kg": 23.667815696421247,
+        "pb_pct": 17.0,
+        "fdn_pct": 35.98535010430146,
+        "amido_pct": 25.451047160166574,
+        "el_mcal_kg": 1.5999999999999999,
+        "ca_pct": 0.6499999999999999,
+        "p_pct": 0.31999999999999995,
+        "fdn_volumoso_pct": 32.13458831169017,
+        "custo_animal_dia": 30.47623168465958
+      },
+      "items": [
+        {
+          "name": "Silagem de milho",
+          "kg_mn": 48.289238961362244,
+          "kg_ms": 16.901233636476785
+        },
+        {
+          "name": "Milho seco moido",
+          "kg_mn": 1.2608287309898343,
+          "kg_ms": 1.1095292832710542
+        },
+        {
+          "name": "Farelo de soja",
+          "kg_mn": 5.989296623732982,
+          "kg_ms": 5.330473995122354
+        },
+        {
+          "name": "Farelo de trigo",
+          "kg_mn": 0.08555733192560692,
+          "kg_ms": 0.07614602541379016
+        },
+        {
+          "name": "Calcario calcitico DEMO",
+          "kg_mn": 0.25296237993662896,
+          "kg_ms": 0.2504327561372627
+        }
+      ]
+    },
+    {
+      "milk_corrected_kg_day": 37,
+      "status": "atende_perfil_demo",
+      "totals": {
+        "ms_kg": 23.880944830977157,
+        "pb_pct": 17.0,
+        "fdn_pct": 35.98535010430147,
+        "amido_pct": 25.451047160166574,
+        "el_mcal_kg": 1.6000000000000003,
+        "ca_pct": 0.6499999999999999,
+        "p_pct": 0.31999999999999984,
+        "fdn_volumoso_pct": 32.13458831169018,
+        "custo_animal_dia": 30.750670735850058
+      },
+      "items": [
+        {
+          "name": "Silagem de milho",
+          "kg_mn": 48.7240844849293,
+          "kg_ms": 17.053429569725257
+        },
+        {
+          "name": "Milho seco moido",
+          "kg_mn": 1.2721825179089932,
+          "kg_ms": 1.119520615759914
+        },
+        {
+          "name": "Farelo de soja",
+          "kg_mn": 6.043230354770437,
+          "kg_ms": 5.378475015745689
+        },
+        {
+          "name": "Farelo de trigo",
+          "kg_mn": 0.08632777734152655,
+          "kg_ms": 0.07683172183395863
+        },
+        {
+          "name": "Calcario calcitico DEMO",
+          "kg_mn": 0.2552403110225656,
+          "kg_ms": 0.25268790791233997
+        }
+      ]
+    },
+    {
+      "milk_corrected_kg_day": 38,
+      "status": "atende_perfil_demo",
+      "totals": {
+        "ms_kg": 24.094073965533056,
+        "pb_pct": 17.0,
+        "fdn_pct": 35.98535010430147,
+        "amido_pct": 25.451047160166574,
+        "el_mcal_kg": 1.6,
+        "ca_pct": 0.6499999999999999,
+        "p_pct": 0.3199999999999999,
+        "fdn_volumoso_pct": 32.13458831169017,
+        "custo_animal_dia": 31.02510978704052
+      },
+      "items": [
+        {
+          "name": "Silagem de milho",
+          "kg_mn": 49.15893000849633,
+          "kg_ms": 17.205625502973714
+        },
+        {
+          "name": "Milho seco moido",
+          "kg_mn": 1.2835363048281514,
+          "kg_ms": 1.1295119482487732
+        },
+        {
+          "name": "Farelo de soja",
+          "kg_mn": 6.097164085807891,
+          "kg_ms": 5.426476036369023
+        },
+        {
+          "name": "Farelo de trigo",
+          "kg_mn": 0.08709822275744868,
+          "kg_ms": 0.07751741825412932
+        },
+        {
+          "name": "Calcario calcitico DEMO",
+          "kg_mn": 0.2575182421085021,
+          "kg_ms": 0.2549430596874171
+        }
+      ]
+    },
+    {
+      "milk_corrected_kg_day": 39,
+      "status": "atende_perfil_demo",
+      "totals": {
+        "ms_kg": 24.307203100088973,
+        "pb_pct": 17.0,
+        "fdn_pct": 35.98535010430146,
+        "amido_pct": 25.45104716016657,
+        "el_mcal_kg": 1.5999999999999999,
+        "ca_pct": 0.6499999999999999,
+        "p_pct": 0.31999999999999995,
+        "fdn_volumoso_pct": 32.13458831169017,
+        "custo_animal_dia": 31.299548838231004
+      },
+      "items": [
+        {
+          "name": "Silagem de milho",
+          "kg_mn": 49.593775532063376,
+          "kg_ms": 17.35782143622218
+        },
+        {
+          "name": "Milho seco moido",
+          "kg_mn": 1.2948900917473103,
+          "kg_ms": 1.139503280737633
+        },
+        {
+          "name": "Farelo de soja",
+          "kg_mn": 6.151097816845347,
+          "kg_ms": 5.474477056992359
+        },
+        {
+          "name": "Farelo de trigo",
+          "kg_mn": 0.08786866817337578,
+          "kg_ms": 0.07820311467430445
+        },
+        {
+          "name": "Calcario calcitico DEMO",
+          "kg_mn": 0.25979617319443876,
+          "kg_ms": 0.2571982114624944
+        }
+      ]
+    },
+    {
+      "milk_corrected_kg_day": 40,
+      "status": "atende_perfil_demo",
+      "totals": {
+        "ms_kg": 24.52033223464487,
+        "pb_pct": 17.0,
+        "fdn_pct": 35.98535010430147,
+        "amido_pct": 25.451047160166578,
+        "el_mcal_kg": 1.6,
+        "ca_pct": 0.6499999999999999,
+        "p_pct": 0.3199999999999999,
+        "fdn_volumoso_pct": 32.13458831169018,
+        "custo_animal_dia": 31.57398788942146
+      },
+      "items": [
+        {
+          "name": "Silagem de milho",
+          "kg_mn": 50.02862105563041,
+          "kg_ms": 17.510017369470642
+        },
+        {
+          "name": "Milho seco moido",
+          "kg_mn": 1.3062438786664687,
+          "kg_ms": 1.1494946132264925
+        },
+        {
+          "name": "Farelo de soja",
+          "kg_mn": 6.205031547882799,
+          "kg_ms": 5.522478077615691
+        },
+        {
+          "name": "Farelo de trigo",
+          "kg_mn": 0.08863911358929541,
+          "kg_ms": 0.07888881109447292
+        },
+        {
+          "name": "Calcario calcitico DEMO",
+          "kg_mn": 0.2620741042803753,
+          "kg_ms": 0.25945336323757157
+        }
+      ]
+    },
+    {
+      "milk_corrected_kg_day": 41,
+      "status": "atende_perfil_demo",
+      "totals": {
+        "ms_kg": 24.733461369200786,
+        "pb_pct": 17.0,
+        "fdn_pct": 35.98535010430147,
+        "amido_pct": 25.45104716016657,
+        "el_mcal_kg": 1.6,
+        "ca_pct": 0.6499999999999998,
+        "p_pct": 0.32,
+        "fdn_volumoso_pct": 32.134588311690166,
+        "custo_animal_dia": 31.848426940611947
+      },
+      "items": [
+        {
+          "name": "Silagem de milho",
+          "kg_mn": 50.46346657919746,
+          "kg_ms": 17.66221330271911
+        },
+        {
+          "name": "Milho seco moido",
+          "kg_mn": 1.3175976655856274,
+          "kg_ms": 1.1594859457153521
+        },
+        {
+          "name": "Farelo de soja",
+          "kg_mn": 6.258965278920256,
+          "kg_ms": 5.570479098239027
+        },
+        {
+          "name": "Farelo de trigo",
+          "kg_mn": 0.08940955900522253,
+          "kg_ms": 0.07957450751464806
+        },
+        {
+          "name": "Calcario calcitico DEMO",
+          "kg_mn": 0.2643520353663119,
+          "kg_ms": 0.2617085150126488
+        }
+      ]
+    },
+    {
+      "milk_corrected_kg_day": 42,
+      "status": "atende_perfil_demo",
+      "totals": {
+        "ms_kg": 24.94659050375669,
+        "pb_pct": 17.0,
+        "fdn_pct": 35.98535010430147,
+        "amido_pct": 25.451047160166574,
+        "el_mcal_kg": 1.6,
+        "ca_pct": 0.6499999999999997,
+        "p_pct": 0.31999999999999984,
+        "fdn_volumoso_pct": 32.13458831169018,
+        "custo_animal_dia": 32.122865991802406
+      },
+      "items": [
+        {
+          "name": "Silagem de milho",
+          "kg_mn": 50.89831210276449,
+          "kg_ms": 17.814409235967574
+        },
+        {
+          "name": "Milho seco moido",
+          "kg_mn": 1.3289514525047859,
+          "kg_ms": 1.1694772782042115
+        },
+        {
+          "name": "Farelo de soja",
+          "kg_mn": 6.312899009957707,
+          "kg_ms": 5.61848011886236
+        },
+        {
+          "name": "Farelo de trigo",
+          "kg_mn": 0.09018000442114216,
+          "kg_ms": 0.08026020393481652
+        },
+        {
+          "name": "Calcario calcitico DEMO",
+          "kg_mn": 0.26662996645224846,
+          "kg_ms": 0.263963666787726
+        }
+      ]
+    },
+    {
+      "milk_corrected_kg_day": 43,
+      "status": "atende_perfil_demo",
+      "totals": {
+        "ms_kg": 25.159719638312588,
+        "pb_pct": 17.0,
+        "fdn_pct": 35.98535010430146,
+        "amido_pct": 25.45104716016657,
+        "el_mcal_kg": 1.6,
+        "ca_pct": 0.6499999999999999,
+        "p_pct": 0.31999999999999995,
+        "fdn_volumoso_pct": 32.13458831169017,
+        "custo_animal_dia": 32.39730504299287
+      },
+      "items": [
+        {
+          "name": "Silagem de milho",
+          "kg_mn": 51.33315762633151,
+          "kg_ms": 17.96660516921603
+        },
+        {
+          "name": "Milho seco moido",
+          "kg_mn": 1.3403052394239443,
+          "kg_ms": 1.179468610693071
+        },
+        {
+          "name": "Farelo de soja",
+          "kg_mn": 6.36683274099516,
+          "kg_ms": 5.666481139485693
+        },
+        {
+          "name": "Farelo de trigo",
+          "kg_mn": 0.09095044983706677,
+          "kg_ms": 0.08094590035498943
+        },
+        {
+          "name": "Calcario calcitico DEMO",
+          "kg_mn": 0.26890789753818506,
+          "kg_ms": 0.2662188185628032
+        }
+      ]
+    },
+    {
+      "milk_corrected_kg_day": 44,
+      "status": "atende_perfil_demo",
+      "totals": {
+        "ms_kg": 25.37284877286849,
+        "pb_pct": 17.0,
+        "fdn_pct": 35.98535010430146,
+        "amido_pct": 25.451047160166574,
+        "el_mcal_kg": 1.6,
+        "ca_pct": 0.6499999999999999,
+        "p_pct": 0.3199999999999999,
+        "fdn_volumoso_pct": 32.13458831169017,
+        "custo_animal_dia": 32.67174409418334
+      },
+      "items": [
+        {
+          "name": "Silagem de milho",
+          "kg_mn": 51.76800314989855,
+          "kg_ms": 18.11880110246449
+        },
+        {
+          "name": "Milho seco moido",
+          "kg_mn": 1.351659026343103,
+          "kg_ms": 1.1894599431819306
+        },
+        {
+          "name": "Farelo de soja",
+          "kg_mn": 6.420766472032614,
+          "kg_ms": 5.714482160109027
+        },
+        {
+          "name": "Farelo de trigo",
+          "kg_mn": 0.09172089525298889,
+          "kg_ms": 0.08163159677516012
+        },
+        {
+          "name": "Calcario calcitico DEMO",
+          "kg_mn": 0.2711858286241216,
+          "kg_ms": 0.2684739703378804
+        }
+      ]
+    },
+    {
+      "milk_corrected_kg_day": 45,
+      "status": "atende_perfil_demo",
+      "totals": {
+        "ms_kg": 25.585977907424393,
+        "pb_pct": 17.000000000000004,
+        "fdn_pct": 35.98535010430146,
+        "amido_pct": 25.451047160166574,
+        "el_mcal_kg": 1.6,
+        "ca_pct": 0.6499999999999999,
+        "p_pct": 0.32,
+        "fdn_volumoso_pct": 32.134588311690166,
+        "custo_animal_dia": 32.9461831453738
+      },
+      "items": [
+        {
+          "name": "Silagem de milho",
+          "kg_mn": 52.20284867346557,
+          "kg_ms": 18.27099703571295
+        },
+        {
+          "name": "Milho seco moido",
+          "kg_mn": 1.3630128132622614,
+          "kg_ms": 1.19945127567079
+        },
+        {
+          "name": "Farelo de soja",
+          "kg_mn": 6.474700203070068,
+          "kg_ms": 5.762483180732361
+        },
+        {
+          "name": "Farelo de trigo",
+          "kg_mn": 0.09249134066891601,
+          "kg_ms": 0.08231729319533525
+        },
+        {
+          "name": "Calcario calcitico DEMO",
+          "kg_mn": 0.2734637597100582,
+          "kg_ms": 0.27072912211295763
+        }
+      ]
+    }
+  ]
+}

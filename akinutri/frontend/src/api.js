@@ -17,13 +17,33 @@ export async function api(path, method = 'GET', body, options = {}) {
     headers: body ? { 'Content-Type': 'application/json' } : {},
     body: body ? JSON.stringify(body) : undefined,
   });
+<<<<<<< HEAD
   if (response.status === 204) return null;
   const data = await response.json();
+=======
+  let data;
+  try {
+    data = await response.json();
+  } catch {
+    throw new Error(
+      response.ok
+        ? 'A API retornou uma resposta inválida.'
+        : `API indisponível (HTTP ${response.status}).`,
+    );
+  }
+>>>>>>> 69cc92da86f2c3b0c89ecee41bd8e5faed79aef4
   if (!response.ok)
     throw new Error(
-      Array.isArray(data.detail)
-        ? data.detail.map((d) => `${d.loc.join('.')}: ${d.msg}`).join('; ')
-        : data.detail || 'Erro na API.',
+      Array.isArray(data?.detail)
+        ? data.detail
+            .map(
+              (d) =>
+                `${Array.isArray(d.loc) ? d.loc.join('.') : 'Dados'}: ${d.msg || 'Valor inválido'}`,
+            )
+            .join('; ')
+        : typeof data?.detail === 'string'
+          ? data.detail
+          : `Erro na API (HTTP ${response.status}).`,
     );
   return data;
 }

@@ -211,4 +211,11 @@ Perfis de lactação exigem TMR, partícula adequada, milho seco predominante e 
 
 Referências de contexto: [NASEM — fibra](https://www.ncbi.nlm.nih.gov/books/NBK600592/), [Penn State — amido](https://extension.psu.edu/carbohydrate-nutrition-for-lactating-dairy-cattle), [Penn State — proteína](https://extension.psu.edu/from-feed-to-milk-understanding-rumen-function), [SciPy — HiGHS](https://docs.scipy.org/doc/scipy/reference/optimize.linprog-highs.html).
 
+<<<<<<< HEAD
 O login verifica credenciais e emite JWT em cookie HttpOnly. Nesta POC, as demais rotas da API ainda não exigem esse cookie; portanto, o login não deve ser tratado como controle de acesso aos dados nem a aplicação deve ser exposta em rede como sistema autenticado. A interface segue critérios de acessibilidade e recebe verificações de teclado, contraste e reflow; isso não equivale a certificação WCAG completa ou prontidão industrial validada.
+=======
+Aplicação para uso local em loopback, sem autenticação. A interface segue critérios de acessibilidade e recebe verificações de teclado, contraste e reflow; isso não equivale a certificação WCAG completa ou prontidão industrial validada.
+# Navegação institucional e painel
+
+A interface inicia em `#home`, com apresentação pública e acesso demonstrativo em `#login`. O painel reúne formulação, comparação, batida, insumos, regras, histórico e resultado. Consulte [arquitetura do frontend e limites da sessão](docs/FRONTEND.md). O login valida o formulário e mantém uma sessão local; ainda não autentica credenciais ou protege endpoints da API.
+>>>>>>> 69cc92da86f2c3b0c89ecee41bd8e5faed79aef4
