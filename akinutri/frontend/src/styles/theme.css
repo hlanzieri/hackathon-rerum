@@ -284,6 +284,214 @@ small {
   min-width: 0;
   flex: 1;
 }
+.institutional-footer {
+  border-top: 1px solid #1e293b;
+  background: #0f172a;
+  color: #cbd5e1;
+}
+.institutional-footer__inner {
+  width: min(100%, 1280px);
+  margin: 0 auto;
+  padding: 36px 40px 24px;
+}
+.institutional-footer__grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 32px;
+}
+.institutional-footer section {
+  min-width: 0;
+}
+.institutional-footer h2 {
+  margin: 0 0 18px;
+  color: #f8fafc;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+.institutional-footer__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: #4ade80;
+  text-decoration: none;
+}
+.institutional-footer__brand strong {
+  display: block;
+  color: #f8fafc;
+  font-size: 21px;
+  line-height: 1.1;
+}
+.institutional-footer__brand small {
+  display: block;
+  margin-top: 4px;
+  color: #94a3b8;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+}
+.institutional-footer__description {
+  margin: 18px 0;
+  color: #cbd5e1;
+  font-size: 12px;
+  line-height: 1.7;
+}
+.institutional-footer abbr {
+  text-decoration: underline dotted;
+  text-underline-offset: 3px;
+  cursor: help;
+}
+.institutional-footer__project {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 10px;
+  color: #cbd5e1;
+  font-size: 11px;
+}
+.institutional-footer__project svg {
+  flex: 0 0 auto;
+  color: #2dd4bf;
+}
+.institutional-footer__list,
+.institutional-footer__actions {
+  display: grid;
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.institutional-footer__list > li,
+.institutional-footer__actions > li {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  min-width: 0;
+}
+.institutional-footer__list > li > svg,
+.institutional-footer__actions > li > svg {
+  flex: 0 0 auto;
+  margin-top: 2px;
+  color: #2dd4bf;
+}
+.institutional-footer__list > li > div {
+  min-width: 0;
+}
+.institutional-footer__link {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #4ade80;
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 1.5;
+  text-align: left;
+  text-decoration: none;
+  transition: color 200ms;
+  cursor: pointer;
+}
+.institutional-footer__link:hover {
+  color: #fff;
+}
+.institutional-footer__link:focus-visible {
+  outline-color: #4ade80;
+}
+.institutional-footer__link svg {
+  flex: 0 0 auto;
+}
+.institutional-footer__list p,
+.institutional-footer__list small {
+  display: block;
+  margin: 3px 0 0;
+  color: #94a3b8;
+  font-size: 11px;
+  line-height: 1.5;
+}
+.institutional-footer__integrity {
+  gap: 14px;
+}
+.institutional-footer__integrity strong,
+.institutional-footer__integrity span,
+.institutional-footer__integrity code {
+  display: block;
+  overflow-wrap: anywhere;
+  color: #cbd5e1;
+  font-size: 11px;
+  line-height: 1.55;
+}
+.institutional-footer__integrity strong {
+  margin-bottom: 2px;
+  color: #f8fafc;
+  font-size: 12px;
+}
+.institutional-footer__integrity code {
+  color: #2dd4bf;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 10px;
+}
+.institutional-footer__status-dot {
+  width: 8px;
+  height: 8px;
+  flex: 0 0 auto;
+  margin: 6px 4px 0;
+  border-radius: 50%;
+  background: #64748b;
+}
+.institutional-footer__status-dot.is-active {
+  background: #4ade80;
+  box-shadow: 0 0 0 3px #4ade8020;
+  animation: footer-status-pulse 2s ease-in-out infinite;
+}
+.institutional-footer__actions {
+  gap: 13px;
+}
+.institutional-footer__actions .institutional-footer__link {
+  color: #cbd5e1;
+  font-weight: 500;
+}
+.institutional-footer__actions .institutional-footer__link:hover {
+  color: #fff;
+}
+.institutional-footer__bottom {
+  margin-top: 32px;
+  border-top: 1px solid #1e293b;
+  padding-top: 22px;
+}
+.institutional-footer__disclaimer {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  color: #fbbf24;
+}
+.institutional-footer__disclaimer svg {
+  flex: 0 0 auto;
+  margin-top: 2px;
+}
+.institutional-footer__disclaimer p {
+  margin: 0;
+  color: #94a3b8;
+  font-size: 11px;
+  line-height: 1.7;
+}
+.institutional-footer__disclaimer strong {
+  color: #fbbf24;
+}
+.institutional-footer__copyright {
+  margin: 18px 0 0;
+  color: #64748b;
+  font-size: 10px;
+  text-align: center;
+}
+@keyframes footer-status-pulse {
+  50% {
+    box-shadow: 0 0 0 5px #4ade8010;
+  }
+}
 .topbar {
   height: 72px;
   display: flex;
@@ -1237,16 +1445,6 @@ td input[type='number'] {
   color: var(--ink);
   font-weight: 650;
 }
-.page-footer {
-  display: flex;
-  justify-content: space-between;
-  gap: 20px;
-  padding-top: 20px;
-  margin-top: 36px;
-  border-top: 1px solid var(--border);
-  font-size: 11px;
-  color: var(--caption);
-}
 .route-content {
   animation: reveal 0.18s cubic-bezier(0.23, 1, 0.32, 1);
 }
@@ -1293,6 +1491,13 @@ td input[type='number'] {
   }
 }
 @media (max-width: 1280px) {
+  .institutional-footer__inner {
+    padding-right: 24px;
+    padding-left: 24px;
+  }
+  .institutional-footer__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
   .sidebar {
     width: 220px;
     padding: 24px 12px;
@@ -1379,6 +1584,20 @@ td input[type='number'] {
   }
 }
 @media (max-width: 640px) {
+  .institutional-footer__inner {
+    padding: 28px 16px 20px;
+  }
+  .institutional-footer__grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 28px;
+  }
+  .institutional-footer__bottom {
+    margin-top: 26px;
+    padding-top: 18px;
+  }
+  .institutional-footer__copyright {
+    text-align: left;
+  }
   body {
     font-size: 14px;
   }
@@ -1593,10 +1812,6 @@ td input[type='number'] {
   .batch-total strong {
     font-size: 34px;
   }
-  .page-footer {
-    flex-wrap: wrap;
-    font-size: 10px;
-  }
   .rule-profile summary {
     flex-wrap: wrap;
     gap: 8px;
@@ -1613,7 +1828,6 @@ td input[type='number'] {
   .topbar,
   .page-heading,
   .page-eyebrow,
-  .page-footer,
   .no-print,
   .skip-link {
     display: none !important;

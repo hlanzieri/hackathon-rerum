@@ -13,6 +13,7 @@ import {
 import useWorkspace from './hooks/useWorkspace';
 import Workspace from './components/Workspace';
 import TracoPanel from './components/TracoPanel';
+import Footer from './components/Footer';
 import useVisibleMotion from './hooks/useVisibleMotion';
 
 const Catalogo = lazy(() => import('./components/Catalogo'));
@@ -244,11 +245,8 @@ export default function App() {
               </Suspense>
             )
           )}
-          <footer className="page-footer">
-            <span>AkiNutri · Hackathon UFJF 2026</span>
-            <span>Conhecimento explícito. Decisão rastreável.</span>
-          </footer>
         </main>
+        <Footer base={workspace.base} />
       </div>
     </div>
   );
