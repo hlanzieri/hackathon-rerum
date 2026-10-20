@@ -1,0 +1,247 @@
+import { useState, useEffect, useCallback } from 'react';
+import { api } from '../api';
+import { scenarios } from '../components/LoteForm';
+
+export function initialRows(data) {
+  return Object.fromEntries(
+    data.map((i, n) => [
+      i.id,
+      {
+        selected: true,
+        quantidade_kg_mn: [35, 2, 4, 5, 0, 0.2, 0.1][n] ?? 0,
+        preco_kg_mn: i.preco_kg_mn,
+        minimo_kg_ms: 0,
+        maximo_kg_ms: i.categoria === 'mineral' ? 0.5 : 40,
+      },
+    ]),
+  );
+}
+export default function useWorkspace() {
+  const [data, setData] = useState({ insumos: [], racas: [], lotes: [], base: null, history: [] });
+  const [lote, setLote] = useState({ ...scenarios[0].lote }),
+    [loteId, setLoteId] = useState(null),
+    [editing, setEditing] = useState(true);
+  const [intake, setIntake] = useState(24),
+    [rows, setRows] = useState({}),
+    [mode, setMode] = useState('formular');
+  const [result, setResult] = useState(null),
+    [snapshot, setSnapshot] = useState(null),
+    [busy, setBusy] = useState(false),
+    [error, setError] = useState(''),
+    [loading, setLoading] = useState(true);
+  const [manejo, setManejo] = useState({
+    sistema: 'tmr',
+    particula_adequada: true,
+    milho_seco_predominante: true,
+  });
+  const [lastSessions, setLastSessions] = useState({ manual: null, formulated: null });
+  const [estimateInputs, setEstimateInputs] = useState(null);
+  const invalidate = useCallback(() => {
+    setResult(null);
+    setSnapshot(null);
+    setError('');
+  }, []);
+  const refresh = useCallback(async (signal) => {
+    const [insumos, racas, lotes, base, history] = await Promise.all(
+      ['/insumos', '/racas', '/lotes', '/regras', '/sessoes'].map((path) =>
+        api(path, 'GET', undefined, { signal }),
+      ),
+    );
+    if (signal?.aborted) return;
+    setData({ insumos, racas, lotes, base, history });
+    setRows((old) =>
+      Object.keys(old).length
+        ? Object.fromEntries(
+            insumos.map((i) => [
+              i.id,
+              old[i.id] || {
+                selected: false,
+                quantidade_kg_mn: 0,
+                preco_kg_mn: i.preco_kg_mn,
+                minimo_kg_ms: 0,
+                maximo_kg_ms: i.categoria === 'mineral' ? 0.5 : 40,
+              },
+            ]),
+          )
+        : initialRows(insumos),
+    );
+  }, []);
+  useEffect(() => {
+    const controller = new AbortController();
+    refresh(controller.signal)
+      .catch((e) => {
+        if (e.name !== 'AbortError') setError('Não foi possível conectar à API. ' + e.message);
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setLoading(false);
+      });
+    return () => controller.abort();
+  }, [refresh]);
+  async function retry() {
+    setLoading(true);
+    setError('');
+    try {
+      await refresh();
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+  function scenario(index) {
+    setEstimateInputs(null);
+    const scenario = scenarios[index];
+    setLote({ ...scenario.lote });
+    setIntake(scenario.intake);
+    setLoteId(null);
+    setEditing(true);
+    setRows(initialRows(data.insumos));
+    setManejo({ sistema: 'tmr', particula_adequada: true, milho_seco_predominante: true });
+    invalidate();
+  }
+  function selectLote(id) {
+    setEstimateInputs(null);
+    const found = data.lotes.find((l) => l.id === Number(id));
+    if (found) {
+      const { id, ...value } = found;
+      setLote(value);
+      setLoteId(id);
+      setEditing(false);
+    } else {
+      setLoteId(null);
+      setEditing(true);
+    }
+    invalidate();
+  }
+  async function saveLote(event) {
+    event.preventDefault();
+    setBusy(true);
+    setError('');
+    try {
+      const saved = await api('/lotes', 'POST', lote);
+      setLoteId(saved.id);
+      setData((old) => ({ ...old, lotes: [saved, ...old.lotes] }));
+      setEditing(false);
+      invalidate();
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+  async function run() {
+    setBusy(true);
+    setError('');
+    setResult(null);
+    try {
+      const items = data.insumos
+        .filter((i) => rows[i.id]?.selected)
+        .map((i) => {
+          const row = rows[i.id];
+          const keys = ['quantidade_kg_mn', 'minimo_kg_ms', 'maximo_kg_ms', 'preco_kg_mn'];
+          if (keys.some((key) => row[key] === '' || !Number.isFinite(Number(row[key]))))
+            throw new Error(`Preencha os valores de ${i.nome}; campo vazio não significa zero.`);
+          return {
+            insumo_id: i.id,
+            ...Object.fromEntries(keys.map((key) => [key, Number(row[key])])),
+          };
+        });
+      if (!items.length) throw new Error('Selecione ao menos um insumo.');
+      const response = await api(`/${mode}`, 'POST', {
+        lote_id: loteId,
+        consumo_ms_kg: Number(intake),
+        ...manejo,
+        itens: items,
+        estimativa_cms: estimateInputs,
+      });
+      const [session, history] = await Promise.all([
+        api(`/sessoes/${response.session_id}`),
+        api('/sessoes'),
+      ]);
+      setResult(response);
+      setSnapshot(session.snapshot);
+      setData((old) => ({ ...old, history }));
+      setLastSessions((old) => ({
+        ...old,
+        [mode === 'verificar' ? 'manual' : 'formulated']: response.session_id,
+      }));
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+  async function openSession(id) {
+    setBusy(true);
+    setError('');
+    try {
+      const session = await api(`/sessoes/${id}`);
+      setResult(session.result);
+      setSnapshot(session.snapshot);
+      return true;
+    } catch (e) {
+      setError(e.message);
+      return false;
+    } finally {
+      setBusy(false);
+    }
+  }
+  function useFormulated() {
+    setRows((old) => {
+      const next = { ...old };
+      for (const item of result.items)
+        next[item.insumo_id] = {
+          ...next[item.insumo_id],
+          selected: true,
+          quantidade_kg_mn: item.quantidade_kg_mn,
+        };
+      return next;
+    });
+    setMode('verificar');
+    invalidate();
+  }
+  return {
+    ...data,
+    lote,
+    setLote: (value) => {
+      setLote(value);
+      setEstimateInputs(null);
+    },
+    loteId,
+    setLoteId,
+    editing,
+    setEditing,
+    intake,
+    setIntake: (value) => {
+      setIntake(value);
+      setEstimateInputs(null);
+    },
+    applyEstimate: (value, inputs) => {
+      setIntake(value);
+      setEstimateInputs(inputs);
+      invalidate();
+    },
+    rows,
+    setRows,
+    mode,
+    setMode,
+    result,
+    snapshot,
+    busy,
+    error,
+    setError,
+    loading,
+    manejo,
+    setManejo,
+    lastSessions,
+    invalidate,
+    refresh,
+    retry,
+    scenario,
+    selectLote,
+    saveLote,
+    run,
+    openSession,
+    useFormulated,
+  };
+}

@@ -1,0 +1,9 @@
+{
+  "model_version":"1.0.0",
+  "equation_id":"NASEM2021-2-1",
+  "source_url":"https://www.ncbi.nlm.nih.gov/books/NBK600610/",
+  "population":"Holandesa em lactacao",
+  "maximum_dim":368,
+  "coefficients":{"intercept":3.7,"parity":5.7,"milk_energy":0.305,"body_weight":0.022,"bcs_intercept":-0.689,"bcs_parity":-1.87,"early_intercept":0.212,"early_parity":0.136,"decay":-0.053},
+  "reference_energy_note":"Leite corrigido e energia de referencia sao declarados pelo usuario. Nao ha conversao automatica de litros de leite bruto em leite corrigido."
+}

@@ -1,0 +1,356 @@
+{
+  "version": "0.1.0",
+  "status": "demonstracao_nao_validada_para_prescricao",
+  "notice": "Perfis e composicoes simplificados para demonstracao de engenharia. Atender estas restricoes nao comprova adequacao nutricional completa. Nao cobre proteina metabolizavel, DCAD, vitaminas, biodisponibilidade ou transicao pre-parto.",
+  "numeric_tolerance": 1e-06,
+  "sources": {
+    "NASEM2021": "https://www.ncbi.nlm.nih.gov/books/NBK600592/",
+    "PSU_AMIDO": "https://extension.psu.edu/carbohydrate-nutrition-for-lactating-dairy-cattle",
+    "PSU_PB": "https://extension.psu.edu/from-feed-to-milk-understanding-rumen-function",
+    "MVP": "Hipotese simplificada de demonstracao; requer revisao por zootecnista. Nao equivale a requisito NRC/NASEM."
+  },
+  "profiles": [
+    {
+      "id": "lactacao_alta",
+      "label": "Lactacao de alta producao",
+      "conditions": [
+        {
+          "fact": "estado",
+          "op": "eq",
+          "value": "lactacao"
+        },
+        {
+          "fact": "producao_l_dia",
+          "op": "gte",
+          "value": 30
+        },
+        {
+          "fact": "dias_lactacao",
+          "op": "gte",
+          "value": 60
+        },
+        {
+          "fact": "sistema",
+          "op": "eq",
+          "value": "tmr"
+        },
+        {
+          "fact": "particula_adequada",
+          "op": "eq",
+          "value": true
+        },
+        {
+          "fact": "milho_seco_predominante",
+          "op": "eq",
+          "value": true
+        }
+      ],
+      "limits": {
+        "ms_kg": [
+          1,
+          1
+        ],
+        "pb_pct": [
+          17,
+          19
+        ],
+        "fdn_pct": [
+          25,
+          38
+        ],
+        "fdn_volumoso_pct": [
+          19,
+          100
+        ],
+        "amido_pct": [
+          20,
+          30
+        ],
+        "el_mcal_kg": [
+          1.6,
+          2.0
+        ],
+        "ca_pct": [
+          0.65,
+          1.0
+        ],
+        "p_pct": [
+          0.32,
+          0.45
+        ]
+      }
+    },
+    {
+      "id": "lactacao_moderada",
+      "label": "Lactacao de producao moderada",
+      "conditions": [
+        {
+          "fact": "estado",
+          "op": "eq",
+          "value": "lactacao"
+        },
+        {
+          "fact": "producao_l_dia",
+          "op": "lt",
+          "value": 30
+        },
+        {
+          "fact": "dias_lactacao",
+          "op": "gte",
+          "value": 60
+        },
+        {
+          "fact": "sistema",
+          "op": "eq",
+          "value": "tmr"
+        },
+        {
+          "fact": "particula_adequada",
+          "op": "eq",
+          "value": true
+        },
+        {
+          "fact": "milho_seco_predominante",
+          "op": "eq",
+          "value": true
+        }
+      ],
+      "limits": {
+        "ms_kg": [
+          1,
+          1
+        ],
+        "pb_pct": [
+          15,
+          18
+        ],
+        "fdn_pct": [
+          28,
+          45
+        ],
+        "fdn_volumoso_pct": [
+          19,
+          100
+        ],
+        "amido_pct": [
+          20,
+          30
+        ],
+        "el_mcal_kg": [
+          1.4,
+          1.9
+        ],
+        "ca_pct": [
+          0.6,
+          1.0
+        ],
+        "p_pct": [
+          0.3,
+          0.45
+        ]
+      }
+    },
+    {
+      "id": "seca_distante",
+      "label": "Periodo seco distante do parto",
+      "conditions": [
+        {
+          "fact": "estado",
+          "op": "eq",
+          "value": "seca"
+        },
+        {
+          "fact": "dias_ate_parto",
+          "op": "gt",
+          "value": 21
+        },
+        {
+          "fact": "sistema",
+          "op": "eq",
+          "value": "tmr"
+        }
+      ],
+      "limits": {
+        "ms_kg": [
+          1,
+          1
+        ],
+        "pb_pct": [
+          12,
+          14
+        ],
+        "fdn_pct": [
+          38,
+          55
+        ],
+        "fdn_volumoso_pct": [
+          30,
+          100
+        ],
+        "amido_pct": [
+          8,
+          18
+        ],
+        "el_mcal_kg": [
+          1.15,
+          1.4
+        ],
+        "ca_pct": [
+          0.4,
+          0.8
+        ],
+        "p_pct": [
+          0.25,
+          0.4
+        ]
+      }
+    }
+  ],
+  "rules": [
+    {
+      "id": "MS-01",
+      "metric": "ms_kg",
+      "label": "Consumo de materia seca",
+      "unit": "kg MS/animal/dia",
+      "scale_by_intake": true,
+      "source": "MVP",
+      "basis": "Consumo informado pelo usuario; nao estimado pelo sistema.",
+      "if": {
+        "fact": "ms_kg",
+        "operator": "outside_inclusive_profile_range"
+      },
+      "then": {
+        "status": "violada"
+      },
+      "else": {
+        "status": "atendida"
+      }
+    },
+    {
+      "id": "PB-01",
+      "metric": "pb_pct",
+      "label": "Proteina bruta",
+      "unit": "% MS",
+      "source": "PSU_PB",
+      "basis": "Faixas do perfil sao adaptacoes didaticas; nao substituem proteina metabolizavel.",
+      "if": {
+        "fact": "pb_pct",
+        "operator": "outside_inclusive_profile_range"
+      },
+      "then": {
+        "status": "violada"
+      },
+      "else": {
+        "status": "atendida"
+      }
+    },
+    {
+      "id": "FDN-01",
+      "metric": "fdn_pct",
+      "label": "FDN total",
+      "unit": "% MS",
+      "source": "NASEM2021",
+      "basis": "Minimo 25% depende de TMR, particula adequada e milho seco; demais limites sao hipoteses MVP.",
+      "if": {
+        "fact": "fdn_pct",
+        "operator": "outside_inclusive_profile_range"
+      },
+      "then": {
+        "status": "violada"
+      },
+      "else": {
+        "status": "atendida"
+      }
+    },
+    {
+      "id": "FDNV-01",
+      "metric": "fdn_volumoso_pct",
+      "label": "FDN de volumosos",
+      "unit": "% MS da dieta",
+      "source": "NASEM2021",
+      "basis": "19% no contexto de referencia. Perfil seco e limites adicionais sao hipoteses MVP.",
+      "if": {
+        "fact": "fdn_volumoso_pct",
+        "operator": "outside_inclusive_profile_range"
+      },
+      "then": {
+        "status": "violada"
+      },
+      "else": {
+        "status": "atendida"
+      }
+    },
+    {
+      "id": "AMIDO-01",
+      "metric": "amido_pct",
+      "label": "Amido",
+      "unit": "% MS",
+      "source": "PSU_AMIDO",
+      "basis": "20-30% e faixa orientativa para lactacao; faixa seca e hipotese MVP.",
+      "if": {
+        "fact": "amido_pct",
+        "operator": "outside_inclusive_profile_range"
+      },
+      "then": {
+        "status": "violada"
+      },
+      "else": {
+        "status": "atendida"
+      }
+    },
+    {
+      "id": "EL-01",
+      "metric": "el_mcal_kg",
+      "label": "Energia liquida de lactacao",
+      "unit": "Mcal/kg MS",
+      "source": "MVP",
+      "basis": "Densidade energetica simplificada; nao estima exigencia individual.",
+      "if": {
+        "fact": "el_mcal_kg",
+        "operator": "outside_inclusive_profile_range"
+      },
+      "then": {
+        "status": "violada"
+      },
+      "else": {
+        "status": "atendida"
+      }
+    },
+    {
+      "id": "CA-01",
+      "metric": "ca_pct",
+      "label": "Calcio",
+      "unit": "% MS",
+      "source": "MVP",
+      "basis": "Faixa didatica sem ajuste por biodisponibilidade.",
+      "if": {
+        "fact": "ca_pct",
+        "operator": "outside_inclusive_profile_range"
+      },
+      "then": {
+        "status": "violada"
+      },
+      "else": {
+        "status": "atendida"
+      }
+    },
+    {
+      "id": "P-01",
+      "metric": "p_pct",
+      "label": "Fosforo",
+      "unit": "% MS",
+      "source": "MVP",
+      "basis": "Faixa didatica sem ajuste por biodisponibilidade.",
+      "if": {
+        "fact": "p_pct",
+        "operator": "outside_inclusive_profile_range"
+      },
+      "then": {
+        "status": "violada"
+      },
+      "else": {
+        "status": "atendida"
+      }
+    }
+  ]
+}

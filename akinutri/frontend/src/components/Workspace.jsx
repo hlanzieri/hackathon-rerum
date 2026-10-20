@@ -1,0 +1,290 @@
+import React from 'react';
+import { Leaf, ArrowUpRight, ShieldCheck, FlaskConical, Activity } from 'lucide-react';
+import { number } from '../api';
+import LoteForm, { scenarios } from './LoteForm';
+import InsumosTable from './InsumosTable';
+import IntakeEstimator from './IntakeEstimator';
+import TracoPanel from './TracoPanel';
+
+export default function Workspace({ workspace: w, onBatch }) {
+  return (
+    <>
+      <div className="work-summary">
+        <div>
+          <Activity size={18} aria-hidden="true" />
+          <strong>{w.history.length}</strong> análises preservadas
+        </div>
+        <span>
+          {w.insumos.length} insumos · {w.base.rules.length} regras explícitas · base v
+          {w.base.version}
+        </span>
+      </div>
+      <div className="demo-strip">
+        <FlaskConical size={18} aria-hidden="true" />
+        <span>
+          <strong>Cenários de demonstração</strong> · Composição e preços sintéticos.
+        </span>
+        <select
+          aria-label="Carregar cenário de demonstração"
+          defaultValue=""
+          disabled={w.busy}
+          onChange={(e) => {
+            if (e.target.value !== '') w.scenario(Number(e.target.value));
+            e.target.value = '';
+          }}
+        >
+          <option value="">Escolher cenário</option>
+          {scenarios.map((s, i) => (
+            <option key={i} value={i}>
+              {s.label}
+            </option>
+          ))}
+        </select>
+      </div>
+      <fieldset disabled={w.busy} className="workspace-fields">
+        <legend className="sr-only">Fatos do lote e dados da dieta</legend>
+        <div className="workspace-grid">
+          <section className="card lot-card">
+            <div className="section-heading">
+              <div className="step-title">
+                <span className="step-number">01</span>
+                <div>
+                  <h2>Perfil do lote</h2>
+                  <p>Características dos animais.</p>
+                </div>
+              </div>
+              {w.loteId && <span className="saved-pill">Salvo #{w.loteId}</span>}
+            </div>
+            {w.lotes.length > 0 && (
+              <label className="existing-label">
+                Lote cadastrado
+                <select value={w.loteId ?? ''} onChange={(e) => w.selectLote(e.target.value)}>
+                  <option value="">Cadastrar novo lote</option>
+                  {w.lotes.map((l) => (
+                    <option key={l.id} value={l.id}>
+                      {l.nome} · #{l.id}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
+            {w.editing ? (
+              <LoteForm
+                value={w.lote}
+                onChange={(value) => {
+                  w.setLote(value);
+                  w.setLoteId(null);
+                  w.invalidate();
+                }}
+                racas={w.racas}
+                save={w.saveLote}
+                busy={w.busy}
+              />
+            ) : (
+              <div className="lot-summary">
+                <span className="lot-avatar">
+                  <Leaf size={29} aria-hidden="true" />
+                </span>
+                <h3>{w.lote.nome}</h3>
+                <p>
+                  {w.racas.find((r) => r.id === w.lote.raca_id)?.nome} ·{' '}
+                  {w.lote.estado === 'seca' ? 'Período seco' : 'Em lactação'}
+                </p>
+                <dl>
+                  <div>
+                    <dt>Animais</dt>
+                    <dd>{w.lote.quantidade}</dd>
+                  </div>
+                  <div>
+                    <dt>Peso médio</dt>
+                    <dd>{number(w.lote.peso_kg, 0)} kg</dd>
+                  </div>
+                  <div>
+                    <dt>Produção</dt>
+                    <dd>{number(w.lote.producao_l_dia, 1)} L/animal/dia</dd>
+                  </div>
+                  <div>
+                    <dt>{w.lote.estado === 'seca' ? 'Dias até parto' : 'Dias em lactação'}</dt>
+                    <dd>{w.lote.dias_ate_parto ?? w.lote.dias_lactacao}</dd>
+                  </div>
+                </dl>
+                <button
+                  className="button secondary"
+                  onClick={() => {
+                    w.setEditing(true);
+                    w.setLoteId(null);
+                    w.invalidate();
+                  }}
+                >
+                  Editar como novo lote
+                </button>
+              </div>
+            )}
+            <div className="lot-tip">
+              <ShieldCheck size={17} aria-hidden="true" />
+              <p>
+                Raça, peso e fase ficam no registro. Os limites nutricionais ainda são perfis
+                demonstrativos e exigem revisão técnica.
+              </p>
+            </div>
+          </section>
+          <section className="card diet-card">
+            <div className="section-heading">
+              <div className="step-title">
+                <span className="step-number">02</span>
+                <div>
+                  <h2>Insumos e objetivo</h2>
+                  <p>Informe custos locais e limites de inclusão.</p>
+                </div>
+              </div>
+            </div>
+            <div className="segmented" role="group" aria-label="Objetivo da análise">
+              <button
+                aria-pressed={w.mode === 'formular'}
+                className={w.mode === 'formular' ? 'selected' : ''}
+                onClick={() => {
+                  w.setMode('formular');
+                  w.invalidate();
+                }}
+              >
+                Formular menor custo <ArrowUpRight size={15} aria-hidden="true" />
+              </button>
+              <button
+                aria-pressed={w.mode === 'verificar'}
+                className={w.mode === 'verificar' ? 'selected' : ''}
+                onClick={() => {
+                  w.setMode('verificar');
+                  w.invalidate();
+                }}
+              >
+                Verificar minha dieta <ShieldCheck size={15} aria-hidden="true" />
+              </button>
+            </div>
+            <div className="intake-row">
+              <label>
+                Consumo alvo de matéria seca
+                <div className="input-unit">
+                  <input
+                    aria-label="Consumo alvo de matéria seca"
+                    required
+                    type="number"
+                    min="3"
+                    max="40"
+                    step="any"
+                    value={w.intake}
+                    onChange={(e) => {
+                      w.setIntake(e.target.value);
+                      w.invalidate();
+                    }}
+                  />
+                  <span>kg / animal / dia</span>
+                </div>
+              </label>
+              <p>Defina manualmente ou aplique uma sugestão do estimador.</p>
+            </div>
+            <IntakeEstimator
+              key={`${w.loteId}-${w.lote.raca_id}-${w.lote.peso_kg}-${w.lote.dias_lactacao}-${w.lote.estado}`}
+              lote={w.lote}
+              raca={w.racas.find((r) => r.id === w.lote.raca_id)?.nome || ''}
+              onApply={w.applyEstimate}
+            />
+            <details className="management">
+              <summary>Condições do manejo</summary>
+              <div>
+                <label>
+                  Sistema alimentar
+                  <select
+                    value={w.manejo.sistema}
+                    onChange={(e) => {
+                      w.setManejo({ ...w.manejo, sistema: e.target.value });
+                      w.invalidate();
+                    }}
+                  >
+                    <option value="tmr">TMR · dieta total misturada</option>
+                    <option value="outro">Outro sistema</option>
+                  </select>
+                </label>
+                {[
+                  ['particula_adequada', 'Partícula do volumoso adequada'],
+                  ['milho_seco_predominante', 'Milho seco como principal fonte de amido'],
+                ].map(([key, label]) => (
+                  <label key={key}>
+                    {label}
+                    <select
+                      value={w.manejo[key] === null ? 'unknown' : String(w.manejo[key])}
+                      onChange={(e) => {
+                        w.setManejo({
+                          ...w.manejo,
+                          [key]: e.target.value === 'unknown' ? null : e.target.value === 'true',
+                        });
+                        w.invalidate();
+                      }}
+                    >
+                      <option value="true">Sim</option>
+                      <option value="false">Não</option>
+                      <option value="unknown">Não informado</option>
+                    </select>
+                  </label>
+                ))}
+              </div>
+            </details>
+            <InsumosTable
+              insumos={w.insumos}
+              rows={w.rows}
+              setRows={(value) => {
+                w.setRows(value);
+                w.invalidate();
+              }}
+              mode={w.mode}
+            />
+            <div className="diet-footer">
+              <p>
+                MN: matéria natural · MS: matéria seca.
+                <br />
+                Preços editados valem para esta análise; o catálogo é preservado.
+              </p>
+              <button
+                className="button primary"
+                disabled={
+                  !w.loteId ||
+                  w.busy ||
+                  w.intake === '' ||
+                  Number(w.intake) < 3 ||
+                  Number(w.intake) > 40
+                }
+                onClick={w.run}
+              >
+                {w.busy
+                  ? 'Processando…'
+                  : w.mode === 'formular'
+                    ? 'Formular dieta'
+                    : 'Verificar dieta'}
+                <ArrowUpRight size={17} aria-hidden="true" />
+              </button>
+            </div>
+            {!w.loteId && <p className="save-hint">Salve ou selecione um lote para executar.</p>}
+          </section>
+        </div>
+      </fieldset>
+      <div className="section-heading result-heading">
+        <div className="step-title">
+          <span className="step-number">03</span>
+          <div>
+            <h2>Resultado e explicação</h2>
+            <p>Cada valor pode ser conferido contra a regra aplicada.</p>
+          </div>
+        </div>
+        {w.result?.status === 'atende_perfil_demo' && (
+          <button className="button secondary" onClick={() => onBatch(w.result.session_id)}>
+            Preparar batida do vagão
+          </button>
+        )}
+      </div>
+      <TracoPanel
+        result={w.result}
+        snapshot={w.snapshot}
+        onUse={w.result?.totals && w.mode === 'formular' ? w.useFormulated : null}
+      />
+    </>
+  );
+}

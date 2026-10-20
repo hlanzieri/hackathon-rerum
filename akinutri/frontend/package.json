@@ -1,0 +1,29 @@
+{
+  "name": "akinutri-frontend",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node scripts/prepare-docs.mjs && vite --host 127.0.0.1",
+    "build": "node scripts/prepare-docs.mjs && vite build",
+    "preview": "vite preview --host 127.0.0.1",
+    "test": "vitest run --maxWorkers=1",
+    "format": "prettier --write src",
+    "format:check": "prettier --check src"
+  },
+  "dependencies": {
+    "lucide-react": "0.468.0",
+    "react": "19.0.0",
+    "react-dom": "19.0.0"
+  },
+  "devDependencies": {
+    "@axe-core/react": "^4.10.2",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.1",
+    "jsdom": "^26.1.0",
+    "prettier": "^3.5.3",
+    "swagger-ui-dist": "5.20.1",
+    "vite": "6.4.1",
+    "vitest": "^3.2.4"
+  }
+}
