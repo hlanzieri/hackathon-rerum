@@ -1,4 +1,5 @@
 import React from 'react';
+import useVisibleMotion from '../hooks/useVisibleMotion';
 import {
   AlertTriangle,
   Award,
@@ -58,8 +59,9 @@ function FooterLink({ href, children, external = false }) {
 }
 
 export default function Footer({ base }) {
+  const motionRef = useVisibleMotion();
   return (
-    <footer className="institutional-footer no-print">
+    <footer ref={motionRef} className="institutional-footer no-print">
       <div className="institutional-footer__inner">
         <div className="institutional-footer__grid">
           <section aria-labelledby="footer-brand">

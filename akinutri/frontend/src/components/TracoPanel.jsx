@@ -2,6 +2,7 @@ import React from 'react';
 import { CheckCircle2, AlertTriangle, Download, ChevronDown } from 'lucide-react';
 import { number, money, download } from '../api';
 import StatusBadge from './StatusBadge';
+import NutrientRange from './NutrientRange';
 
 export const statusLabel = (status) =>
   ({
@@ -118,9 +119,10 @@ export default function TracoPanel({ result, snapshot, onUse }) {
         <span className="version-pill">Base v{result.knowledge_version}</span>
       </div>
       {result.trace.map((t) => (
-        <details className="trace-row" key={t.id}>
+        <details className={`trace-row audit-${t.status}`} key={t.id}>
           <summary>
             <strong>
+              <code className="audit-rule-id">{t.id}</code>
               {t.label}
               <small className="range-preview">
                 [{number(t.minimum)}; {number(t.maximum)}] {t.unit}
@@ -133,6 +135,7 @@ export default function TracoPanel({ result, snapshot, onUse }) {
             <ChevronDown size={15} aria-hidden="true" />
           </summary>
           <div className="trace-detail">
+            <NutrientRange rule={t} />
             <p>
               <b>{t.id}</b> · IF {t.label} ∈ [{number(t.minimum, 3)}; {number(t.maximum, 3)}]{' '}
               {t.unit}, THEN restrição atendida; caso contrário, violada.
