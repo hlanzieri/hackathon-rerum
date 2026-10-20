@@ -4,6 +4,7 @@ import platform
 import sqlalchemy
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.openapi.docs import get_swagger_ui_html
 from sqlalchemy import select, desc
@@ -36,6 +37,8 @@ from .engine_solver import solve
 from .engine_intake import estimate_intake
 from .audit import verify_base, sign_result, verify_session
 from .reports import compare_sessions, mixing_report
+from .auth import router as auth_router
+from .lifecycle import router as lifecycle_router
 
 
 @asynccontextmanager
@@ -70,10 +73,18 @@ def local_documentation():
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_origins=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "http://localhost:8000",
+        "http://127.0.0.1:8000",
+    ],
     allow_methods=["GET", "POST", "PUT"],
     allow_headers=["Content-Type"],
+    allow_credentials=True,
 )
+app.include_router(auth_router)
+app.include_router(lifecycle_router)
 
 
 def require(db, model, id):
@@ -399,4 +410,9 @@ def unknown_api(path: str):
 # Built React bundle is served by the API for a single localhost origin.
 DIST = Path(__file__).resolve().parents[2] / "frontend" / "dist"
 if DIST.exists():
+    @app.get("/login", include_in_schema=False)
+    @app.get("/register", include_in_schema=False)
+    def auth_page():
+        return FileResponse(DIST / "index.html")
+
     app.mount("/", StaticFiles(directory=DIST, html=True), name="frontend")

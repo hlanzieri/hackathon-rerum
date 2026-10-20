@@ -1,10 +1,23 @@
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+const apiOrigin = new URL(API_BASE_URL);
+if (
+  apiOrigin.protocol !== 'http:' ||
+  !['localhost', '127.0.0.1', '[::1]'].includes(apiOrigin.hostname)
+) {
+  throw new Error('A API do AkiNutri deve apontar para localhost ou loopback via HTTP.');
+}
+
+export const apiUrl = (path) => `${API_BASE_URL}/api${path}`;
+
 export async function api(path, method = 'GET', body, options = {}) {
-  const response = await fetch(`/api${path}`, {
+  const response = await fetch(apiUrl(path), {
     ...options,
     method,
+    credentials: 'include',
     headers: body ? { 'Content-Type': 'application/json' } : {},
     body: body ? JSON.stringify(body) : undefined,
   });
+  if (response.status === 204) return null;
   const data = await response.json();
   if (!response.ok)
     throw new Error(

@@ -4,19 +4,25 @@ POC local do Hackathon UFJF 2026, Tema T2. React/Vite + FastAPI + SQLite/SQLAlch
 
 ## Executar
 
+Os serviços escutam somente em loopback. O frontend usa `http://localhost:5173`, a API `http://localhost:8000` e o banco SQLite é um arquivo local em `backend/akinutri.db`. Não configure endereços públicos, serviços externos ou banco hospedado.
+
+Copie `.env.example` para `.env` em `akinutri`, e `frontend/.env.example` para `frontend/.env.local`. Substitua `AKINUTRI_JWT_SECRET=CHANGE_ME` por uma chave aleatória local de pelo menos 32 bytes (em Linux/macOS, `openssl rand -hex 32`). O exemplo de segredo é intencionalmente inválido e a API recusa iniciar autenticação até que seja trocado. Esses arquivos locais são ignorados pelo Git.
+
 Nesta máquina, dependências e build estão preparados. No PowerShell, dentro de `akinutri`:
 
 ```powershell
 .\start.ps1
 ```
 
-Abra **http://127.0.0.1:8000** ou **http://localhost:8000**. Swagger: **http://localhost:8000/docs**. `Ctrl+C` encerra o servidor. Apenas um processo pode ocupar a porta 8000.
+Abra **http://localhost:8000**. Swagger: **http://localhost:8000/docs**. `Ctrl+C` encerra o servidor. Apenas um processo pode ocupar a porta 8000.
 
 ### Instalação em outra máquina
 
 Requisitos: Python 3.12 e Node.js 22 com npm. Na pasta `akinutri`:
 
 ```powershell
+if (-not (Test-Path .env)) { Copy-Item .env.example .env }
+if (-not (Test-Path frontend\.env.local)) { Copy-Item frontend\.env.example frontend\.env.local }
 py -3.12 -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r backend\requirements.txt
 Set-Location frontend
@@ -31,20 +37,46 @@ A internet só é necessária para instalar dependências. Não há CDN, fontes 
 Linux/macOS:
 
 ```bash
+test -f .env || cp .env.example .env
+test -f frontend/.env.local || cp frontend/.env.example frontend/.env.local
 python3.12 -m venv .venv
 .venv/bin/python -m pip install -r backend/requirements.txt
 cd frontend
 npm ci
 npm run build
 cd ../backend
-../.venv/bin/python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
+../.venv/bin/python -m app
 ```
 
 ### Desenvolvimento
 
-Em `backend`, execute `..\.venv\Scripts\python.exe -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000`. Em outro terminal, dentro de `frontend`, execute `npm run dev` e abra http://localhost:5173. O proxy do Vite encaminha `/api` ao backend. O build deve existir antes de iniciar a API para disponibilizar a interface na porta 8000.
+Na raiz `akinutri`, inicie a API local com `./start.sh` (Linux/macOS) ou `.\start.ps1` (PowerShell). Para desenvolvimento do frontend, abra outro terminal, entre em `frontend` e execute `npm run dev`; acesse http://localhost:5173. O frontend chama a API diretamente em `http://localhost:8000`, e o backend aceita CORS apenas das origens locais configuradas. O build deve existir antes de iniciar a API para disponibilizar a interface na porta 8000.
+
+### Contas e autenticação
+
+O cadastro em `/register` usa `POST /api/auth/register` com `nome`, `email` e `senha`; exige senha com ao menos 12 caracteres e rejeita e-mail já utilizado. Após salvar o hash bcrypt, autentica a nova conta automaticamente. O login em `POST /api/auth/login` também compara senhas com bcrypt. Ambos emitem JWT em cookie `HttpOnly`, `SameSite=Lax`, com validade de uma hora (30 dias se “Manter conectado” estiver marcado no login). O segredo de assinatura não tem valor padrão: configure `AKINUTRI_JWT_SECRET` com pelo menos 32 bytes aleatórios antes de iniciar o backend. Por exemplo, em Linux/macOS:
+
+```bash
+export AKINUTRI_JWT_SECRET="$(openssl rand -hex 32)"
+```
+
+Em PowerShell, defina `$env:AKINUTRI_JWT_SECRET` para um valor aleatório forte antes de iniciar o servidor. Em produção, use HTTPS e configure `AKINUTRI_COOKIE_SECURE=true`; em desenvolvimento local HTTP, o padrão `false` permite que o navegador aceite o cookie.
+
+Crie uma conta administrativa pelo terminal do backend; a senha é solicitada sem eco e nunca deve ser passada como argumento:
+
+```bash
+../.venv/bin/python -m app.create_user --email pessoa@exemplo.com --name "Nome da pessoa"
+```
+
+No Windows, use `..\.venv\Scripts\python.exe -m app.create_user --email pessoa@exemplo.com --name "Nome da pessoa"`. O banco cria a tabela de usuários com `create_all`; contas existentes não são alteradas.
 
 ## Fluxo de uso
+
+### Histórico do ciclo de vida e grupos de produção
+
+Na aba **Animais e GP** (`/#animais`), cadastre grupos nas fases Bezerril, Recria, Lactação ou Seca, depois cadastre animais com data de nascimento, identificação e grupo inicial. A movimentação registra a data de entrada em cada novo grupo e encerra o período anterior no dia precedente. Grupos e animais podem ser arquivados; os registros históricos são preservados.
+
+Para ativar uma dieta, selecione uma formulação LP concluída e verificada, o GP e a data de início. Uma dieta nova encerra a dieta anterior do mesmo grupo no dia precedente. No perfil do animal, a linha do tempo cruza seus períodos de movimentação com as dietas ativas, mostra os ingredientes e custos diários dos snapshots registrados e acumula o custo pelo número de dias em cada período. Períodos sem dieta registrada aparecem explicitamente e têm custo nutricional contabilizado como zero; o histórico começa na primeira movimentação cadastrada, sem inferir fases anteriores.
 
 1. **Lote:** carregue um cenário ou preencha o formulário, incluindo raça, peso, idade, parição, fase, destinação e produção. Salve ou selecione um lote existente.
 2. **Consumo:** informe CMS manualmente ou abra o estimador opcional, complete as entradas técnicas e aplique a sugestão. Aplicação e ajuste manual são ações explícitas.
@@ -78,6 +110,7 @@ flowchart LR
 | Arquivo / módulo | Responsabilidade |
 |---|---|
 | `backend/app/main.py` | REST, transações, integração e frontend estático |
+| `backend/app/lifecycle.py` | CRUD de grupos/animais, movimentações, dietas ativas e linha do tempo nutricional |
 | `schemas.py`, `models.py`, `database.py` | DTOs, entidades, SQLite e proteção append-only |
 | `engine_rules.py` | Seleção de perfis e verificação determinística |
 | `engine_solver.py` | LP, custos marginais e preços sombra |
@@ -178,4 +211,4 @@ Perfis de lactação exigem TMR, partícula adequada, milho seco predominante e 
 
 Referências de contexto: [NASEM — fibra](https://www.ncbi.nlm.nih.gov/books/NBK600592/), [Penn State — amido](https://extension.psu.edu/carbohydrate-nutrition-for-lactating-dairy-cattle), [Penn State — proteína](https://extension.psu.edu/from-feed-to-milk-understanding-rumen-function), [SciPy — HiGHS](https://docs.scipy.org/doc/scipy/reference/optimize.linprog-highs.html).
 
-Aplicação para uso local em loopback, sem autenticação. A interface segue critérios de acessibilidade e recebe verificações de teclado, contraste e reflow; isso não equivale a certificação WCAG completa ou prontidão industrial validada.
+O login verifica credenciais e emite JWT em cookie HttpOnly. Nesta POC, as demais rotas da API ainda não exigem esse cookie; portanto, o login não deve ser tratado como controle de acesso aos dados nem a aplicação deve ser exposta em rede como sistema autenticado. A interface segue critérios de acessibilidade e recebe verificações de teclado, contraste e reflow; isso não equivale a certificação WCAG completa ou prontidão industrial validada.

@@ -1,10 +1,15 @@
 import os
 from pathlib import Path
+
+from dotenv import load_dotenv
 from sqlalchemy import create_engine, event, text
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
 DEFAULT_DB = Path(__file__).resolve().parents[1] / "akinutri.db"
+load_dotenv(Path(__file__).resolve().parents[2] / ".env", override=False)
 DATABASE_URL = os.getenv("AKINUTRI_DATABASE_URL", f"sqlite:///{DEFAULT_DB.as_posix()}")
+if not DATABASE_URL.startswith("sqlite:///"):
+    raise RuntimeError("AkiNutri aceita somente um banco SQLite em arquivo local.")
 engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 
 

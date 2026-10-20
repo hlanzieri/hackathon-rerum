@@ -8,6 +8,7 @@ from app.database import Base, get_db
 
 @pytest.fixture
 def client(tmp_path, monkeypatch):
+    monkeypatch.setenv("AKINUTRI_JWT_SECRET", "test-only-secret-key-at-least-32-bytes")
     engine = create_engine(
         f'sqlite:///{(tmp_path / "test.db").as_posix()}',
         connect_args={"check_same_thread": False},

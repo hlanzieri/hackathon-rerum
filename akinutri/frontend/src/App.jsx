@@ -9,11 +9,16 @@ import {
   ShieldCheck,
   GitCompareArrows,
   Truck,
+  LogIn,
+  UsersRound,
 } from 'lucide-react';
 import useWorkspace from './hooks/useWorkspace';
 import Workspace from './components/Workspace';
 import TracoPanel from './components/TracoPanel';
 import Footer from './components/Footer';
+import LoginPage from './components/LoginPage';
+import RegisterPage from './components/RegisterPage';
+import AnimaisPage from './components/AnimaisPage';
 import useVisibleMotion from './hooks/useVisibleMotion';
 
 const Catalogo = lazy(() => import('./components/Catalogo'));
@@ -28,6 +33,7 @@ const tabs = [
   ['insumos', 'Insumos', Wheat],
   ['regras', 'Base de conhecimento', BookOpen],
   ['historico', 'Histórico de análises', History],
+  ['animais', 'Animais e GP', UsersRound],
 ];
 const titles = {
   workspace: ['Da análise ao cocho.', 'Formule, confira e explique a dieta do seu lote.'],
@@ -51,6 +57,10 @@ const titles = {
     'O registro de cada decisão.',
     'Fatos, preços e regras preservados no momento da análise.',
   ],
+  animais: [
+    'A vida do rebanho, em contexto.',
+    'Acompanhe grupos de produção, movimentações e dietas ao longo do tempo.',
+  ],
   resultado: [
     'Uma análise, todos os detalhes.',
     'Resultado histórico com integridade conferida pelo backend.',
@@ -58,19 +68,29 @@ const titles = {
 };
 const currentRoute = () => {
   const value = window.location.hash.slice(1);
-  return value in titles ? value : 'workspace';
+  if (value === 'login' || value === 'register' || value in titles) return value;
+  const path = window.location.pathname.replace(/\/+$/, '');
+  if (path === '/login' || path === '/register') return path.slice(1);
+  return 'workspace';
 };
 
 export default function App() {
-  const workspace = useWorkspace();
-  const statusMotion = useVisibleMotion();
-  const [tab, setTab] = useState(currentRoute),
-    [batchSession, setBatchSession] = useState(null);
+  const [route, setRoute] = useState(currentRoute);
   useEffect(() => {
-    const update = () => setTab(currentRoute());
+    const update = () => setRoute(currentRoute());
     window.addEventListener('hashchange', update);
     return () => window.removeEventListener('hashchange', update);
   }, []);
+
+  if (route === 'login') return <LoginPage />;
+  if (route === 'register') return <RegisterPage />;
+  return <WorkspaceApp tab={route} />;
+}
+
+function WorkspaceApp({ tab }) {
+  const workspace = useWorkspace();
+  const statusMotion = useVisibleMotion();
+  const [batchSession, setBatchSession] = useState(null);
   const batch = (id) => {
     setBatchSession(id);
     window.location.hash = 'batida';
@@ -148,9 +168,14 @@ export default function App() {
             <ChevronRight size={13} aria-hidden="true" />
             <span>{tabs.find((t) => t[0] === tab)?.[1] || 'Resultado da análise'}</span>
           </div>
-          <span className="local-badge">
-            <span className="live-dot pulse" /> Motor determinístico ativo
-          </span>
+          <div className="topbar-actions">
+            <span className="local-badge">
+              <span className="live-dot pulse" /> Motor determinístico ativo
+            </span>
+            <a className="login-entry-link" href="#login">
+              Entrar <LogIn size={15} aria-hidden="true" />
+            </a>
+          </div>
         </header>
         <main id="main-content" tabIndex="-1">
           <div className="page-eyebrow">
@@ -222,6 +247,7 @@ export default function App() {
                   {tab === 'historico' && (
                     <HistoryPage history={workspace.history} busy={workspace.busy} onOpen={open} />
                   )}
+                  {tab === 'animais' && <AnimaisPage />}
                   {tab === 'resultado' &&
                     (workspace.result ? (
                       <>
