@@ -16,6 +16,8 @@ import { API_BASE_URL, apiUrl } from '../api';
 
 afterEach(cleanup);
 afterEach(() => {
+  sessionStorage.clear();
+  localStorage.clear();
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
 });
@@ -75,17 +77,22 @@ test('animal and group screen offers lifecycle registration and GP diet controls
   expect(screen.getByRole('heading', { name: 'Novo animal' })).toBeTruthy();
   expect(screen.getByRole('heading', { name: 'Grupos de produção' })).toBeTruthy();
 });
-test('animais hash opens the lifecycle module from app navigation', async () => {
+test('animais path opens the lifecycle module from app navigation', async () => {
   vi.stubGlobal(
     'fetch',
     vi.fn().mockImplementation(async (url) => ({
       ok: true,
       status: 200,
       json: async () =>
-        String(url).endsWith('/regras') ? { version: '0.1.0', sha256: 'test' } : [],
+        String(url).endsWith('/auth/me')
+          ? { user: { id: 1, name: 'Pessoa', email: 'pessoa@example.com', role: 'produtor' } }
+          : String(url).endsWith('/regras')
+            ? { version: '0.1.0', sha256: 'test', rules: [] }
+            : [],
     })),
   );
-  window.history.replaceState(null, '', '/#animais');
+  sessionStorage.setItem('akinutri.access_token.v1', 'issued-token');
+  window.history.replaceState(null, '', '/dashboard/animais');
   render(<App />);
   expect(await screen.findByRole('heading', { name: 'Novo grupo de produção' })).toBeTruthy();
   expect(screen.getByRole('link', { name: 'Animais e GP' }).getAttribute('aria-current')).toBe(
@@ -184,10 +191,14 @@ test('login submits credentials and redirects after success', async () => {
   const user = userEvent.setup();
   const fetch = vi.fn().mockResolvedValue({
     ok: true,
-    json: async () => ({ user: { id: 1, email: 'pessoa@exemplo.com', name: 'Pessoa' } }),
+    json: async () => ({
+      access_token: 'signed-token',
+      token_type: 'bearer',
+      user: { id: 1, email: 'pessoa@exemplo.com', name: 'Pessoa' },
+    }),
   });
   vi.stubGlobal('fetch', fetch);
-  window.location.hash = 'login';
+  window.history.replaceState(null, '', '/login');
   render(<LoginPage />);
   await user.type(screen.getByLabelText('E-mail'), 'pessoa@exemplo.com');
   await user.type(screen.getByLabelText('Senha'), 'senha-segura');
@@ -205,7 +216,7 @@ test('login submits credentials and redirects after success', async () => {
       }),
     }),
   );
-  expect(window.location.hash).toBe('#workspace');
+  expect(window.location.pathname).toBe('/dashboard');
 });
 test('login password visibility can be toggled', async () => {
   const user = userEvent.setup();
@@ -217,16 +228,16 @@ test('login password visibility can be toggled', async () => {
   await user.click(screen.getByRole('button', { name: 'Ocultar senha' }));
   expect(password.type).toBe('password');
 });
-test('login hash opens the page without starting the workspace', () => {
-  window.history.replaceState(null, '', '/#login');
+test('login hash opens the page without starting the workspace', async () => {
+  window.history.replaceState(null, '', '/login');
   render(<App />);
-  expect(screen.getByRole('heading', { name: 'Acesse sua conta' })).toBeTruthy();
+  expect(await screen.findByRole('heading', { name: 'Acesse sua conta' })).toBeTruthy();
   window.history.replaceState(null, '', '/');
 });
-test('register path opens the account creation page', () => {
+test('register path opens the account creation page', async () => {
   window.history.replaceState(null, '', '/register');
   render(<App />);
-  expect(screen.getByRole('heading', { name: 'Crie sua conta' })).toBeTruthy();
+  expect(await screen.findByRole('heading', { name: 'Crie sua conta' })).toBeTruthy();
   window.history.replaceState(null, '', '/');
 });
 test('login shows API errors and disables submission while loading', async () => {
@@ -270,7 +281,11 @@ test('register sends account fields and redirects after success', async () => {
   const user = userEvent.setup();
   const fetch = vi.fn().mockResolvedValue({
     ok: true,
-    json: async () => ({ user: { id: 1, email: 'pessoa@exemplo.com', name: 'Pessoa' } }),
+    json: async () => ({
+      access_token: 'signed-token',
+      token_type: 'bearer',
+      user: { id: 1, email: 'pessoa@exemplo.com', name: 'Pessoa' },
+    }),
   });
   vi.stubGlobal('fetch', fetch);
   window.location.hash = '';
@@ -292,5 +307,5 @@ test('register sends account fields and redirects after success', async () => {
       }),
     }),
   );
-  expect(window.location.hash).toBe('#workspace');
+  expect(window.location.pathname).toBe('/dashboard');
 });

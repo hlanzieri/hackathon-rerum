@@ -1,5 +1,5 @@
 import React from 'react';
-import { number, money } from '../api';
+import { number, money, displayText } from '../api';
 
 export default function InsumosTable({ insumos, rows, setRows, mode }) {
   function change(id, key, value) {
@@ -33,14 +33,14 @@ export default function InsumosTable({ insumos, rows, setRows, mode }) {
                 <label className="checkbox-target">
                   <input
                     type="checkbox"
-                    aria-label={`Usar ${i.nome}`}
+                    aria-label={`Usar ${displayText(i.nome)}`}
                     checked={!!rows[i.id]?.selected}
                     onChange={(e) => change(i.id, 'selected', e.target.checked)}
                   />
                 </label>
               </td>
               <th scope="row">
-                <strong>{i.nome}</strong>
+                <strong>{displayText(i.nome)}</strong>
                 <small>{i.categoria}</small>
               </th>
               <td>
@@ -54,7 +54,7 @@ export default function InsumosTable({ insumos, rows, setRows, mode }) {
               </td>
               <td>
                 <input
-                  aria-label={`Preço MN ${i.nome}`}
+                  aria-label={`Preço MN ${displayText(i.nome)}`}
                   type="number"
                   min="0"
                   max="10000"
@@ -67,7 +67,7 @@ export default function InsumosTable({ insumos, rows, setRows, mode }) {
               </td>
               <td>
                 <input
-                  aria-label={`${mode === 'verificar' ? 'Quantidade MN' : 'Mínimo MS'} ${i.nome}`}
+                  aria-label={`${mode === 'verificar' ? 'Quantidade MN' : 'Mínimo MS'} ${displayText(i.nome)}`}
                   disabled={!rows[i.id]?.selected}
                   type="number"
                   min="0"
@@ -87,7 +87,7 @@ export default function InsumosTable({ insumos, rows, setRows, mode }) {
               </td>
               <td>
                 <input
-                  aria-label={`Máximo MS ${i.nome}`}
+                  aria-label={`Máximo MS ${displayText(i.nome)}`}
                   disabled={!rows[i.id]?.selected}
                   type="number"
                   min="0"

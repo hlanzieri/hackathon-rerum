@@ -18,7 +18,7 @@ test('institutional footer shows the loaded knowledge-base audit values', () => 
 
   expect(screen.getByText('v0.1.0 (base_v0.1.0.json)')).toBeTruthy();
   expect(screen.getByText('SHA-256: 0123456789abcdef')).toBeTruthy();
-  expect(screen.getByText('Localhost / Privacy-First')).toBeTruthy();
+  expect(screen.getByText('Base carregada e identificada')).toBeTruthy();
 });
 
 test('system links open existing local routes and documentation', () => {
@@ -31,7 +31,7 @@ test('system links open existing local routes and documentation', () => {
     screen
       .getByRole('link', { name: /Visualizar JSON da Base de Conhecimento/ })
       .getAttribute('href'),
-  ).toBe('#regras');
+  ).toBe('/dashboard/regras');
   expect(screen.getByRole('link', { name: /Roteiro de Apresentação/ }).getAttribute('href')).toBe(
     'https://github.com/hlanzieri/hackathon-rerum/blob/main/akinutri/docs/APRESENTACAO.md',
   );

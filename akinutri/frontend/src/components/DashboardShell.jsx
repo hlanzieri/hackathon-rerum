@@ -10,10 +10,12 @@ import {
   LogOut,
   GitCompareArrows,
   Truck,
+  UsersRound,
   PanelLeftClose,
   PanelLeftOpen,
 } from 'lucide-react';
 import useWorkspace from '../hooks/useWorkspace';
+import { paths, navigate } from '../navigation';
 import Workspace from './Workspace';
 import TracoPanel from './TracoPanel';
 import Footer from './Footer';
@@ -24,8 +26,10 @@ const Catalogo = lazy(() => import('./Catalogo'));
 const ComparisonPage = lazy(() => import('./ComparisonPage'));
 const MixingPage = lazy(() => import('./MixingPage'));
 const KnowledgePage = lazy(() => import('./KnowledgePage'));
+const AnimaisPage = lazy(() => import('./AnimaisPage'));
 const HistoryPage = lazy(() => import('./HistoryPage'));
 const tabs = [
+  ['animais', 'Animais e GP', UsersRound],
   ['workspace', 'Formulação', LayoutDashboard],
   ['comparacao', 'Comparação A/B', GitCompareArrows],
   ['batida', 'Batida do vagão', Truck],
@@ -35,6 +39,10 @@ const tabs = [
   ['resultado', 'Resultado e traço', ShieldCheck],
 ];
 const titles = {
+  animais: [
+    'A vida do rebanho, em contexto.',
+    'Acompanhe grupos, movimentações e dietas ao longo do tempo.',
+  ],
   workspace: ['Da análise ao cocho.', 'Formule, confira e explique a dieta do seu lote.'],
   comparacao: [
     'Duas dietas. Uma comparação clara.',
@@ -46,7 +54,7 @@ const titles = {
   ],
   insumos: [
     'Conheça o que entra na dieta.',
-    'Composição, custo e origem dos alimentos em uma biblioteca local.',
+    'Composição, custo e origem dos alimentos em uma biblioteca de insumos.',
   ],
   regras: [
     'Cada decisão tem uma regra.',
@@ -61,7 +69,7 @@ const titles = {
     'Resultado histórico com integridade conferida pelo backend.',
   ],
 };
-export default function DashboardShell({ tab, session, onLogout }) {
+export default function DashboardShell({ tab, session, onLogout, authError }) {
   useEffect(() => {
     document.getElementById('route-focus')?.focus();
   }, [tab]);
@@ -71,16 +79,16 @@ export default function DashboardShell({ tab, session, onLogout }) {
   const [collapsed, setCollapsed] = useState(false);
   const batch = (id) => {
     setBatchSession(id);
-    window.location.hash = 'batida';
+    navigate('/dashboard/batida');
   };
   async function open(id) {
-    if (await workspace.openSession(id)) window.location.hash = 'resultado';
+    if (await workspace.openSession(id)) navigate('/dashboard/resultado');
   }
   return (
     <div className={`app-shell enterprise-shell ${collapsed ? 'sidebar-collapsed' : ''}`}>
       <a
         className="skip-link"
-        href="#main-content"
+        href=""
         onClick={(e) => {
           e.preventDefault();
           document.getElementById('main-content')?.focus();
@@ -89,7 +97,7 @@ export default function DashboardShell({ tab, session, onLogout }) {
         Ir para o conteúdo
       </a>
       <aside className="sidebar" aria-label="Navegação principal">
-        <a className="brand" href="#workspace" aria-label="AkiNutri · Formulação">
+        <a className="brand" href="/dashboard" aria-label="AkiNutri · Formulação">
           <span className="brand-icon">
             <Leaf size={27} aria-hidden="true" />
           </span>
@@ -101,7 +109,8 @@ export default function DashboardShell({ tab, session, onLogout }) {
         <div className="workspace-tag">
           <span className="tiny-square">A</span>
           <div>
-            Hackathon UFJF<small>Tema T2 · Pecuária leiteira</small>
+            {session.fazenda_nome || 'Minha propriedade'}
+            <small>Gestão nutricional do rebanho</small>
           </div>
           <ChevronRight size={15} aria-hidden="true" />
         </div>
@@ -124,7 +133,7 @@ export default function DashboardShell({ tab, session, onLogout }) {
           {tabs.map(([id, label, Icon]) => (
             <a
               key={id}
-              href={`#${id}`}
+              href={paths[id]}
               className={`nav-item ${tab === id ? 'active' : ''}`}
               aria-current={tab === id ? 'page' : undefined}
               title={label}
@@ -141,13 +150,11 @@ export default function DashboardShell({ tab, session, onLogout }) {
             <span className="session-avatar" aria-hidden="true">
               {session.role === 'produtor' ? 'PR' : 'ZC'}
             </span>
-            <strong>
-              {session.role === 'produtor' ? 'Produtor Rural' : 'Zootecnista / Consultor'}
-            </strong>
+            <strong>{session.name}</strong>
             <span title={session.email}>{session.email}</span>
-            <small>Sessão demonstrativa local</small>
+            <small>{session.role === 'zootecnista' ? 'Zootecnista' : 'Produtor rural'}</small>
             <button className="button secondary" onClick={onLogout}>
-              <LogOut size={16} aria-hidden="true" /> Sair / trocar perfil
+              <LogOut size={16} aria-hidden="true" /> Sair
             </button>
           </div>
           <div className="engine-card">
@@ -156,14 +163,14 @@ export default function DashboardShell({ tab, session, onLogout }) {
             <p>
               Regras explícitas.
               <br />
-              Cálculo local. Registro imutável.
+              Cálculo determinístico. Registro imutável.
             </p>
             <span>
               BASE v{workspace.base?.version || '0.1.0'} <span className="live-dot" />
             </span>
           </div>
           <div className="local-status">
-            <span className="live-dot" /> Ambiente local <small>localhost</small>
+            <span className="live-dot" /> Sessão autenticada
           </div>
         </div>
       </aside>
@@ -174,11 +181,11 @@ export default function DashboardShell({ tab, session, onLogout }) {
             <ChevronRight size={13} aria-hidden="true" />
             <span>{tabs.find((t) => t[0] === tab)?.[1] || 'Resultado da análise'}</span>
           </div>
-          <a className="dashboard-home" href="#home">
+          <a className="dashboard-home" href="/">
             Sobre o AkiNutri
           </a>
           <span className="local-badge">
-            <span className="live-dot pulse" /> Cálculo determinístico local
+            <span className="live-dot pulse" /> Motor Determinístico Ativo
           </span>
         </header>
         <main id="main-content" tabIndex="-1">
@@ -192,8 +199,13 @@ export default function DashboardShell({ tab, session, onLogout }) {
               </h1>
               <p>{titles[tab][1]}</p>
             </div>
-            <span className="edition">BASE v{workspace.base?.version || '0.1.0'} · LOCAL</span>
+            <span className="edition">BASE v{workspace.base?.version || '0.1.0'}</span>
           </div>
+          {authError && (
+            <p role="alert" className="error">
+              {authError}
+            </p>
+          )}
           <DashboardMetrics workspace={workspace} />
           {workspace.error && (
             <div role="alert" className="error">
@@ -214,7 +226,7 @@ export default function DashboardShell({ tab, session, onLogout }) {
           </div>
           {workspace.loading ? (
             <div className="card loading-state" role="status">
-              Conectando à base de conhecimento local…
+              Carregando base de conhecimento…
             </div>
           ) : (
             workspace.base && (
@@ -226,6 +238,7 @@ export default function DashboardShell({ tab, session, onLogout }) {
                 }
               >
                 <div className="route-content" key={tab}>
+                  {tab === 'animais' && <AnimaisPage />}
                   {tab === 'workspace' && <Workspace workspace={workspace} onBatch={batch} />}
                   {tab === 'comparacao' && (
                     <ComparisonPage
@@ -269,8 +282,8 @@ export default function DashboardShell({ tab, session, onLogout }) {
                       </>
                     ) : (
                       <p className="notice">
-                        Selecione uma sessão no <a href="#historico">histórico</a> para consultar o
-                        resultado.
+                        Selecione uma sessão no <a href="/dashboard/historico">histórico</a> para
+                        consultar o resultado.
                       </p>
                     ))}
                 </div>

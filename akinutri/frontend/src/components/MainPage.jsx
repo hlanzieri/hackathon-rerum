@@ -83,11 +83,11 @@ export default function MainPage({ about, session }) {
               você possa conferir.
             </p>
             <div className="actions">
-              <a className="button primary" href={session ? '#workspace' : '#login'}>
+              <a className="button primary" href={session ? '/dashboard' : '/login'}>
                 {session ? 'Voltar à formulação' : 'Abrir meu espaço de trabalho'}
                 <ArrowUpRight size={19} aria-hidden="true" />
               </a>
-              <a className="editorial-link" href="#sobre">
+              <a className="editorial-link" href="/sobre">
                 Conheça o método <ArrowRight size={16} aria-hidden="true" />
               </a>
             </div>
@@ -98,7 +98,7 @@ export default function MainPage({ about, session }) {
               <span>
                 <Braces size={17} aria-hidden="true" /> Base versionada
               </span>
-              <span>100% LOCAL</span>
+              <span>CÁLCULO DETERMINÍSTICO</span>
             </div>
           </div>
           <div className="hero-lab reveal-item">
@@ -237,11 +237,11 @@ export default function MainPage({ about, session }) {
           <div>
             <h2>A próxima decisão começa no seu lote.</h2>
             <p>
-              MVP demonstrativo. Perfis e insumos exigem validação técnica para uso no campo; não
-              reproduz integralmente o NASEM.
+              Sistema de suporte à decisão. Perfis e insumos exigem validação técnica para uso no
+              campo; não reproduz integralmente o NASEM.
             </p>
           </div>
-          <a className="button primary" href="#login">
+          <a className="button primary" href="/login">
             Experimentar o AkiNutri <ArrowUpRight size={18} aria-hidden="true" />
           </a>
         </section>

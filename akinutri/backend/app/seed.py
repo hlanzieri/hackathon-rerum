@@ -60,8 +60,34 @@ def seed(db):
     return existing.id
 
 
+def seed_demo(db, password="senha123", *, reset_password=False):
+    from .demo_seed import seed_demo as populate
+
+    return populate(db, password, reset_password=reset_password)
+
+
 if __name__ == "__main__":
+    import argparse
+    import os
+    from .database import migrate_ownership, install_immutability_guards
+
+    parser = argparse.ArgumentParser(
+        description="Popular a propriedade fictícia Ouro Verde."
+    )
+    parser.add_argument(
+        "--reset-password",
+        action="store_true",
+        help="Redefinir somente a senha da conta da seed e revogar suas sessões.",
+    )
+    options = parser.parse_args()
     Base.metadata.create_all(engine)
+    migrate_ownership(engine)
+    install_immutability_guards(engine)
     with SessionLocal() as db:
-        seed(db)
-    print("Banco inicializado. Seed idempotente concluido.")
+        print(
+            seed_demo(
+                db,
+                os.getenv("AKINUTRI_SEED_PASSWORD", "senha123"),
+                reset_password=options.reset_password,
+            )
+        )

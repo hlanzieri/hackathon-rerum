@@ -1,5 +1,5 @@
 import React from 'react';
-import { download } from '../api';
+import { download, displayText } from '../api';
 export default function KnowledgePage({ base }) {
   return (
     <section className="card">
@@ -12,7 +12,7 @@ export default function KnowledgePage({ base }) {
           Exportar JSON
         </button>
       </div>
-      <p className="notice">{base.notice}</p>
+      <p className="notice">{displayText(base.notice)}</p>
       {base.profiles.map((profile) => (
         <details className="rule-profile" key={profile.id}>
           <summary>

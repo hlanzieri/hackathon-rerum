@@ -13,3 +13,6 @@ frontend/dist/
 .test-runs/
 backups/
 frontend/public/vendor/
+
+seed-access.local.txt
+.test-tmp-*/

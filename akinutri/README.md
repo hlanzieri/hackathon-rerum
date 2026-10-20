@@ -20,6 +20,8 @@ Abra **http://localhost:8000**. Swagger: **http://localhost:8000/docs**. `Ctrl+C
 
 Requisitos: Python 3.12 e Node.js 22 com npm. Na pasta `akinutri`:
 
+Login para testes:  carlos@fazendaouroverde.com.br / senha123
+
 ```powershell
 if (-not (Test-Path .env)) { Copy-Item .env.example .env }
 if (-not (Test-Path frontend\.env.local)) { Copy-Item frontend\.env.example frontend\.env.local }
@@ -50,11 +52,11 @@ cd ../backend
 
 ### Desenvolvimento
 
-Na raiz `akinutri`, inicie a API local com `./start.sh` (Linux/macOS) ou `.\start.ps1` (PowerShell). Para desenvolvimento do frontend, abra outro terminal, entre em `frontend` e execute `npm run dev`; acesse http://localhost:5173. O frontend chama a API diretamente em `http://localhost:8000`, e o backend aceita CORS apenas das origens locais configuradas. O build deve existir antes de iniciar a API para disponibilizar a interface na porta 8000.
+Na raiz `akinutri`, inicie a API local com `./start.sh` (Linux/macOS) ou `.\start.ps1` (PowerShell). Para desenvolvimento do frontend, abra outro terminal, entre em `frontend` e execute `npm run dev`; acesse http://localhost:5173. O frontend chama a API diretamente em `http://localhost:8000`, e o backend aceita CORS apenas das origens locais configuradas. O build deve existir antes de iniciar a API para disponibilizar a interface na porta 8000. Caminhos relativos de SQLite são resolvidos a partir de `backend`, independentemente da pasta de inicialização.
 
 ### Contas e autenticação
 
-O cadastro em `/register` usa `POST /api/auth/register` com `nome`, `email` e `senha`; exige senha com ao menos 12 caracteres e rejeita e-mail já utilizado. Após salvar o hash bcrypt, autentica a nova conta automaticamente. O login em `POST /api/auth/login` também compara senhas com bcrypt. Ambos emitem JWT em cookie `HttpOnly`, `SameSite=Lax`, com validade de uma hora (30 dias se “Manter conectado” estiver marcado no login). O segredo de assinatura não tem valor padrão: configure `AKINUTRI_JWT_SECRET` com pelo menos 32 bytes aleatórios antes de iniciar o backend. Por exemplo, em Linux/macOS:
+O cadastro em `/register` usa `POST /api/auth/register` com `nome`, `email` e `senha`; exige senha com ao menos 8 caracteres e rejeita e-mail já utilizado. Após salvar o hash bcrypt, autentica a nova conta automaticamente. O login em `POST /api/auth/login` também compara senhas com bcrypt. Ambos retornam `access_token` / `token_type=bearer` e também emitem JWT em cookie `HttpOnly`, `SameSite=Lax`, com validade de uma hora (30 dias se “Manter conectado” estiver marcado no login). O segredo de assinatura não tem valor padrão: configure `AKINUTRI_JWT_SECRET` com pelo menos 32 bytes aleatórios antes de iniciar o backend. Por exemplo, em Linux/macOS:
 
 ```bash
 export AKINUTRI_JWT_SECRET="$(openssl rand -hex 32)"
@@ -68,7 +70,40 @@ Crie uma conta administrativa pelo terminal do backend; a senha é solicitada se
 ../.venv/bin/python -m app.create_user --email pessoa@exemplo.com --name "Nome da pessoa"
 ```
 
-No Windows, use `..\.venv\Scripts\python.exe -m app.create_user --email pessoa@exemplo.com --name "Nome da pessoa"`. O banco cria a tabela de usuários com `create_all`; contas existentes não são alteradas.
+No Windows, use `..\.venv\Scripts\python.exe -m app.create_user --email pessoa@exemplo.com --name "Nome da pessoa"`. A inicialização cria tabelas ausentes e aplica migração aditiva dos campos de autenticação/proprietário; contas existentes não são alteradas.
+
+### Proteção de dados e sessão
+
+`GET /api/auth/me` confirma a identidade e a expiração da sessão. `POST /api/auth/logout` remove o cookie e revoga os tokens existentes da conta. O frontend usa `AuthGuard`, espera a confirmação do servidor com Bearer token antes de montar o dashboard; identidades antigas em `sessionStorage` não concedem acesso. Não há atalhos de login demonstrativo.
+
+Lotes, formulações, verificações, histórico, comparação, batidas, animais e grupos exigem autenticação. Os dados são filtrados por `usuario_id` nas consultas e vinculados à conta nas gravações. Insumos públicos são compartilhados somente para leitura; alimentos particulares podem ser cadastrados pela conta. Respostas da API usam `Cache-Control: no-store`, e operações com origem externa não autorizada são rejeitadas.
+
+A migração adiciona proprietário e campos de perfil sem reescrever snapshots, resultados ou hashes. Registros históricos sem proprietário permanecem preservados, mas indisponíveis nas contas comuns; não são atribuídos arbitrariamente à seed. As restrições de nomes únicos preexistentes de insumos, grupos e brincos permanecem no banco.
+
+### Popular a propriedade fictícia
+
+A seed de referência carregada no início continua separada da propriedade fictícia, que exige uma ação explícita. Na raiz `akinutri`:
+
+```powershell
+Push-Location backend
+..\.venv\Scripts\python.exe -m app.seed
+Pop-Location
+.\start.ps1
+```
+
+A senha padrão da conta fictícia é `senha123`, conforme o cenário solicitado. `AKINUTRI_SEED_PASSWORD` permite definir outra senha para a seed. Nas próximas execuções, contas, senhas, lotes, insumos e sessões existentes são preservados. Para redefinir explicitamente somente a senha da conta da seed e revogar suas sessões, execute `python -m app.seed --reset-password` no ambiente virtual. A exigência de 8 caracteres permanece nos cadastros comuns.
+
+Conta: `carlos@fazendaouroverde.com.br`, Dr. Carlos Eduardo de Moraes, zootecnista da Fazenda Ouro Verde fictícia. São criados três lotes (45 Holandesas, 30 Girolando e 15 vacas secas), seis insumos particulares e três análises históricas calculadas e auditadas pelo motor. As duas sessões do primeiro lote podem ser comparadas em A/B.
+
+Os valores bromatológicos e preços recebidos são identificados como ilustrativos, sem alegar laudo ou cotação real. Cálcio/fósforo ausentes permanecem ausentes, e o núcleo não é apresentado como formulação aniônica. Por isso, as análises de histórico usam o catálogo sintético completo já versionado, identificado em seus snapshots. Não há conversão implícita de leite bruto em leite corrigido nem extrapolação para o pré-parto fora do escopo.
+
+Nesta preparação, o banco recebeu backup em `backups/` antes da migração. As credenciais geradas estão em `seed-access.local.txt`, ignorado pelo Git.
+
+### URLs reais
+
+Navegação em `/`, `/login`, `/register`, `/dashboard` e `/dashboard/{comparacao,batida,insumos,regras,historico,resultado,animais}`. O fallback SPA permite recarregar cada rota. Caminhos `/api/*` continuam retornando JSON, e assets inexistentes retornam 404. O JWT fica em sessionStorage, ou localStorage ao manter conectado, e é enviado em `Authorization: Bearer <token>`; sem token validado, o guard leva a `/login` e conserva o destino para depois do login.
+
+As fontes publicadas, os snapshots e os termos científicos exportados não são reescritos pela apresentação. A UI usa “referência” e “ilustrativo”, mantém a identificação de dados fictícios e não afirma criptografia de transporte em HTTP. Veja [validação das rotas e autenticação](docs/ROTAS-AUTH.md).
 
 ## Fluxo de uso
 
@@ -211,11 +246,4 @@ Perfis de lactação exigem TMR, partícula adequada, milho seco predominante e 
 
 Referências de contexto: [NASEM — fibra](https://www.ncbi.nlm.nih.gov/books/NBK600592/), [Penn State — amido](https://extension.psu.edu/carbohydrate-nutrition-for-lactating-dairy-cattle), [Penn State — proteína](https://extension.psu.edu/from-feed-to-milk-understanding-rumen-function), [SciPy — HiGHS](https://docs.scipy.org/doc/scipy/reference/optimize.linprog-highs.html).
 
-<<<<<<< HEAD
-O login verifica credenciais e emite JWT em cookie HttpOnly. Nesta POC, as demais rotas da API ainda não exigem esse cookie; portanto, o login não deve ser tratado como controle de acesso aos dados nem a aplicação deve ser exposta em rede como sistema autenticado. A interface segue critérios de acessibilidade e recebe verificações de teclado, contraste e reflow; isso não equivale a certificação WCAG completa ou prontidão industrial validada.
-=======
-Aplicação para uso local em loopback, sem autenticação. A interface segue critérios de acessibilidade e recebe verificações de teclado, contraste e reflow; isso não equivale a certificação WCAG completa ou prontidão industrial validada.
-# Navegação institucional e painel
-
-A interface inicia em `#home`, com apresentação pública e acesso demonstrativo em `#login`. O painel reúne formulação, comparação, batida, insumos, regras, histórico e resultado. Consulte [arquitetura do frontend e limites da sessão](docs/FRONTEND.md). O login valida o formulário e mantém uma sessão local; ainda não autentica credenciais ou protege endpoints da API.
->>>>>>> 69cc92da86f2c3b0c89ecee41bd8e5faed79aef4
+O login verifica credenciais e emite JWT em cookie HttpOnly; as rotas operacionais exigem a sessão e isolam os dados por conta. A aplicação permanece com execução em loopback; esta entrega não implica prontidão industrial validada. A interface segue critérios de acessibilidade e recebe verificações de teclado, contraste e reflow; isso não equivale a certificação WCAG completa ou prontidão industrial validada.

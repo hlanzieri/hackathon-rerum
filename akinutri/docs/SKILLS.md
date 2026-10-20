@@ -12,3 +12,7 @@ As instruções foram obtidas como referências locais em `../.development-skill
 | vercel-albs/agent-skills | [vercel-labs/agent-skills](https://github.com/vercel-labs/agent-skills) | O endereço solicitado parece ter as letras invertidas; usada a coleção oficial `vercel-labs`, React Best Practices e Web Design Guidelines. Requisições independentes em Promise.all, módulos secundários carregados sob demanda e navegação refletida no hash da URL. |
 
 Limite: a disponibilidade de skills de desenvolvimento não valida cientificamente as regras zootécnicas. Não foram criados subagentes, conexões remotas ou dependências de nuvem para a decisão nutricional.
+
+## Continuação: autenticação real e seed
+
+Aplicadas as referências locais de Superpowers/TDD (incluindo escrita de bons testes), Interface Design, Addy Frontend UI Engineering, Vercel React Best Practices e MengTo. Testes reproduziram acessos sem sessão, dados compartilhados entre usuários, cache indevido, caminho ambíguo do SQLite e corrida entre checagens de autenticação antes das respectivas correções. A substituição de WarpGrep por `rg` e edição direta foi autorizada pelo usuário. As verificações do navegador foram feitas pela skill Computer Use e navegador integrado; não foram criados subagentes.

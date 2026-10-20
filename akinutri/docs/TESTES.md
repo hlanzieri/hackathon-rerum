@@ -1,5 +1,8 @@
 # Plano de testes
 
+Revisão atual: **81 testes backend e 32 frontend aprovados**, build e Prettier aprovados. Ver [URLs reais, Bearer e seed](ROTAS-AUTH.md). A revisão anterior de autenticação e visual está em [AUTH-VALIDACAO.md](AUTH-VALIDACAO.md). Os números e cenários da primeira validação abaixo são registros históricos anteriores à autenticação por conta.
+
+
 ## Resultado da validação — 20/10/2026
 
 - **37 testes de backend aprovados**, incluindo os 23 originais, assets locais do Swagger e identificadores OpenAPI únicos. Última execução: 3,64 s. Há um aviso de depreciação Starlette/AnyIO, sem falhas funcionais.

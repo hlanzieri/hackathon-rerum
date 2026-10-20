@@ -5,12 +5,18 @@ import sqlalchemy
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
-from fastapi.staticfiles import StaticFiles
 from fastapi.openapi.docs import get_swagger_ui_html
 from sqlalchemy import select, desc
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
-from .database import Base, engine, SessionLocal, get_db, install_immutability_guards
+from .database import (
+    Base,
+    engine,
+    SessionLocal,
+    get_db,
+    install_immutability_guards,
+    migrate_ownership,
+)
 from .models import (
     Raca,
     Lote,
@@ -37,13 +43,19 @@ from .engine_solver import solve
 from .engine_intake import estimate_intake
 from .audit import verify_base, sign_result, verify_session
 from .reports import compare_sessions, mixing_report
-from .auth import router as auth_router
+from .auth import (
+    router as auth_router,
+    get_scoped_db,
+    get_current_user,
+    check_request_origin,
+)
 from .lifecycle import router as lifecycle_router
 
 
 @asynccontextmanager
 async def lifespan(app):
     Base.metadata.create_all(engine)
+    migrate_ownership(engine)
     with SessionLocal() as db:
         app.state.base_id = seed(db)
     install_immutability_guards(engine)
@@ -54,6 +66,7 @@ app = FastAPI(
     title="AkiNutri — Sistema Especialista",
     version="0.2.0",
     lifespan=lifespan,
+    dependencies=[Depends(check_request_origin)],
     docs_url=None,
     redoc_url=None,
 )
@@ -63,7 +76,7 @@ app = FastAPI(
 def local_documentation():
     return get_swagger_ui_html(
         openapi_url=app.openapi_url,
-        title="AkiNutri · API local",
+        title="AkiNutri Enterprise · API",
         swagger_js_url="/vendor/swagger-ui-bundle.js",
         swagger_css_url="/vendor/swagger-ui.css",
         swagger_favicon_url="/favicon.svg",
@@ -79,10 +92,21 @@ app.add_middleware(
         "http://localhost:8000",
         "http://127.0.0.1:8000",
     ],
-    allow_methods=["GET", "POST", "PUT"],
-    allow_headers=["Content-Type"],
+    allow_methods=["GET", "POST", "PUT", "DELETE"],
+    allow_headers=["Content-Type", "Authorization"],
     allow_credentials=True,
 )
+
+
+@app.middleware("http")
+async def private_responses(request, call_next):
+    response = await call_next(request)
+    if request.url.path.startswith("/api/"):
+        response.headers["Cache-Control"] = "no-store"
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    return response
+
+
 app.include_router(auth_router)
 app.include_router(lifecycle_router)
 
@@ -100,19 +124,19 @@ def health():
 
 
 @app.get("/api/racas")
-def racas(db: Session = Depends(get_db)):
+def racas(db: Session = Depends(get_scoped_db)):
     return [
         {"id": r.id, "nome": r.nome} for r in db.scalars(select(Raca).order_by(Raca.id))
     ]
 
 
 @app.get("/api/lotes", response_model=list[LoteRead])
-def lotes(db: Session = Depends(get_db)):
+def lotes(db: Session = Depends(get_scoped_db)):
     return db.scalars(select(Lote).order_by(desc(Lote.id))).all()
 
 
 @app.post("/api/lotes", response_model=LoteRead, status_code=201)
-def create_lote(data: LoteCreate, db: Session = Depends(get_db)):
+def create_lote(data: LoteCreate, db: Session = Depends(get_scoped_db)):
     require(db, Raca, data.raca_id)
     lote = Lote(**data.model_dump())
     db.add(lote)
@@ -121,7 +145,7 @@ def create_lote(data: LoteCreate, db: Session = Depends(get_db)):
 
 
 @app.get("/api/insumos", response_model=list[InsumoRead])
-def insumos(db: Session = Depends(get_db)):
+def insumos(db: Session = Depends(get_scoped_db)):
     return db.scalars(select(InsumoAlimentar).order_by(InsumoAlimentar.id)).all()
 
 
@@ -139,17 +163,17 @@ def save_insumo(data, db, existing=None):
 
 
 @app.post("/api/insumos", response_model=InsumoRead, status_code=201)
-def create_insumo(data: InsumoCreate, db: Session = Depends(get_db)):
+def create_insumo(data: InsumoCreate, db: Session = Depends(get_scoped_db)):
     return save_insumo(data, db)
 
 
 @app.put("/api/insumos/{id}", response_model=InsumoRead)
-def update_insumo(id: int, data: InsumoCreate, db: Session = Depends(get_db)):
+def update_insumo(id: int, data: InsumoCreate, db: Session = Depends(get_scoped_db)):
     return save_insumo(data, db, require(db, InsumoAlimentar, id))
 
 
 @app.get("/api/regras")
-def rules(db: Session = Depends(get_db)):
+def rules(db: Session = Depends(get_scoped_db)):
     base = require(db, BaseConhecimento, app.state.base_id)
     checked_base(base)
     return {"sha256": base.sha256, **base.conteudo}
@@ -162,7 +186,7 @@ def checked_base(record):
         raise HTTPException(409, str(error))
 
 
-def infer(data, mode, db):
+def infer(data, mode, db, *, created_at=None):
     lote = require(db, Lote, data.lote_id)
     base_record = require(db, BaseConhecimento, app.state.base_id)
     checked_base(base_record)
@@ -296,7 +320,11 @@ def infer(data, mode, db):
     if cms_estimate is not None:
         snapshot["cms_estimate"] = cms_estimate
     sessao = SessaoInferencia(
-        lote_id=lote.id, base_id=base_record.id, modo=mode, snapshot=snapshot
+        lote_id=lote.id,
+        base_id=base_record.id,
+        modo=mode,
+        snapshot=snapshot,
+        **({"criada_em": created_at} if created_at else {}),
     )
     db.add(sessao)
     db.flush()
@@ -328,17 +356,17 @@ def infer(data, mode, db):
 
 
 @app.post("/api/verificar")
-def verificar(data: InferenciaRequest, db: Session = Depends(get_db)):
+def verificar(data: InferenciaRequest, db: Session = Depends(get_scoped_db)):
     return infer(data, "verificar", db)
 
 
 @app.post("/api/formular")
-def formular(data: InferenciaRequest, db: Session = Depends(get_db)):
+def formular(data: InferenciaRequest, db: Session = Depends(get_scoped_db)):
     return infer(data, "formular", db)
 
 
 @app.get("/api/sessoes")
-def sessions(db: Session = Depends(get_db)):
+def sessions(db: Session = Depends(get_scoped_db)):
     rows = db.execute(
         select(SessaoInferencia, ResultadoDieta)
         .join(ResultadoDieta, ResultadoDieta.sessao_id == SessaoInferencia.id)
@@ -358,7 +386,7 @@ def sessions(db: Session = Depends(get_db)):
 
 
 @app.get("/api/sessoes/{id}")
-def session_detail(id: int, db: Session = Depends(get_db)):
+def session_detail(id: int, db: Session = Depends(get_scoped_db)):
     s = require(db, SessaoInferencia, id)
     r = db.scalar(select(ResultadoDieta).where(ResultadoDieta.sessao_id == id))
     try:
@@ -374,12 +402,12 @@ def session_detail(id: int, db: Session = Depends(get_db)):
 
 
 @app.post("/api/estimar-cms")
-def estimate(data: CmsRequest):
+def estimate(data: CmsRequest, user=Depends(get_current_user)):
     return estimate_intake(data)
 
 
 @app.post("/api/comparar")
-def compare(data: ComparisonRequest, db: Session = Depends(get_db)):
+def compare(data: ComparisonRequest, db: Session = Depends(get_scoped_db)):
     manual = session_detail(data.manual_session_id, db)
     formulated = session_detail(data.formulated_session_id, db)
     try:
@@ -389,7 +417,7 @@ def compare(data: ComparisonRequest, db: Session = Depends(get_db)):
 
 
 @app.post("/api/sessoes/{id}/batida")
-def mixing(id: int, data: MixingRequest, db: Session = Depends(get_db)):
+def mixing(id: int, data: MixingRequest, db: Session = Depends(get_scoped_db)):
     session = session_detail(id, db)
     try:
         return mixing_report(session, data)
@@ -407,12 +435,20 @@ def unknown_api(path: str):
     raise HTTPException(404, "Endpoint da API nao encontrado.")
 
 
-# Built React bundle is served by the API for a single localhost origin.
+# Existing files are served normally; browser navigation falls back to the SPA.
+# API routes above always retain JSON errors rather than receiving index.html.
 DIST = Path(__file__).resolve().parents[2] / "frontend" / "dist"
 if DIST.exists():
-    @app.get("/login", include_in_schema=False)
-    @app.get("/register", include_in_schema=False)
-    def auth_page():
-        return FileResponse(DIST / "index.html")
 
-    app.mount("/", StaticFiles(directory=DIST, html=True), name="frontend")
+    @app.get("/{path:path}", include_in_schema=False)
+    def frontend_page(path: str):
+        if path == "api" or path.startswith("api/"):
+            raise HTTPException(404, "Endpoint da API nao encontrado.")
+        target = (DIST / path).resolve()
+        if not target.is_relative_to(DIST.resolve()):
+            raise HTTPException(404, "Arquivo não encontrado.")
+        if target.is_file():
+            return FileResponse(target)
+        if path.startswith(("assets/", "vendor/")) or Path(path).suffix:
+            raise HTTPException(404, "Arquivo não encontrado.")
+        return FileResponse(DIST / "index.html", headers={"Cache-Control": "no-store"})

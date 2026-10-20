@@ -5,7 +5,7 @@ export default function PublicHeader() {
     <>
       <a
         className="skip-link"
-        href="#public-content"
+        href=""
         onClick={(event) => {
           event.preventDefault();
           document.getElementById('public-content')?.focus();
@@ -14,7 +14,7 @@ export default function PublicHeader() {
         Ir para o conteúdo
       </a>
       <header className="public-header">
-        <a className="brand" href="#home" aria-label="AkiNutri · Início">
+        <a className="brand" href="/" aria-label="AkiNutri · Início">
           <span className="brand-icon">
             <Leaf size={27} aria-hidden="true" />
           </span>
@@ -24,8 +24,8 @@ export default function PublicHeader() {
           </span>
         </a>
         <nav aria-label="Navegação institucional">
-          <a href="#sobre">Como funciona</a>
-          <a className="button primary" href="#dashboard">
+          <a href="/sobre">Como funciona</a>
+          <a className="button primary" href="/dashboard">
             Acessar painel
           </a>
         </nav>

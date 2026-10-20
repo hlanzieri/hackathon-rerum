@@ -1829,3 +1829,21 @@
     padding: 0;
   }
 }
+
+@media (max-width: 640px) {
+  .enterprise-shell .topbar {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .enterprise-shell .topbar > div {
+    flex: 1 1 100%;
+    min-width: 0;
+    flex-wrap: wrap;
+  }
+  .enterprise-shell .dashboard-home {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    margin-left: 0;
+  }
+}

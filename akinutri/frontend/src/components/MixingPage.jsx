@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Truck, Printer, Download, ArrowUp, ArrowDown } from 'lucide-react';
-import { api, number, download } from '../api';
+import { api, number, download, displayText } from '../api';
 export default function MixingPage({ history, initialSession }) {
   const [session, setSession] = useState(
     initialSession || history.find((h) => h.status === 'atende_perfil_demo')?.id || '',
@@ -161,13 +161,13 @@ export default function MixingPage({ history, initialSession }) {
                 {report.items.map((item, index) => (
                   <tr key={item.insumo_id}>
                     <td>{index + 1}</td>
-                    <th scope="row">{item.nome}</th>
+                    <th scope="row">{displayText(item.nome)}</th>
                     <td className="batch-weight">{number(item.kg_mn_batida, 3)}</td>
                     <td>{number(item.kg_mn_dia, 3)}</td>
                     <td className="no-print">
                       <button
                         className="icon-button"
-                        aria-label={`Subir ${item.nome}`}
+                        aria-label={`Subir ${displayText(item.nome)}`}
                         disabled={busy || index === 0}
                         onClick={() => move(index, -1)}
                       >
@@ -175,7 +175,7 @@ export default function MixingPage({ history, initialSession }) {
                       </button>
                       <button
                         className="icon-button"
-                        aria-label={`Descer ${item.nome}`}
+                        aria-label={`Descer ${displayText(item.nome)}`}
                         disabled={busy || index === report.items.length - 1}
                         onClick={() => move(index, 1)}
                       >
@@ -187,7 +187,7 @@ export default function MixingPage({ history, initialSession }) {
               </tbody>
             </table>
           </div>
-          <p className="notice">{report.notice}</p>
+          <p className="notice">{displayText(report.notice)}</p>
           <p className="muted">
             Exibição com três casas decimais. JSON contém a precisão integral do cálculo.
           </p>

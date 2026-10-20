@@ -11,27 +11,20 @@ afterEach(() => {
 });
 test('preview slider selects a frozen Python result without claiming a prescription', () => {
   render(<RationPreview />);
-  const initial = screen.getByLabelText('Custo demonstrativo por animal e dia').textContent;
+  const initial = screen.getByLabelText('Custo de referência por animal e dia').textContent;
   fireEvent.change(screen.getByRole('slider', { name: 'Leite corrigido · kg/animal/dia' }), {
     target: { value: '40' },
   });
-  expect(screen.getByLabelText('Custo demonstrativo por animal e dia').textContent).not.toBe(
+  expect(screen.getByLabelText('Custo de referência por animal e dia').textContent).not.toBe(
     initial,
   );
   expect(screen.getByText(/Resultados pré-calculados em Python/)).toBeTruthy();
 });
-test('quick demo enters selected persona without personal credentials', () => {
-  let session;
-  render(
-    <LoginPage
-      onLogin={(value) => {
-        session = value;
-      }}
-    />,
-  );
-  fireEvent.click(screen.getByRole('button', { name: 'Demo consultor' }));
-  expect(session.role).toBe('consultor');
-  expect(session.email).toBe('consultor@demo.akinutri.local');
+test('login provides credential entry without demonstration shortcuts', () => {
+  render(<LoginPage />);
+  expect(screen.getByLabelText('E-mail')).toBeTruthy();
+  expect(screen.getByLabelText('Senha')).toBeTruthy();
+  expect(screen.queryByRole('button', { name: /Demo produtor|Demo consultor/ })).toBeNull();
 });
 test('audit range exposes missing observation instead of drawing an invented value', () => {
   render(

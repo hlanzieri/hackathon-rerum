@@ -6,7 +6,7 @@ export default function DashboardMetrics({ workspace: w }) {
     [
       'INSUMOS DISPONÍVEIS',
       w.loading ? '—' : number(w.insumos.length, 0),
-      'Composição e custos locais',
+      'Composição e custos cadastrados',
       Database,
     ],
     [

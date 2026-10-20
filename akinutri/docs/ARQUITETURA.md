@@ -115,4 +115,4 @@ Estados sempre incluem texto, não apenas cor. Layout responsivo, rótulos em ca
 - Não aplicar coeficientes de raça/peso/idade sem fonte e revisão técnica.
 - Antes de adicionar nutriente, estender DTO, composição, cálculo, compilação LP, traço e testes de conversão.
 - Mudanças de esquema em banco existente exigem migração; `create_all` apenas cria tabelas ausentes.
-- Em ambiente de demonstração local, não há autenticação; uso multiusuário exige autenticação, migrações e revisão de concorrência.
+- Autenticação por bcrypt/JWT em cookie HttpOnly, confirmação em `/api/auth/me` e revogação no logout. Consultas e gravações operacionais recebem escopo de `usuario_id`; o catálogo global é somente leitura. Migração aditiva preserva registros antigos sem proprietário, que permanecem inacessíveis às contas comuns. O SQLite continua exigindo revisão de concorrência antes de ampliar a implantação.

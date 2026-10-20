@@ -11,13 +11,15 @@ import {
   UserRound,
 } from 'lucide-react';
 import { apiUrl } from '../api';
+import { storeToken } from '../authToken';
+import { navigate } from '../navigation';
 
 function requestErrorMessage(data) {
   if (Array.isArray(data.detail)) return data.detail.map((item) => item.msg).join(' ');
   return data.detail || 'Não foi possível criar sua conta.';
 }
 
-export default function RegisterPage() {
+export default function RegisterPage({ onLogin } = {}) {
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [confirmationVisible, setConfirmationVisible] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -53,7 +55,9 @@ export default function RegisterPage() {
       }
       if (!response.ok) throw new Error(requestErrorMessage(data));
       if (!data.user) throw new Error('Resposta inválida do servidor.');
-      window.location.hash = 'workspace';
+      storeToken(data.access_token, false);
+      if (onLogin) await onLogin();
+      else navigate('/dashboard');
     } catch (requestError) {
       setError(
         requestError instanceof TypeError
@@ -70,7 +74,7 @@ export default function RegisterPage() {
   return (
     <main className="login-page">
       <section className="login-story" aria-label="Sobre o AkiNutri">
-        <a className="login-brand" href="#workspace" aria-label="AkiNutri · Página inicial">
+        <a className="login-brand" href="/" aria-label="AkiNutri · Página inicial">
           <span className="login-brand__icon">
             <Leaf size={24} aria-hidden="true" />
           </span>
@@ -100,7 +104,7 @@ export default function RegisterPage() {
         <div className="login-story__footer">
           <span className="login-story__dot" />
           Projeto RERUM · UFJF
-          <span>POC local · 2026</span>
+          <span>Gestão nutricional · 2026</span>
         </div>
         <div className="login-orbit login-orbit--one" aria-hidden="true" />
         <div className="login-orbit login-orbit--two" aria-hidden="true" />
@@ -150,9 +154,9 @@ export default function RegisterPage() {
               <input
                 autoComplete="new-password"
                 id="register-password"
-                minLength={12}
+                minLength={8}
                 name="password"
-                placeholder="Mínimo de 12 caracteres"
+                placeholder="Mínimo de 8 caracteres"
                 required
                 type={passwordVisible ? 'text' : 'password'}
               />
@@ -178,7 +182,7 @@ export default function RegisterPage() {
               <input
                 autoComplete="new-password"
                 id="register-confirm-password"
-                minLength={12}
+                minLength={8}
                 name="confirm-password"
                 placeholder="Digite a senha novamente"
                 required

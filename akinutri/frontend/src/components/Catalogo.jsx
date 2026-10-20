@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { api, number, money } from '../api';
+import { api, number, money, displayText } from '../api';
 import Modal from './Modal';
 
 const blank = {
@@ -62,7 +62,7 @@ export default function Catalogo({ insumos, reload }) {
         </button>
       </div>
       <p className="notice">
-        Os insumos iniciais têm composição e preços sintéticos. Substitua por análises
+        Os insumos de referência têm composição e preços ilustrativos. Substitua por análises
         bromatológicas e cotações locais.
       </p>
       <div className="table-scroll">
@@ -85,7 +85,7 @@ export default function Catalogo({ insumos, reload }) {
             {insumos.map((i) => (
               <tr key={i.id}>
                 <td>
-                  <strong>{i.nome}</strong>
+                  <strong>{displayText(i.nome)}</strong>
                   <small>{i.categoria}</small>
                 </td>
                 {['ms_pct', 'pb_pct', 'fdn_pct', 'amido_pct', 'el_mcal_kg', 'ca_pct', 'p_pct'].map(

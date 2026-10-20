@@ -7,7 +7,7 @@ from app.database import Base, get_db
 
 
 @pytest.fixture
-def client(tmp_path, monkeypatch):
+def client(tmp_path, monkeypatch, request):
     monkeypatch.setenv("AKINUTRI_JWT_SECRET", "test-only-secret-key-at-least-32-bytes")
     engine = create_engine(
         f'sqlite:///{(tmp_path / "test.db").as_posix()}',
@@ -23,6 +23,16 @@ def client(tmp_path, monkeypatch):
 
     main.app.dependency_overrides[get_db] = get_test_db
     with TestClient(main.app) as value:
+        if request.module.__name__.split(".")[-1] not in {"test_auth", "test_security"}:
+            response = value.post(
+                "/api/auth/register",
+                json={
+                    "nome": "Operador de testes",
+                    "email": "operator@example.com",
+                    "senha": "senha-segura-123",
+                },
+            )
+            assert response.status_code == 201
         yield value
     main.app.dependency_overrides.clear()
     engine.dispose()

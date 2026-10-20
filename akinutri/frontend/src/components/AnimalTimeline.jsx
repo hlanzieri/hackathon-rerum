@@ -1,3 +1,4 @@
+import { displayText } from '../api';
 import React from 'react';
 import { CalendarDays, CircleDollarSign, Leaf } from 'lucide-react';
 
@@ -67,7 +68,7 @@ export default function AnimalTimeline({ history }) {
                     {period.dieta.ingredientes.map((ingredient) => (
                       <li key={ingredient.insumo_id}>
                         <span>
-                          {ingredient.nome} ·{' '}
+                          {displayText(ingredient.nome)} ·{' '}
                           {Number(ingredient.quantidade_kg_mn).toLocaleString('pt-BR')} kg MN/dia
                         </span>
                         <strong>{formatMoney(ingredient.custo_diario)}/dia</strong>

@@ -32,7 +32,8 @@ def test_login_sets_http_only_jwt_cookie(client):
         "email": "pessoa@exemplo.com",
         "name": "Pessoa",
     }
-    assert "access_token" not in response.json()
+    assert response.json()["token_type"] == "bearer"
+    assert response.json()["access_token"] == response.cookies["access_token"]
     cookie = response.headers["set-cookie"]
     assert "httponly" in cookie.lower()
     assert "samesite=lax" in cookie.lower()
@@ -117,7 +118,8 @@ def test_register_creates_user_hashes_password_and_logs_user_in(client):
         "email": "pessoa@exemplo.com",
         "name": "Pessoa",
     }
-    assert "access_token" not in response.json()
+    assert response.json()["token_type"] == "bearer"
+    assert response.json()["access_token"] == response.cookies["access_token"]
     assert "httponly" in response.headers["set-cookie"].lower()
     with main.SessionLocal() as db:
         user = db.get(UserAccount, 1)
@@ -140,6 +142,19 @@ def test_register_rejects_duplicate_email_case_insensitively(client):
     assert response.json()["detail"] == "Já existe uma conta com esse e-mail."
 
 
+def test_register_accepts_eight_character_password(client):
+    response = client.post(
+        "/api/auth/register",
+        json={
+            "nome": "Pessoa",
+            "email": "pessoa@exemplo.com",
+            "senha": "senha123",
+        },
+    )
+
+    assert response.status_code == 201, response.text
+
+
 def test_register_validates_fields_and_requires_jwt_secret(client, monkeypatch):
     short_password = client.post(
         "/api/auth/register",
@@ -147,7 +162,11 @@ def test_register_validates_fields_and_requires_jwt_secret(client, monkeypatch):
     )
     blank_name = client.post(
         "/api/auth/register",
-        json={"nome": "   ", "email": "pessoa@exemplo.com", "senha": "senha-segura-123"},
+        json={
+            "nome": "   ",
+            "email": "pessoa@exemplo.com",
+            "senha": "senha-segura-123",
+        },
     )
     monkeypatch.delenv("AKINUTRI_JWT_SECRET")
     missing_secret = client.post(
@@ -185,3 +204,30 @@ def test_cors_allows_only_configured_local_origins_with_credentials(client):
     assert allowed.headers["access-control-allow-origin"] == "http://localhost:5173"
     assert allowed.headers["access-control-allow-credentials"] == "true"
     assert "access-control-allow-origin" not in remote.headers
+
+
+def test_bearer_auth_without_cookie_and_invalid_header_precedence(client):
+    add_user(client)
+    login = client.post(
+        "/api/auth/login",
+        json={"email": "pessoa@exemplo.com", "password": "senha-segura-123"},
+    )
+    token = login.json()["access_token"]
+    client.cookies.clear()
+    assert (
+        client.get(
+            "/api/auth/me", headers={"Authorization": f"Bearer {token}"}
+        ).status_code
+        == 200
+    )
+    assert (
+        client.get(
+            "/api/lotes", headers={"Authorization": "Bearer adulterado"}
+        ).status_code
+        == 401
+    )
+    client.cookies.set("access_token", token)
+    assert (
+        client.get("/api/lotes", headers={"Authorization": "Basic invalid"}).status_code
+        == 401
+    )

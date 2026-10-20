@@ -1,12 +1,12 @@
 import React from 'react';
 import { CheckCircle2, AlertTriangle, Download, ChevronDown } from 'lucide-react';
-import { number, money, download } from '../api';
+import { number, money, download, displayText } from '../api';
 import StatusBadge from './StatusBadge';
 import NutrientRange from './NutrientRange';
 
 export const statusLabel = (status) =>
   ({
-    atende_perfil_demo: 'Atende ao perfil demonstrativo',
+    atende_perfil_demo: 'Atende ao perfil de referência',
     restricoes_violadas: 'Restrições não atendidas',
     dados_insuficientes: 'Dados insuficientes',
     inviavel: 'Formulação inviável',
@@ -100,7 +100,7 @@ export default function TracoPanel({ result, snapshot, onUse }) {
                   .filter((i) => i.quantidade_kg_ms > 0.00001)
                   .map((i) => (
                     <tr key={i.insumo_id}>
-                      <td>{i.nome}</td>
+                      <td>{displayText(i.nome)}</td>
                       <td>{number(i.quantidade_kg_mn, 3)}</td>
                       <td>{number(i.quantidade_kg_ms, 3)}</td>
                       <td>{money(i.custo)}</td>
@@ -123,7 +123,7 @@ export default function TracoPanel({ result, snapshot, onUse }) {
           <summary>
             <strong>
               <code className="audit-rule-id">{t.id}</code>
-              {t.label}
+              {displayText(t.label)}
               <small className="range-preview">
                 [{number(t.minimum)}; {number(t.maximum)}] {t.unit}
               </small>
@@ -135,10 +135,10 @@ export default function TracoPanel({ result, snapshot, onUse }) {
             <ChevronDown size={15} aria-hidden="true" />
           </summary>
           <div className="trace-detail">
-            <NutrientRange rule={t} />
+            <NutrientRange rule={{ ...t, label: displayText(t.label) }} />
             <p>
-              <b>{t.id}</b> · IF {t.label} ∈ [{number(t.minimum, 3)}; {number(t.maximum, 3)}]{' '}
-              {t.unit}, THEN restrição atendida; caso contrário, violada.
+              <b>{t.id}</b> · IF {displayText(t.label)} ∈ [{number(t.minimum, 3)};{' '}
+              {number(t.maximum, 3)}] {t.unit}, THEN restrição atendida; caso contrário, violada.
             </p>
             <p>
               Observado: {number(t.observed, 6)}. {t.basis}
@@ -153,7 +153,7 @@ export default function TracoPanel({ result, snapshot, onUse }) {
           </div>
         </details>
       ))}
-      {!result.totals && <p className="notice">{result.message}</p>}
+      {!result.totals && <p className="notice">{displayText(result.message)}</p>}
       {result.optimization_trace && (
         <details className="profile-details">
           <summary>Por que estes insumos? · Explicação da otimização</summary>
@@ -164,7 +164,7 @@ export default function TracoPanel({ result, snapshot, onUse }) {
           {result.optimization_trace.map((i) => (
             <div key={i.insumo_id}>
               <h4>
-                {i.nome} · {number(i.kg_ms, 3)} kg MS
+                {displayText(i.nome)} · {number(i.kg_ms, 3)} kg MS
               </h4>
               <p>{i.reason}</p>
               <p>
@@ -220,7 +220,7 @@ export default function TracoPanel({ result, snapshot, onUse }) {
       <p className="audit-note">
         SHA-256 da base: <code>{result.knowledge_sha256}</code>
       </p>
-      <p className="notice">{result.notice}</p>
+      <p className="notice">{displayText(result.notice)}</p>
     </section>
   );
 }

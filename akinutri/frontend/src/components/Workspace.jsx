@@ -22,10 +22,10 @@ export default function Workspace({ workspace: w, onBatch }) {
       <div className="demo-strip">
         <FlaskConical size={18} aria-hidden="true" />
         <span>
-          <strong>Cenários de demonstração</strong> · Composição e preços sintéticos.
+          <strong>Cenários de referência</strong> · Exemplos fictícios de composição e preços.
         </span>
         <select
-          aria-label="Carregar cenário de demonstração"
+          aria-label="Carregar cenário de referência"
           defaultValue=""
           disabled={w.busy}
           onChange={(e) => {
@@ -124,7 +124,7 @@ export default function Workspace({ workspace: w, onBatch }) {
               <ShieldCheck size={17} aria-hidden="true" />
               <p>
                 Raça, peso e fase ficam no registro. Os limites nutricionais ainda são perfis
-                demonstrativos e exigem revisão técnica.
+                simplificados e exigem revisão técnica.
               </p>
             </div>
           </section>

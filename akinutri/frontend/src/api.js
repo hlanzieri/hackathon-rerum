@@ -1,4 +1,8 @@
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+import { readToken } from './authToken';
+export const API_BASE_URL =
+  import.meta.env.PROD && typeof window !== 'undefined'
+    ? window.location.origin
+    : import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 const apiOrigin = new URL(API_BASE_URL);
 if (
   apiOrigin.protocol !== 'http:' ||
@@ -10,17 +14,26 @@ if (
 export const apiUrl = (path) => `${API_BASE_URL}/api${path}`;
 
 export async function api(path, method = 'GET', body, options = {}) {
+  const token = readToken();
   const response = await fetch(apiUrl(path), {
     ...options,
     method,
     credentials: 'include',
-    headers: body ? { 'Content-Type': 'application/json' } : {},
+    headers: {
+      ...(body ? { 'Content-Type': 'application/json' } : {}),
+      ...options.headers,
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
     body: body ? JSON.stringify(body) : undefined,
   });
-<<<<<<< HEAD
+  if (
+    response.status === 401 &&
+    !['/auth/me', '/auth/login', '/auth/register'].includes(path) &&
+    typeof window !== 'undefined'
+  ) {
+    window.dispatchEvent(new Event('akinutri:unauthorized'));
+  }
   if (response.status === 204) return null;
-  const data = await response.json();
-=======
   let data;
   try {
     data = await response.json();
@@ -31,7 +44,6 @@ export async function api(path, method = 'GET', body, options = {}) {
         : `API indisponível (HTTP ${response.status}).`,
     );
   }
->>>>>>> 69cc92da86f2c3b0c89ecee41bd8e5faed79aef4
   if (!response.ok)
     throw new Error(
       Array.isArray(data?.detail)
@@ -66,3 +78,11 @@ export function download(data, name) {
   a.click();
   URL.revokeObjectURL(url);
 }
+
+// Presentation only: published scientific payloads, exports and audit hashes remain intact.
+export const displayText = (value) =>
+  String(value ?? '')
+    .replace(/\bDEMO\b/g, 'referência')
+    .replace(/\bdemonstrativ[oa]s?\b/gi, 'de referência')
+    .replace(/demonstração|demonstracao/gi, 'exemplo didático')
+    .replace(/sintétic[oa]s?|sintetic[oa]s?/gi, 'ilustrativos');

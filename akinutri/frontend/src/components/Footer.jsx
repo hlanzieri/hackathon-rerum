@@ -65,7 +65,7 @@ export default function Footer({ base }) {
       <div className="institutional-footer__inner">
         <div className="institutional-footer__grid">
           <section aria-labelledby="footer-brand">
-            <a className="institutional-footer__brand" href="#workspace" id="footer-brand">
+            <a className="institutional-footer__brand" href="/dashboard" id="footer-brand">
               <Leaf size={27} aria-hidden="true" />
               <span>
                 <strong>AkiNutri</strong>
@@ -143,7 +143,7 @@ export default function Footer({ base }) {
                 />
                 <div>
                   <strong>Status de Execução</strong>
-                  <span>{base ? 'Localhost / Privacy-First' : 'Aguardando conexão local'}</span>
+                  <span>{base ? 'Base carregada e identificada' : 'Aguardando conexão'}</span>
                 </div>
               </li>
             </ul>
@@ -158,13 +158,15 @@ export default function Footer({ base }) {
               </li>
               <li>
                 <ExternalLink size={16} aria-hidden="true" />
-                <FooterLink href="#batida">
+                <FooterLink href="/dashboard/batida">
                   Batida do Vagão · exportar relatório PDF / imprimir
                 </FooterLink>
               </li>
               <li>
                 <BookOpen size={16} aria-hidden="true" />
-                <FooterLink href="#regras">Visualizar JSON da Base de Conhecimento</FooterLink>
+                <FooterLink href="/dashboard/regras">
+                  Visualizar JSON da Base de Conhecimento
+                </FooterLink>
               </li>
               <li>
                 <Award size={16} aria-hidden="true" />
@@ -194,8 +196,8 @@ export default function Footer({ base }) {
             </p>
           </div>
           <p className="institutional-footer__copyright">
-            © 2026 AkiNutri System. Desenvolvido para o Hackathon UFJF / RERUM. Licença Open Source
-            MIT.
+            © 2026 AkiNutri Enterprise v0.2. Desenvolvido para o Hackathon UFJF / RERUM. Licença
+            Open Source MIT.
           </p>
         </div>
       </div>

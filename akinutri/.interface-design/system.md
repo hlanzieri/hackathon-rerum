@@ -17,3 +17,9 @@ Estados: badge com ícone + texto Atendida / Violada / Dados Insuficientes / For
 Responsividade: tabela com rolagem própria; em até 1280px, lote acima da dieta; navegação compacta em até 1024px; em até 640px, navegação horizontal e formulários de duas colunas ou uma conforme conteúdo. Conferir 320/768/1024/1440px.
 
 Animação: apenas opacity/transform, 150–200ms para revelação. Pulso limitado a três ciclos e pausado fora da tela/aba oculta. Respeitar prefers-reduced-motion. Não usar loops de render React para animar.
+
+## Acesso por credenciais · revisão de 20/10/2026
+
+O formulário é o foco da entrada: e-mail, senha, visibilidade, permanência da sessão, envio e erro. Nenhum atalho cria identidade fictícia no navegador. Estado de verificação ocupa a rota antes do dashboard, e identidade/propriedade vêm da API. Não expor host ou arquitetura de implantação na linguagem do produto; preservar identificação honesta dos exemplos e limites científicos.
+
+A marca móvel e o kicker ocupam linhas distintas. Manter contraste floresta/superfície clara, controles de pelo menos 44px e números tabulares. Não adicionar animações para comunicar autenticação: o texto de estado e o botão desabilitado representam a operação em andamento.

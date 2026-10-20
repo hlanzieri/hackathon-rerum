@@ -43,7 +43,12 @@ def test_infeasible_not_relaxed(client):
 def test_missing_composition_not_assumed_zero(client):
     payload = request_for(client)
     ingredient = client.get("/api/insumos").json()[0]
-    id = ingredient.pop("id")
+    original_id = ingredient.pop("id")
+    ingredient["nome"] += " customizado"
+    id = client.post("/api/insumos", json=ingredient).json()["id"]
+    for item in payload["itens"]:
+        if item["insumo_id"] == original_id:
+            item["insumo_id"] = id
     ingredient["pb_pct"] = None
     assert client.put(f"/api/insumos/{id}", json=ingredient).status_code == 200
     result = client.post("/api/formular", json=payload).json()
@@ -82,12 +87,17 @@ def test_closeup_not_treated_as_faroff(client):
 
 def test_snapshot_remains_after_price_change(client):
     payload = request_for(client)
+    ingredient = client.get("/api/insumos").json()[0]
+    original_id = ingredient.pop("id")
+    ingredient["nome"] += " customizado"
+    id = client.post("/api/insumos", json=ingredient).json()["id"]
+    for item in payload["itens"]:
+        if item["insumo_id"] == original_id:
+            item["insumo_id"] = id
     result = client.post("/api/formular", json=payload).json()
     before = client.get(f"/api/sessoes/{result['session_id']}").json()
-    ingredient = client.get("/api/insumos").json()[0]
-    id = ingredient.pop("id")
     ingredient["preco_kg_mn"] = 999
-    client.put(f"/api/insumos/{id}", json=ingredient)
+    assert client.put(f"/api/insumos/{id}", json=ingredient).status_code == 200
     after = client.get(f"/api/sessoes/{result['session_id']}").json()
     assert before == after
     assert after["snapshot"]["base_sha256"] == result["knowledge_sha256"]

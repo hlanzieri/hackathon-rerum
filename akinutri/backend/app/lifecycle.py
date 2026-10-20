@@ -7,7 +7,7 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from .database import get_db
+from .auth import get_scoped_db
 from .models import (
     Animal,
     GrupoProducao,
@@ -157,7 +157,7 @@ def movement_group_payload(db: Session, movement: HistoricoMovimentacaoAnimal):
 @router.get("/api/grupos-producao")
 def list_groups(
     include_inativos: bool = Query(default=False),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_scoped_db),
 ):
     statement = select(GrupoProducao).order_by(GrupoProducao.nome)
     if not include_inativos:
@@ -186,7 +186,7 @@ def list_groups(
 @router.post(
     "/api/grupos-producao", status_code=status.HTTP_201_CREATED
 )
-def create_group(data: GrupoProducaoCreate, db: Session = Depends(get_db)):
+def create_group(data: GrupoProducaoCreate, db: Session = Depends(get_scoped_db)):
     group = GrupoProducao(
         nome=data.nome.strip(), fase=data.fase, descricao=data.descricao or None
     )
@@ -200,13 +200,13 @@ def create_group(data: GrupoProducaoCreate, db: Session = Depends(get_db)):
 
 
 @router.get("/api/grupos-producao/{group_id}")
-def get_group(group_id: int, db: Session = Depends(get_db)):
+def get_group(group_id: int, db: Session = Depends(get_scoped_db)):
     return group_payload(require(db, GrupoProducao, group_id))
 
 
 @router.put("/api/grupos-producao/{group_id}")
 def update_group(
-    group_id: int, data: GrupoProducaoCreate, db: Session = Depends(get_db)
+    group_id: int, data: GrupoProducaoCreate, db: Session = Depends(get_scoped_db)
 ):
     group = require(db, GrupoProducao, group_id)
     group.nome = data.nome.strip()
@@ -221,7 +221,7 @@ def update_group(
 
 
 @router.delete("/api/grupos-producao/{group_id}", status_code=status.HTTP_204_NO_CONTENT)
-def archive_group(group_id: int, db: Session = Depends(get_db)):
+def archive_group(group_id: int, db: Session = Depends(get_scoped_db)):
     group = require(db, GrupoProducao, group_id)
     group.ativo = False
     db.commit()
@@ -232,7 +232,7 @@ def archive_group(group_id: int, db: Session = Depends(get_db)):
     status_code=status.HTTP_201_CREATED,
 )
 def assign_group_diet(
-    group_id: int, data: AtribuirDieta, db: Session = Depends(get_db)
+    group_id: int, data: AtribuirDieta, db: Session = Depends(get_scoped_db)
 ):
     group = require(db, GrupoProducao, group_id)
     if not group.ativo:
@@ -307,7 +307,7 @@ def assign_group_diet(
 @router.get("/api/animais")
 def list_animals(
     include_inativos: bool = Query(default=False),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_scoped_db),
 ):
     statement = select(Animal).order_by(Animal.nome, Animal.id)
     if not include_inativos:
@@ -316,7 +316,7 @@ def list_animals(
 
 
 @router.post("/api/animais", status_code=status.HTTP_201_CREATED)
-def create_animal(data: AnimalCreate, db: Session = Depends(get_db)):
+def create_animal(data: AnimalCreate, db: Session = Depends(get_scoped_db)):
     group = require(db, GrupoProducao, data.grupo_producao_id)
     if not group.ativo:
         raise HTTPException(
@@ -348,13 +348,13 @@ def create_animal(data: AnimalCreate, db: Session = Depends(get_db)):
 
 
 @router.get("/api/animais/{animal_id}")
-def get_animal(animal_id: int, db: Session = Depends(get_db)):
+def get_animal(animal_id: int, db: Session = Depends(get_scoped_db)):
     return animal_payload(db, require(db, Animal, animal_id))
 
 
 @router.put("/api/animais/{animal_id}")
 def update_animal(
-    animal_id: int, data: AnimalUpdate, db: Session = Depends(get_db)
+    animal_id: int, data: AnimalUpdate, db: Session = Depends(get_scoped_db)
 ):
     animal = require(db, Animal, animal_id)
     first_movement = db.scalar(
@@ -386,7 +386,7 @@ def update_animal(
 
 
 @router.delete("/api/animais/{animal_id}", status_code=status.HTTP_204_NO_CONTENT)
-def archive_animal(animal_id: int, db: Session = Depends(get_db)):
+def archive_animal(animal_id: int, db: Session = Depends(get_scoped_db)):
     animal = require(db, Animal, animal_id)
     animal.ativo = False
     db.commit()
@@ -397,7 +397,7 @@ def archive_animal(animal_id: int, db: Session = Depends(get_db)):
     status_code=status.HTTP_201_CREATED,
 )
 def move_animal(
-    animal_id: int, data: MovimentacaoCreate, db: Session = Depends(get_db)
+    animal_id: int, data: MovimentacaoCreate, db: Session = Depends(get_scoped_db)
 ):
     animal = require(db, Animal, animal_id)
     if not animal.ativo:
@@ -487,7 +487,7 @@ def diet_payload(db: Session, history: HistoricoDietaGP):
 
 
 @router.get("/api/animais/{animal_id}/historico-nutricional")
-def animal_nutrition_history(animal_id: int, db: Session = Depends(get_db)):
+def animal_nutrition_history(animal_id: int, db: Session = Depends(get_scoped_db)):
     animal = require(db, Animal, animal_id)
     movements = db.scalars(
         select(HistoricoMovimentacaoAnimal)
