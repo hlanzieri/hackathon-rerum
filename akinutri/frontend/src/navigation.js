@@ -5,6 +5,7 @@ export const paths = {
   register: '/register',
   dashboard: '/dashboard',
   workspace: '/dashboard',
+  akibot: '/dashboard/akibot',
   comparacao: '/dashboard/comparacao',
   batida: '/dashboard/batida',
   insumos: '/dashboard/insumos',

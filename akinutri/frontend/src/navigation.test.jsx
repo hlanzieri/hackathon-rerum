@@ -49,48 +49,67 @@ test('failed authentication never opens the workspace', async () => {
   expect(await screen.findByRole('alert')).toBeTruthy();
   expect(screen.queryByText('Da análise ao cocho.')).toBeNull();
 });
-test('authenticated history opens and logout removes operational content', async () => {
-  sessionStorage.setItem('akinutri.access_token.v1', 'server-issued-token');
-  let signedIn = true;
-  vi.stubGlobal(
-    'fetch',
-    vi.fn(async (url) => {
-      if (String(url).endsWith('/auth/me'))
-        return signedIn
-          ? {
-              ok: true,
-              status: 200,
-              json: async () => ({
-                user: {
-                  id: 1,
-                  name: 'Carlos',
-                  email: 'carlos@example.com',
-                  role: 'zootecnista',
-                  fazenda_nome: 'Fazenda',
-                },
-              }),
-            }
-          : denied();
-      if (String(url).endsWith('/auth/logout')) {
-        signedIn = false;
-        return { ok: true, status: 204 };
-      }
-      return {
-        ok: true,
-        status: 200,
-        json: async () =>
-          String(url).endsWith('/regras') ? { version: '0.1.0', sha256: 'test', rules: [] } : [],
-      };
-    }),
-  );
-  window.history.replaceState(null, '', '/dashboard/historico');
-  render(<App />);
-  expect(await screen.findByRole('heading', { name: 'O registro de cada decisão.' })).toBeTruthy();
-  fireEvent.click(screen.getByRole('button', { name: 'Sair' }));
-  expect(await screen.findByRole('heading', { name: 'Acesse sua conta' })).toBeTruthy();
-  expect(screen.queryByText('O registro de cada decisão.')).toBeNull();
-  expect(window.location.pathname).toBe('/login');
-});
+test.each([
+  ['/dashboard/historico', 'O registro de cada decisão.'],
+  ['/dashboard/akibot', 'Sua dieta, passo a passo.'],
+])(
+  'authenticated deep link %s opens and logout removes operational content',
+  async (path, heading) => {
+    sessionStorage.setItem('akinutri.access_token.v1', 'server-issued-token');
+    let signedIn = true;
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (url) => {
+        if (String(url).endsWith('/auth/me'))
+          return signedIn
+            ? {
+                ok: true,
+                status: 200,
+                json: async () => ({
+                  user: {
+                    id: 1,
+                    name: 'Carlos',
+                    email: 'carlos@example.com',
+                    role: 'zootecnista',
+                    fazenda_nome: 'Fazenda',
+                  },
+                }),
+              }
+            : denied();
+        if (String(url).endsWith('/auth/logout')) {
+          signedIn = false;
+          return { ok: true, status: 204 };
+        }
+        return {
+          ok: true,
+          status: 200,
+          json: async () =>
+            String(url).endsWith('/regras') ? { version: '0.1.0', sha256: 'test', rules: [] } : [],
+        };
+      }),
+    );
+    window.history.replaceState(null, '', path);
+    render(<App />);
+    expect(await screen.findByRole('heading', { name: heading })).toBeTruthy();
+    if (path === '/dashboard/akibot') {
+      expect(
+        await screen.findByRole('region', { name: 'AkiBot · Assistente guiado' }),
+      ).toBeTruthy();
+      expect(screen.queryByRole('dialog')).toBeNull();
+      expect(
+        screen.getByRole('link', { name: 'AkiBot · Assistente' }).getAttribute('aria-current'),
+      ).toBe('page');
+      fireEvent.click(screen.getByRole('link', { name: 'Histórico de análises' }));
+      expect(
+        await screen.findByRole('heading', { name: 'O registro de cada decisão.' }),
+      ).toBeTruthy();
+    }
+    fireEvent.click(screen.getByRole('button', { name: 'Sair' }));
+    expect(await screen.findByRole('heading', { name: 'Acesse sua conta' })).toBeTruthy();
+    expect(screen.queryByText('O registro de cada decisão.')).toBeNull();
+    expect(window.location.pathname).toBe('/login');
+  },
+);
 
 test('native panel link redirects anonymous users without hashes', async () => {
   vi.stubGlobal(

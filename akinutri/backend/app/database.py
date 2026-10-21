@@ -77,7 +77,11 @@ def migrate_ownership(target_engine):
             ("fracao_multiparas", "FLOAT"),
         ):
             if group_columns and name not in group_columns:
-                connection.execute(text(f'ALTER TABLE grupos_producao ADD COLUMN "{name}" {definition}'))
+                connection.execute(
+                    text(
+                        f'ALTER TABLE grupos_producao ADD COLUMN "{name}" {definition}'
+                    )
+                )
         for table in Base.metadata.sorted_tables:
             columns = {column["name"] for column in inspector.get_columns(table.name)}
             if "usuario_id" in table.c and "usuario_id" not in columns:

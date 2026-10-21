@@ -13,6 +13,7 @@ import {
   UsersRound,
   PanelLeftClose,
   PanelLeftOpen,
+  Bot,
 } from 'lucide-react';
 import useWorkspace from '../hooks/useWorkspace';
 import { paths, navigate } from '../navigation';
@@ -21,6 +22,7 @@ import TracoPanel from './TracoPanel';
 import Footer from './Footer';
 import useVisibleMotion from '../hooks/useVisibleMotion';
 import DashboardMetrics from './DashboardMetrics';
+import AkiBotWizard from './AkiBotWizard';
 
 const Catalogo = lazy(() => import('./Catalogo'));
 const ComparisonPage = lazy(() => import('./ComparisonPage'));
@@ -29,6 +31,7 @@ const KnowledgePage = lazy(() => import('./KnowledgePage'));
 const AnimaisPage = lazy(() => import('./AnimaisPage'));
 const HistoryPage = lazy(() => import('./HistoryPage'));
 const tabs = [
+  ['akibot', 'AkiBot · Assistente', Bot],
   ['animais', 'Animais e GP', UsersRound],
   ['workspace', 'Formulação', LayoutDashboard],
   ['comparacao', 'Comparação A/B', GitCompareArrows],
@@ -39,6 +42,10 @@ const tabs = [
   ['resultado', 'Resultado e traço', ShieldCheck],
 ];
 const titles = {
+  akibot: [
+    'Sua dieta, passo a passo.',
+    'Um assistente guiado para formular ou conferir a dieta do lote.',
+  ],
   animais: [
     'A vida do rebanho, em contexto.',
     'Acompanhe grupos, movimentações e dietas ao longo do tempo.',
@@ -193,11 +200,18 @@ export default function DashboardShell({ tab, session, onLogout, authError }) {
             PECUÁRIA LEITEIRA <span>/</span> SISTEMA ESPECIALISTA
           </div>
           <div className="page-heading">
-            <div>
-              <h1 id="route-focus" tabIndex="-1">
-                {titles[tab][0]}
-              </h1>
-              <p>{titles[tab][1]}</p>
+            <div className={tab === 'akibot' ? 'akibot-intro' : undefined}>
+              {tab === 'akibot' && (
+                <span className="akibot-producer" role="img" aria-label="Produtor rural">
+                  👨‍🌾
+                </span>
+              )}
+              <div>
+                <h1 id="route-focus" tabIndex="-1">
+                  {titles[tab][0]}
+                </h1>
+                <p>{titles[tab][1]}</p>
+              </div>
             </div>
             <span className="edition">BASE v{workspace.base?.version || '0.1.0'}</span>
           </div>
@@ -206,7 +220,7 @@ export default function DashboardShell({ tab, session, onLogout, authError }) {
               {authError}
             </p>
           )}
-          <DashboardMetrics workspace={workspace} />
+          {tab !== 'akibot' && <DashboardMetrics workspace={workspace} />}
           {workspace.error && (
             <div role="alert" className="error">
               {workspace.error}
@@ -238,8 +252,29 @@ export default function DashboardShell({ tab, session, onLogout, authError }) {
                 }
               >
                 <div className="route-content" key={tab}>
+                  {tab === 'akibot' && (
+                    <AkiBotWizard
+                      workspace={workspace}
+                      onComplete={async (id) => {
+                        if (!(await workspace.openSession(id)))
+                          throw new Error(
+                            `Análise ${id} salva. Consulte o histórico para abrir o traço.`,
+                          );
+                        navigate('/dashboard/resultado');
+                        workspace
+                          .refresh()
+                          .catch(() =>
+                            workspace.setError(
+                              'Análise concluída; não foi possível atualizar o histórico.',
+                            ),
+                          );
+                      }}
+                    />
+                  )}
                   {tab === 'animais' && <AnimaisPage />}
-                  {tab === 'workspace' && <Workspace workspace={workspace} onBatch={batch} />}
+                  {tab === 'workspace' && (
+                    <Workspace workspace={workspace} onBatch={batch} onScenarioOpen={open} />
+                  )}
                   {tab === 'comparacao' && (
                     <ComparisonPage
                       history={workspace.history}
@@ -278,7 +313,12 @@ export default function DashboardShell({ tab, session, onLogout, authError }) {
                             Preparar batida do vagão
                           </button>
                         </div>
-                        <TracoPanel result={workspace.result} snapshot={workspace.snapshot} />
+                        <TracoPanel
+                          result={workspace.result}
+                          snapshot={workspace.snapshot}
+                          onScenarioOpen={open}
+                          onScenarioSaved={workspace.refresh}
+                        />
                       </>
                     ) : (
                       <p className="notice">

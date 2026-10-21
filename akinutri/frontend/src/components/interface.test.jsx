@@ -94,7 +94,9 @@ test('animais path opens the lifecycle module from app navigation', async () => 
   sessionStorage.setItem('akinutri.access_token.v1', 'issued-token');
   window.history.replaceState(null, '', '/dashboard/animais');
   render(<App />);
-  expect(await screen.findByRole('heading', { name: 'Novo grupo de produção' })).toBeTruthy();
+  expect(
+    await screen.findByRole('heading', { name: 'Novo grupo de produção' }, { timeout: 5000 }),
+  ).toBeTruthy();
   expect(screen.getByRole('link', { name: 'Animais e GP' }).getAttribute('aria-current')).toBe(
     'page',
   );

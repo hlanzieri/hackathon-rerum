@@ -192,7 +192,7 @@ def checked_base(record):
 def infer(data, mode, db, *, created_at=None):
     lote = require(db, Lote, data.lote_id)
     group_context = None
-    if mode == "formular":
+    if data.grupo_id is not None:
         group = require(db, GrupoProducao, data.grupo_id)
         if not group.ativo:
             raise HTTPException(409, "O grupo de produção está arquivado.")
@@ -216,12 +216,15 @@ def infer(data, mode, db, *, created_at=None):
             )
         if group.fase != lote.estado:
             raise HTTPException(
-                422, f"Fase incompatível: grupo em {group.fase} e lote em {lote.estado}."
+                422,
+                f"Fase incompatível: grupo em {group.fase} e lote em {lote.estado}.",
             )
         if group.fase == "lactacao" and (
             group.producao_media_l_dia <= 0 or group.del_medio <= 0
         ):
-            raise HTTPException(422, "Grupo em lactação exige DEL e produção médios positivos.")
+            raise HTTPException(
+                422, "Grupo em lactação exige DEL e produção médios positivos."
+            )
         if group.fase == "seca" and group.producao_media_l_dia != 0:
             raise HTTPException(422, "Grupo seco exige produção média igual a zero.")
         group_context = {
@@ -252,16 +255,6 @@ def infer(data, mode, db, *, created_at=None):
     cms_estimate = None
     if data.estimativa_cms is not None:
         estimation = data.estimativa_cms
-        if group_context:
-            estimation = estimation.model_copy(
-                update={
-                    "peso_kg": group_context["peso_medio_kg"],
-                    "dias_lactacao": max(1, int(group_context["del_medio"])),
-                    "estado": group_context["fase"],
-                    "escore_corporal": group_context["ecc_medio"],
-                    "fracao_multiparas": group_context["fracao_multiparas"],
-                }
-            )
         expected_group = group_context or {}
         if (
             estimation.peso_kg,
@@ -270,13 +263,24 @@ def infer(data, mode, db, *, created_at=None):
             estimation.raca,
         ) != (
             expected_group.get("peso_medio_kg", lote.peso_kg),
-            max(1, int(expected_group["del_medio"])) if expected_group else lote.dias_lactacao,
+            (
+                max(1, int(expected_group["del_medio"]))
+                if expected_group
+                else lote.dias_lactacao
+            ),
             expected_group.get("fase", lote.estado),
             require(db, Raca, lote.raca_id).nome,
         ):
             raise HTTPException(
                 422,
                 "Estimativa de CMS pertence a outro contexto de lote. Recalcule ou informe consumo manual.",
+            )
+        if group_context and (
+            estimation.escore_corporal != group_context["ecc_medio"]
+            or estimation.fracao_multiparas != group_context["fracao_multiparas"]
+        ):
+            raise HTTPException(
+                422, "ECC ou paridade da estimativa diverge do grupo. Recalcule o CMS."
             )
         cms_estimate = estimate_intake(estimation, group_context=group_context)
         if (
@@ -328,14 +332,22 @@ def infer(data, mode, db, *, created_at=None):
         quantities = [i["quantidade_kg_mn"] for i in items]
         if mode == "formular":
             solution = solve(
-                base, profile, ingredients, items, data.consumo_ms_kg,
+                base,
+                profile,
+                ingredients,
+                items,
+                data.consumo_ms_kg,
                 data.insumos_excluidos_explicitamente,
                 group_context=group_context,
             )
             result.update({k: v for k, v in solution.items() if k != "quantities"})
             if solution.get("excluded_ingredients"):
                 result["exclusion_trace"] = [
-                    {**entry, "status": "exclusao_explicita_auditada", "message": "Insumo removido do espaco de otimizacao por solicitacao do usuario."}
+                    {
+                        **entry,
+                        "status": "exclusao_explicita_auditada",
+                        "message": "Insumo removido do espaco de otimizacao por solicitacao do usuario.",
+                    }
                     for entry in solution["excluded_ingredients"]
                 ]
             quantities = solution["quantities"]
@@ -370,7 +382,9 @@ def infer(data, mode, db, *, created_at=None):
                 )
                 if not ok:
                     status = "restricoes_violadas"
-            excluded = result.get("excluded_ingredients", []) if mode == "formular" else []
+            excluded = (
+                result.get("excluded_ingredients", []) if mode == "formular" else []
+            )
             if mode == "formular" and status != "atende_perfil_demo":
                 status = "falha_pos_verificacao"
             values["custo_lote_dia"] = values["custo_animal_dia"] * (

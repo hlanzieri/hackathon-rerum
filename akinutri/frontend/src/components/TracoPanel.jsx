@@ -3,6 +3,7 @@ import { CheckCircle2, AlertTriangle, Download, ChevronDown } from 'lucide-react
 import { number, money, download, displayText } from '../api';
 import StatusBadge from './StatusBadge';
 import NutrientRange from './NutrientRange';
+import PriceScenarioPanel from './PriceScenarioPanel';
 
 export const statusLabel = (status) =>
   ({
@@ -32,7 +33,15 @@ const missingFields = {
   p_pct: ['p_pct', 'Fósforo %'],
 };
 
-export default function TracoPanel({ result, snapshot, onUse, onExclude, onFill }) {
+export default function TracoPanel({
+  result,
+  snapshot,
+  onUse,
+  onExclude,
+  onFill,
+  onScenarioOpen,
+  onScenarioSaved,
+}) {
   const [editingIngredient, setEditingIngredient] = useState(null);
   const [fieldValues, setFieldValues] = useState({});
   const [actionError, setActionError] = useState('');
@@ -381,6 +390,13 @@ export default function TracoPanel({ result, snapshot, onUse, onExclude, onFill 
         SHA-256 da base: <code>{result.knowledge_sha256}</code>
       </p>
       <p className="notice">{displayText(result.notice)}</p>
+      <PriceScenarioPanel
+        key={result.session_id}
+        result={result}
+        snapshot={snapshot}
+        onOpen={onScenarioOpen}
+        onSaved={onScenarioSaved}
+      />
     </section>
   );
 }

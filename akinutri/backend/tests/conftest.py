@@ -84,8 +84,23 @@ def request_for(client, scenario=SCENARIOS[0]):
         },
     )
     assert response.status_code == 201, response.text
+    group_response = client.post(
+        "/api/grupos-producao",
+        json={
+            "nome": f"GP {response.json()['id']} — {name}",
+            "fase": state,
+            "numero_animais": 25,
+            "del_medio": days or 0,
+            "peso_medio_kg": weight,
+            "producao_media_l_dia": milk,
+            "ecc_medio": 3,
+            "fracao_multiparas": 1,
+        },
+    )
+    assert group_response.status_code == 201, group_response.text
     return {
         "lote_id": response.json()["id"],
+        "grupo_id": group_response.json()["id"],
         "consumo_ms_kg": intake,
         "sistema": "tmr",
         "particula_adequada": True,

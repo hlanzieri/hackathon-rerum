@@ -12,6 +12,7 @@ def compare_sessions(manual, formulated, days):
         request = snapshot["request"]
         return {
             "lote": snapshot["lote"],
+            "grupo": snapshot.get("grupo"),
             "base": snapshot["base_sha256"],
             "insumos": snapshot["insumos"],
             "manejo": {
@@ -50,7 +51,9 @@ def compare_sessions(manual, formulated, days):
             if ma["totals"]["custo_lote_dia"] > 0
             else None
         ),
-        "quantidade_animais": a["lote"]["quantidade"],
+        "quantidade_animais": (a.get("grupo") or {}).get(
+            "numero_animais", a["lote"]["quantidade"]
+        ),
         "same_context": True,
         "equivalencia_nutricional_demo": ma["status"] == "atende_perfil_demo",
         "notice": "Projecao de custo com precos e consumo constantes; nao estima receita, producao ou lucro. Dieta manual com restricoes violadas nao e nutricionalmente equivalente.",

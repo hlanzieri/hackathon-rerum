@@ -54,12 +54,21 @@ class GrupoProducaoCreate(LifecycleDTO):
             self.ecc_medio,
             self.fracao_multiparas,
         )
-        if any(value is not None for value in values) and any(value is None for value in values):
-            raise ValueError("Informe todos os parâmetros agregados do grupo ou deixe-os pendentes.")
+        if any(value is not None for value in values) and any(
+            value is None for value in values
+        ):
+            raise ValueError(
+                "Informe todos os parâmetros agregados do grupo ou deixe-os pendentes."
+            )
         if self.fase == "lactacao" and self.producao_media_l_dia is not None:
             if self.producao_media_l_dia <= 0 or self.del_medio <= 0:
-                raise ValueError("Grupo em lactação exige produção e DEL médios positivos.")
-        if self.fase in {"seca", "pre_parto"} and self.producao_media_l_dia not in (None, 0):
+                raise ValueError(
+                    "Grupo em lactação exige produção e DEL médios positivos."
+                )
+        if self.fase in {"seca", "pre_parto"} and self.producao_media_l_dia not in (
+            None,
+            0,
+        ):
             raise ValueError("Grupo seco ou pré-parto deve ter produção média zero.")
         return self
 
@@ -214,9 +223,7 @@ def list_groups(
     return payloads
 
 
-@router.post(
-    "/api/grupos-producao", status_code=status.HTTP_201_CREATED
-)
+@router.post("/api/grupos-producao", status_code=status.HTTP_201_CREATED)
 def create_group(data: GrupoProducaoCreate, db: Session = Depends(get_scoped_db)):
     group = GrupoProducao(
         **data.model_dump(exclude={"nome", "descricao"}),
@@ -259,7 +266,9 @@ def update_group(
     return group_payload(group)
 
 
-@router.delete("/api/grupos-producao/{group_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete(
+    "/api/grupos-producao/{group_id}", status_code=status.HTTP_204_NO_CONTENT
+)
 def archive_group(group_id: int, db: Session = Depends(get_scoped_db)):
     group = require(db, GrupoProducao, group_id)
     group.ativo = False
@@ -288,9 +297,9 @@ def assign_group_diet(
     )
     profile_id = result.conteudo.get("profile") if result else None
     expected_phase = (
-        "lactacao" if (profile_id or "").startswith("lactacao")
-        else "seca" if (profile_id or "").startswith("seca")
-        else None
+        "lactacao"
+        if (profile_id or "").startswith("lactacao")
+        else "seca" if (profile_id or "").startswith("seca") else None
     )
     if expected_phase is None or group.fase != expected_phase:
         raise HTTPException(
@@ -399,7 +408,8 @@ def create_animal(data: AnimalCreate, db: Session = Depends(get_scoped_db)):
     group = require(db, GrupoProducao, data.grupo_producao_id)
     if not group.ativo:
         raise HTTPException(
-            status.HTTP_409_CONFLICT, "Não é possível atribuir o animal a um grupo arquivado."
+            status.HTTP_409_CONFLICT,
+            "Não é possível atribuir o animal a um grupo arquivado.",
         )
     animal = Animal(
         brinco=data.brinco.strip(),
@@ -484,7 +494,8 @@ def move_animal(
     group = require(db, GrupoProducao, data.grupo_producao_id)
     if not group.ativo:
         raise HTTPException(
-            status.HTTP_409_CONFLICT, "Não é possível movimentar para um grupo arquivado."
+            status.HTTP_409_CONFLICT,
+            "Não é possível movimentar para um grupo arquivado.",
         )
     if data.data_inicio > date.today():
         raise HTTPException(
@@ -571,7 +582,9 @@ def animal_nutrition_history(animal_id: int, db: Session = Depends(get_scoped_db
     movements = db.scalars(
         select(HistoricoMovimentacaoAnimal)
         .where(HistoricoMovimentacaoAnimal.animal_id == animal_id)
-        .order_by(HistoricoMovimentacaoAnimal.data_inicio, HistoricoMovimentacaoAnimal.id)
+        .order_by(
+            HistoricoMovimentacaoAnimal.data_inicio, HistoricoMovimentacaoAnimal.id
+        )
     ).all()
     today = date.today()
     timeline = []
@@ -617,7 +630,9 @@ def animal_nutrition_history(animal_id: int, db: Session = Depends(get_scoped_db
                 continue
             diet_start = max(diet.data_inicio, movement.data_inicio)
             if diet_start > cursor:
-                append_period(cursor, min(diet_start - timedelta(days=1), movement_end), None)
+                append_period(
+                    cursor, min(diet_start - timedelta(days=1), movement_end), None
+                )
             period_start = max(cursor, diet_start)
             if period_start <= diet_end:
                 append_period(period_start, diet_end, diet)

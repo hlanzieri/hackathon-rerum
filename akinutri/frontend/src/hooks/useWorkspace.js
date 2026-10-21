@@ -180,7 +180,7 @@ export default function useWorkspace() {
       }
       const response = await api(`/${mode}`, 'POST', {
         lote_id: loteId,
-        ...(mode === 'formular' ? { grupo_id: Number(grupoId) } : {}),
+        ...(grupoCompativel ? { grupo_id: Number(grupoId) } : {}),
         consumo_ms_kg: Number(intake),
         ...manejo,
         itens: items,
@@ -219,6 +219,45 @@ export default function useWorkspace() {
       setResult(session.result);
       setSnapshot(session.snapshot);
       setGrupoId(String(session.snapshot?.grupo?.id || ''));
+      const saved = session.snapshot.request;
+      const { id: savedLotId, ...savedLot } = session.snapshot.lote;
+      setLote(savedLot);
+      setLoteId(saved.lote_id);
+      setEditing(false);
+      setMode(session.modo);
+      setIntake(saved.consumo_ms_kg);
+      setEstimateInputs(saved.estimativa_cms ?? null);
+      setManejo({
+        sistema: saved.sistema,
+        particula_adequada: saved.particula_adequada,
+        milho_seco_predominante: saved.milho_seco_predominante,
+      });
+      setRows((old) =>
+        Object.fromEntries(
+          data.insumos.map((i) => {
+            const item = saved.itens.find((row) => row.insumo_id === i.id);
+            const quantity = session.result.items?.find(
+              (row) => row.insumo_id === i.id,
+            )?.quantidade_kg_mn;
+            return [
+              i.id,
+              {
+                ...old[i.id],
+                selected: Boolean(item),
+                ...(item
+                  ? {
+                      ...item,
+                      quantidade_kg_mn: quantity ?? item.quantidade_kg_mn,
+                      preco_kg_mn:
+                        item.preco_kg_mn ??
+                        session.snapshot.insumos.find((row) => row.id === i.id)?.preco_kg_mn,
+                    }
+                  : {}),
+              },
+            ];
+          }),
+        ),
+      );
       return true;
     } catch (e) {
       setError(e.message);

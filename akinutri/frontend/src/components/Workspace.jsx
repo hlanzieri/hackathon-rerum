@@ -6,7 +6,7 @@ import InsumosTable from './InsumosTable';
 import IntakeEstimator from './IntakeEstimator';
 import TracoPanel from './TracoPanel';
 
-export default function Workspace({ workspace: w, onBatch }) {
+export default function Workspace({ workspace: w, onBatch, onScenarioOpen }) {
   return (
     <>
       <div className="work-summary">
@@ -336,6 +336,8 @@ export default function Workspace({ workspace: w, onBatch }) {
       <TracoPanel
         result={w.result}
         snapshot={w.snapshot}
+        onScenarioOpen={onScenarioOpen}
+        onScenarioSaved={w.refresh}
         onUse={w.result?.totals && w.mode === 'formular' ? w.useFormulated : null}
         onExclude={
           w.mode === 'formular'

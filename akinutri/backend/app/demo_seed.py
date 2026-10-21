@@ -10,6 +10,7 @@ from .models import (
     InsumoAlimentar,
     SessaoInferencia,
     ResultadoDieta,
+    GrupoProducao,
 )
 from .schemas import LoteCreate, InferenciaRequest
 
@@ -45,6 +46,7 @@ def seed_demo(db, password="senha123", *, reset_password=False):
     db.info["usuario_id"] = user.id
     try:
         lots = []
+        groups = []
         scenarios = [
             (
                 "Lote 01 — Holandesas Alta Produção (fictício)",
@@ -98,6 +100,24 @@ def seed_demo(db, password="senha123", *, reset_password=False):
                 db.add(lot)
                 db.flush()
             lots.append(lot)
+            group_name = f"GP — {lot.nome}"
+            group = db.scalar(
+                select(GrupoProducao).where(GrupoProducao.nome == group_name)
+            )
+            if not group:
+                group = GrupoProducao(
+                    nome=group_name,
+                    fase=lot.estado,
+                    numero_animais=lot.quantidade,
+                    del_medio=lot.dias_lactacao or 0,
+                    peso_medio_kg=lot.peso_kg,
+                    producao_media_l_dia=lot.producao_l_dia,
+                    ecc_medio=3,
+                    fracao_multiparas=1,
+                )
+                db.add(group)
+                db.flush()
+            groups.append(group)
         ingredients = [
             ("Silagem de Milho · Ouro Verde", "volumoso", 35, 7.8, 46, 31, 1.52, 0.38),
             (
@@ -219,6 +239,7 @@ def seed_demo(db, password="senha123", *, reset_password=False):
                     item["quantidade_kg_mn"] = quantities.get(item["insumo_id"], 0)
             request = InferenciaRequest(
                 lote_id=lot.id,
+                grupo_id=groups[0 if index < 2 else 1].id,
                 consumo_ms_kg=intake,
                 sistema="tmr",
                 particula_adequada=True,

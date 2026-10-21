@@ -1,0 +1,57 @@
+.price-scenario {
+  margin: 24px 0;
+  border-top: 3px solid #0f766e;
+}
+.price-scenario fieldset {
+  border: 0;
+  padding: 0;
+  min-width: 0;
+}
+.price-scenario legend {
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+.price-scenario-options {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+.price-scenario-options [aria-pressed='true'] {
+  border: 2px solid #14532d;
+  background: #e5f4ed;
+  color: #14532d;
+}
+.price-scenario label {
+  display: grid;
+  gap: 8px;
+  max-width: 420px;
+  margin-bottom: 18px;
+}
+.price-scenario-totals {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin: 20px 0;
+}
+.price-scenario-totals > p {
+  padding: 16px;
+  margin: 0;
+  background: #f8fafc;
+  border: 1px solid #dce6df;
+  border-radius: 8px;
+}
+.price-scenario-totals strong {
+  display: block;
+  font-size: 24px;
+  color: #14532d;
+  margin-top: 8px;
+}
+.price-scenario-totals small {
+  display: block;
+  font-size: 12px;
+  font-weight: 400;
+}
+.price-scenario details {
+  margin: 18px 0;
+}

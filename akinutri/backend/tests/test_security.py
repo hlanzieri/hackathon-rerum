@@ -215,6 +215,7 @@ def test_relative_database_url_is_independent_of_launch_directory(tmp_path):
         "/",
         "/login",
         "/dashboard",
+        "/dashboard/akibot",
         "/dashboard/comparacao",
         "/dashboard/batida",
         "/dashboard/insumos",

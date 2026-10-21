@@ -39,6 +39,17 @@ def verify_session(snapshot, result):
             for k in ("sistema", "particula_adequada", "milho_seco_predominante")
         },
     }
+    group = snapshot.get("grupo")
+    if group:
+        facts.update(
+            estado=group["fase"],
+            quantidade=group["numero_animais"],
+            peso_kg=group["peso_medio_kg"],
+            producao_l_dia=group["producao_media_l_dia"],
+            dias_lactacao=(
+                max(1, int(group["del_medio"])) if group["fase"] == "lactacao" else None
+            ),
+        )
     profile, profile_trace = select_profile(snapshot["base"], facts)
     if (profile["id"] if profile else None) != result[
         "profile"
@@ -50,6 +61,7 @@ def verify_session(snapshot, result):
         values = totals(
             ingredients, [by_id[i["id"]]["quantidade_kg_mn"] for i in ingredients]
         )
+        values["custo_lote_dia"] = values["custo_animal_dia"] * facts["quantidade"]
         _, trace = evaluate(snapshot["base"], profile, values, request["consumo_ms_kg"])
         if trace != result["trace"][: len(trace)]:
             raise ValueError("Falha de integridade no traco de inferencia.")

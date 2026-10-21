@@ -2,8 +2,14 @@ from typing import Literal, TypeAlias
 from pydantic import AliasChoices, BaseModel, ConfigDict, Field, model_validator
 
 InferenceStatus: TypeAlias = Literal[
-    "fora_escopo", "otimo", "diagnostico_relaxado", "inviavel", "falha_solver",
-    "dados_insuficientes", "restricoes_violadas", "falha_pos_verificacao",
+    "fora_escopo",
+    "otimo",
+    "diagnostico_relaxado",
+    "inviavel",
+    "falha_solver",
+    "dados_insuficientes",
+    "restricoes_violadas",
+    "falha_pos_verificacao",
     "atende_perfil_demo",
 ]
 
@@ -123,9 +129,13 @@ class InferenciaRequest(DTO):
     def unique_items(self):
         if len({i.insumo_id for i in self.itens}) != len(self.itens):
             raise ValueError("Insumos duplicados.")
-        if len(set(self.insumos_excluidos_explicitamente)) != len(self.insumos_excluidos_explicitamente):
+        if len(set(self.insumos_excluidos_explicitamente)) != len(
+            self.insumos_excluidos_explicitamente
+        ):
             raise ValueError("Insumos para exclusao duplicados.")
-        if not set(self.insumos_excluidos_explicitamente).issubset({i.insumo_id for i in self.itens}):
+        if not set(self.insumos_excluidos_explicitamente).issubset(
+            {i.insumo_id for i in self.itens}
+        ):
             raise ValueError("Exclusao deve referenciar insumos selecionados.")
         return self
 

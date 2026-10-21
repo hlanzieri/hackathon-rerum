@@ -121,6 +121,8 @@ small {
   min-height: 100vh;
 }
 .sidebar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
   width: 244px;
   position: fixed;
   inset: 0 auto 0 0;
@@ -130,6 +132,9 @@ small {
   flex-direction: column;
   background: var(--canvas);
   z-index: 10;
+}
+.sidebar::-webkit-scrollbar {
+  display: none;
 }
 .brand {
   display: flex;
@@ -178,6 +183,14 @@ small {
   color: var(--supporting);
   font-size: 10px;
   margin-top: 4px;
+}
+.workspace-tag > div {
+  min-width: 0;
+  flex: 1;
+  overflow-wrap: anywhere;
+}
+.workspace-tag > .tiny-square {
+  flex-shrink: 0;
 }
 .workspace-tag > svg {
   margin-left: auto;

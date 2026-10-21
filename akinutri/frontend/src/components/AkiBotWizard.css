@@ -1,0 +1,91 @@
+.aki-wizard {
+  width: 100%;
+  max-width: 960px;
+  margin: 0 auto;
+  min-width: 0;
+  border: 1px solid #dce6df;
+  border-radius: 18px;
+  padding: clamp(16px, 3vw, 32px);
+  background: #f8fafc;
+  color: #14532d;
+}
+.aki-step-count {
+  padding: 6px 12px;
+  background: #e5f4ed;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.aki-wizard > footer {
+  border-top: 1px solid #dce6df;
+  padding-top: 20px;
+}
+.aki-wizard h2 {
+  margin: 0;
+  font-size: clamp(19px, 3vw, 24px);
+}
+.aki-wizard input,
+.aki-wizard select {
+  min-width: 0;
+  max-width: 100%;
+}
+.aki-wizard header,
+.aki-wizard footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.aki-wizard progress {
+  width: 100%;
+  accent-color: #0f766e;
+}
+.aki-wizard fieldset {
+  border: 0;
+  padding: 0;
+  margin: 20px 0;
+  min-width: 0;
+}
+.aki-choice {
+  display: block;
+  width: 100%;
+  padding: 16px;
+  margin: 10px 0;
+  text-align: left;
+  border: 2px solid #cbd5e1;
+  border-radius: 12px;
+  background: white;
+  color: #14532d;
+  font: inherit;
+  cursor: pointer;
+}
+.aki-choice[aria-pressed='true'] {
+  border: 2px solid #14532d;
+  background: #e5f4ed;
+  font-weight: 700;
+}
+.aki-wizard :focus-visible {
+  outline: 3px solid #0f766e;
+  outline-offset: 3px;
+}
+.aki-wizard label {
+  display: grid;
+  gap: 6px;
+  margin: 12px 0;
+}
+.aki-ingredient {
+  border-bottom: 1px solid #cbd5e1;
+  padding: 8px 0;
+}
+.aki-ingredient label:first-child {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.aki-ingredient input[type='checkbox'] {
+  width: 20px;
+  height: 20px;
+  accent-color: #14532d;
+}

@@ -1,6 +1,6 @@
 # Plano de testes
 
-Revisão atual: **81 testes backend e 32 frontend aprovados**, build e Prettier aprovados. Ver [URLs reais, Bearer e seed](ROTAS-AUTH.md). A revisão anterior de autenticação e visual está em [AUTH-VALIDACAO.md](AUTH-VALIDACAO.md). Os números e cenários da primeira validação abaixo são registros históricos anteriores à autenticação por conta.
+Revisão atual (21/10/2026): **87 testes backend e 48 frontend aprovados**, Black, Prettier e build de produção aprovados pelo comando `tools/verify.ps1`. Ver [validação final e evidência visual](VALIDACAO-FINAL.md) e [URLs reais, Bearer e seed](ROTAS-AUTH.md). A revisão anterior de autenticação e visual está em [AUTH-VALIDACAO.md](AUTH-VALIDACAO.md). Os números e cenários da primeira validação abaixo são registros históricos anteriores à autenticação por conta.
 
 
 ## Resultado da validação — 20/10/2026

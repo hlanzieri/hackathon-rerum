@@ -1060,6 +1060,24 @@
     monospace;
   letter-spacing: 1.2px;
 }
+.akibot-intro {
+  display: flex;
+  align-items: center;
+  gap: clamp(12px, 2vw, 20px);
+  min-width: 0;
+}
+.akibot-producer {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: clamp(52px, 8vw, 76px);
+  height: clamp(52px, 8vw, 76px);
+  font-size: clamp(30px, 5vw, 44px);
+  line-height: 1;
+  background: #e5f4ed;
+  border: 1px solid #c8dfcf;
+  border-radius: 50%;
+}
 .enterprise-shell .page-heading {
   margin: 12px 0 24px;
 }
