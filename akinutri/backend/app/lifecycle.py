@@ -18,7 +18,7 @@ from .models import (
 )
 
 router = APIRouter(tags=["grupos de producao e animais"])
-FaseGP = Literal["bezerril", "recria", "lactacao", "seca"]
+FaseGP = Literal["bezerril", "recria", "lactacao", "seca", "pre_parto"]
 SexoAnimal = Literal["femea", "macho"]
 
 
@@ -30,6 +30,12 @@ class GrupoProducaoCreate(LifecycleDTO):
     nome: str = Field(min_length=1, max_length=120)
     fase: FaseGP
     descricao: str | None = Field(default=None, max_length=500)
+    numero_animais: int | None = Field(default=None, ge=1, le=100000)
+    del_medio: float | None = Field(default=None, ge=0, le=700)
+    peso_medio_kg: float | None = Field(default=None, ge=200, le=1000)
+    producao_media_l_dia: float | None = Field(default=None, ge=0, le=80)
+    ecc_medio: float | None = Field(default=None, ge=1, le=5)
+    fracao_multiparas: float | None = Field(default=None, ge=0, le=1)
 
     @field_validator("nome")
     @classmethod
@@ -37,6 +43,25 @@ class GrupoProducaoCreate(LifecycleDTO):
         if not value.strip():
             raise ValueError("Informe o nome do grupo.")
         return value
+
+    @model_validator(mode="after")
+    def validate_group_facts(self):
+        values = (
+            self.numero_animais,
+            self.del_medio,
+            self.peso_medio_kg,
+            self.producao_media_l_dia,
+            self.ecc_medio,
+            self.fracao_multiparas,
+        )
+        if any(value is not None for value in values) and any(value is None for value in values):
+            raise ValueError("Informe todos os parâmetros agregados do grupo ou deixe-os pendentes.")
+        if self.fase == "lactacao" and self.producao_media_l_dia is not None:
+            if self.producao_media_l_dia <= 0 or self.del_medio <= 0:
+                raise ValueError("Grupo em lactação exige produção e DEL médios positivos.")
+        if self.fase in {"seca", "pre_parto"} and self.producao_media_l_dia not in (None, 0):
+            raise ValueError("Grupo seco ou pré-parto deve ter produção média zero.")
+        return self
 
 
 class AnimalCreate(LifecycleDTO):
@@ -115,6 +140,12 @@ def group_payload(group: GrupoProducao):
         "fase": group.fase,
         "descricao": group.descricao,
         "ativo": group.ativo,
+        "numero_animais": group.numero_animais,
+        "del_medio": group.del_medio,
+        "peso_medio_kg": group.peso_medio_kg,
+        "producao_media_l_dia": group.producao_media_l_dia,
+        "ecc_medio": group.ecc_medio,
+        "fracao_multiparas": group.fracao_multiparas,
     }
 
 
@@ -188,7 +219,9 @@ def list_groups(
 )
 def create_group(data: GrupoProducaoCreate, db: Session = Depends(get_scoped_db)):
     group = GrupoProducao(
-        nome=data.nome.strip(), fase=data.fase, descricao=data.descricao or None
+        **data.model_dump(exclude={"nome", "descricao"}),
+        nome=data.nome.strip(),
+        descricao=data.descricao or None,
     )
     db.add(group)
     try:
@@ -212,6 +245,12 @@ def update_group(
     group.nome = data.nome.strip()
     group.fase = data.fase
     group.descricao = data.descricao or None
+    group.numero_animais = data.numero_animais
+    group.del_medio = data.del_medio
+    group.peso_medio_kg = data.peso_medio_kg
+    group.producao_media_l_dia = data.producao_media_l_dia
+    group.ecc_medio = data.ecc_medio
+    group.fracao_multiparas = data.fracao_multiparas
     try:
         db.commit()
     except IntegrityError as error:
@@ -247,6 +286,46 @@ def assign_group_diet(
     result = db.scalar(
         select(ResultadoDieta).where(ResultadoDieta.sessao_id == session.id)
     )
+    profile_id = result.conteudo.get("profile") if result else None
+    expected_phase = (
+        "lactacao" if (profile_id or "").startswith("lactacao")
+        else "seca" if (profile_id or "").startswith("seca")
+        else None
+    )
+    if expected_phase is None or group.fase != expected_phase:
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_ENTITY,
+            f"Fase incompatível: o perfil {profile_id or 'da dieta'} exige grupo em {expected_phase or 'fase não suportada'}, mas o grupo está em {group.fase}.",
+        )
+    snapshot_group = (session.snapshot or {}).get("grupo")
+    if not snapshot_group or snapshot_group.get("id") != group.id:
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_ENTITY,
+            "A formulação foi calculada para outro grupo ou não possui vínculo de grupo.",
+        )
+    if any(
+        snapshot_group.get(field) != value
+        for field, value in (
+            ("fase", group.fase),
+            ("numero_animais", group.numero_animais),
+            ("del_medio", group.del_medio),
+            ("peso_medio_kg", group.peso_medio_kg),
+            ("producao_media_l_dia", group.producao_media_l_dia),
+            ("ecc_medio", group.ecc_medio),
+            ("fracao_multiparas", group.fracao_multiparas),
+        )
+    ):
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_ENTITY,
+            "Os parâmetros do grupo mudaram desde a formulação; reformule antes de ativar.",
+        )
+    snapshot_lot = (session.snapshot or {}).get("lote", {})
+    expected_lot_state = "lactacao" if expected_phase == "lactacao" else "seca"
+    if snapshot_lot.get("estado") != expected_lot_state:
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_ENTITY,
+            "A fase fisiológica do lote da formulação não corresponde ao perfil da dieta.",
+        )
     if (
         result is None
         or not result.conteudo.get("items")

@@ -1,5 +1,11 @@
-from typing import Literal
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from typing import Literal, TypeAlias
+from pydantic import AliasChoices, BaseModel, ConfigDict, Field, model_validator
+
+InferenceStatus: TypeAlias = Literal[
+    "fora_escopo", "otimo", "diagnostico_relaxado", "inviavel", "falha_solver",
+    "dados_insuficientes", "restricoes_violadas", "falha_pos_verificacao",
+    "atende_perfil_demo",
+]
 
 
 class DTO(BaseModel):
@@ -9,6 +15,21 @@ class DTO(BaseModel):
         extra="forbid",
         str_strip_whitespace=True,
     )
+
+
+class ComposicaoPendente(DTO):
+    insumo_id: int
+    nome: str
+    nutrientes_faltantes: list[str]
+
+
+class InferenceResponse(BaseModel):
+    """Public result contract; additional explainability fields remain extensible."""
+
+    model_config = ConfigDict(extra="allow", allow_inf_nan=False)
+    status: InferenceStatus
+    mensagem: str | None = None
+    insumos_incompletos: list[ComposicaoPendente] = Field(default_factory=list)
 
 
 class LoteCreate(DTO):
@@ -83,18 +104,34 @@ class ItemEntrada(DTO):
 
 class InferenciaRequest(DTO):
     lote_id: int = Field(gt=0)
+    grupo_id: int | None = Field(default=None, gt=0)
     consumo_ms_kg: float = Field(ge=3, le=40)
     sistema: Literal["tmr", "outro"] = "tmr"
     particula_adequada: bool | None = None
     milho_seco_predominante: bool | None = None
     estimativa_cms: "CmsRequest | None" = None
     itens: list[ItemEntrada] = Field(min_length=1, max_length=50)
+    insumos_excluidos_explicitamente: list[int] = Field(
+        default_factory=list,
+        max_length=50,
+        validation_alias=AliasChoices(
+            "insumos_excluidos_explicitamente", "excluir_insumos_incompletos"
+        ),
+    )
 
     @model_validator(mode="after")
     def unique_items(self):
         if len({i.insumo_id for i in self.itens}) != len(self.itens):
             raise ValueError("Insumos duplicados.")
+        if len(set(self.insumos_excluidos_explicitamente)) != len(self.insumos_excluidos_explicitamente):
+            raise ValueError("Insumos para exclusao duplicados.")
+        if not set(self.insumos_excluidos_explicitamente).issubset({i.insumo_id for i in self.itens}):
+            raise ValueError("Exclusao deve referenciar insumos selecionados.")
         return self
+
+
+class FormulacaoRequest(InferenciaRequest):
+    grupo_id: int = Field(gt=0)
 
 
 class CmsRequest(DTO):

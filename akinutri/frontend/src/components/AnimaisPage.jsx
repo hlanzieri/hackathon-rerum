@@ -8,6 +8,7 @@ const phases = [
   ['recria', 'Recria'],
   ['lactacao', 'Lactação'],
   ['seca', 'Seca'],
+  ['pre_parto', 'Pré-parto'],
 ];
 
 function localDate(value = new Date()) {
@@ -46,7 +47,18 @@ export default function AnimaisPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
-  const [groupForm, setGroupForm] = useState({ nome: '', fase: 'bezerril', descricao: '' });
+  const emptyGroup = {
+    nome: '',
+    fase: 'bezerril',
+    descricao: '',
+    numero_animais: '',
+    del_medio: 0,
+    peso_medio_kg: '',
+    producao_media_l_dia: 0,
+    ecc_medio: 3,
+    fracao_multiparas: 0.5,
+  };
+  const [groupForm, setGroupForm] = useState(emptyGroup);
   const [animalForm, setAnimalForm] = useState({
     brinco: '',
     nome: '',
@@ -129,7 +141,7 @@ export default function AnimaisPage() {
     perform(async () => {
       const created = await api('/grupos-producao', 'POST', groupForm);
       setSelectedGroupId(String(created.id));
-      setGroupForm({ nome: '', fase: 'bezerril', descricao: '' });
+      setGroupForm(emptyGroup);
     }, 'Grupo de produção cadastrado.');
   }
 
@@ -271,6 +283,33 @@ export default function AnimaisPage() {
               value={groupForm.descricao}
             />
           </Field>
+          <div className="form-grid">
+            {[
+              ['numero_animais', 'Número de animais', 1, 100000, 1],
+              ['del_medio', 'DEL médio · dias (0 para fases sem lactação)', 0, 700, 1],
+              ['peso_medio_kg', 'Peso médio · kg', 200, 1000, 0.1],
+              ['producao_media_l_dia', 'Produção média · L/dia (0 se não lactante)', 0, 80, 0.1],
+              ['ecc_medio', 'ECC médio · escala 1–5', 1, 5, 0.1],
+              ['fracao_multiparas', 'Fração de multíparas · 0–1', 0, 1, 0.01],
+            ].map(([key, label, min, max, step]) => (
+              <Field key={key} label={label}>
+                <input
+                  required
+                  type="number"
+                  min={min}
+                  max={max}
+                  step={step}
+                  value={groupForm[key]}
+                  onChange={(event) =>
+                    setGroupForm((current) => ({
+                      ...current,
+                      [key]: event.target.value === '' ? '' : Number(event.target.value),
+                    }))
+                  }
+                />
+              </Field>
+            ))}
+          </div>
           <button className="button primary" disabled={busy} type="submit">
             Cadastrar grupo
           </button>

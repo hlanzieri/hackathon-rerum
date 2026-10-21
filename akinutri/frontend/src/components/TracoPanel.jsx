@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { CheckCircle2, AlertTriangle, Download, ChevronDown } from 'lucide-react';
 import { number, money, download, displayText } from '../api';
 import StatusBadge from './StatusBadge';
@@ -7,6 +7,8 @@ import NutrientRange from './NutrientRange';
 export const statusLabel = (status) =>
   ({
     atende_perfil_demo: 'Atende ao perfil de referência',
+    otimo: 'Formulação otimizada',
+    diagnostico_relaxado: 'Diagnóstico relaxado · não validado',
     restricoes_violadas: 'Restrições não atendidas',
     dados_insuficientes: 'Dados insuficientes',
     inviavel: 'Formulação inviável',
@@ -15,7 +17,26 @@ export const statusLabel = (status) =>
     falha_pos_verificacao: 'Falha na verificação do resultado',
   })[status] || status;
 
-export default function TracoPanel({ result, snapshot, onUse }) {
+const missingFields = {
+  PB: ['pb_pct', 'Proteína bruta (PB) %'],
+  pb_pct: ['pb_pct', 'Proteína bruta (PB) %'],
+  FDN: ['fdn_pct', 'FDN %'],
+  fdn_pct: ['fdn_pct', 'FDN %'],
+  Amido: ['amido_pct', 'Amido %'],
+  amido_pct: ['amido_pct', 'Amido %'],
+  EL: ['el_mcal_kg', 'Energia líquida (Mcal/kg)'],
+  el_mcal_kg: ['el_mcal_kg', 'Energia líquida (Mcal/kg)'],
+  Cálcio: ['ca_pct', 'Cálcio %'],
+  ca_pct: ['ca_pct', 'Cálcio %'],
+  Fósforo: ['p_pct', 'Fósforo %'],
+  p_pct: ['p_pct', 'Fósforo %'],
+};
+
+export default function TracoPanel({ result, snapshot, onUse, onExclude, onFill }) {
+  const [editingIngredient, setEditingIngredient] = useState(null);
+  const [fieldValues, setFieldValues] = useState({});
+  const [actionError, setActionError] = useState('');
+  const [actionBusy, setActionBusy] = useState(false);
   if (!result)
     return (
       <section className="empty-result">
@@ -32,7 +53,34 @@ export default function TracoPanel({ result, snapshot, onUse }) {
         </div>
       </section>
     );
-  const good = result.status === 'atende_perfil_demo';
+  const good = ['otimo', 'atende_perfil_demo'].includes(result.status);
+  const pendingIngredients = result.insumos_incompletos || result.missing_composition || [];
+  const excludedIds = (result.excluded_ingredients || []).map((item) => item.insumo_id);
+  async function submitMissing(event) {
+    event.preventDefault();
+    setActionBusy(true);
+    setActionError('');
+    try {
+      await onFill(editingIngredient.insumo_id, fieldValues);
+      setEditingIngredient(null);
+      setFieldValues({});
+    } catch (error) {
+      setActionError(error.message);
+    } finally {
+      setActionBusy(false);
+    }
+  }
+  async function excludeIngredient(id) {
+    setActionBusy(true);
+    setActionError('');
+    try {
+      await onExclude?.(id);
+    } catch (error) {
+      setActionError(error.message);
+    } finally {
+      setActionBusy(false);
+    }
+  }
   return (
     <section className="result-section">
       <h2 className="sr-only">Balanço nutricional e traço da sessão</h2>
@@ -56,6 +104,106 @@ export default function TracoPanel({ result, snapshot, onUse }) {
           <Download size={19} />
         </button>
       </div>
+      {result.status === 'dados_insuficientes' && pendingIngredients.length > 0 && (
+        <section
+          className="notice missing-composition"
+          aria-label="Pendências de composição nutricional"
+        >
+          <h3>Dados nutricionais pendentes</h3>
+          <p>
+            {result.mensagem ||
+              result.message ||
+              'Complete os dados ou exclua o insumo explicitamente.'}
+          </p>
+          <ul>
+            {pendingIngredients.map((item) => {
+              const missing = item.nutrientes_faltantes || item.nutrientes || [];
+              return (
+                <li key={item.insumo_id}>
+                  <strong>{displayText(item.nome)}</strong>
+                  <span>Faltam: {missing.join(', ')}</span>
+                  <div className="missing-actions">
+                    <button
+                      className="button secondary"
+                      disabled={actionBusy || !onExclude || excludedIds.includes(item.insumo_id)}
+                      onClick={() => excludeIngredient(item.insumo_id)}
+                    >
+                      Excluir da Formulação (Auditado)
+                    </button>
+                    <button
+                      className="button secondary"
+                      disabled={actionBusy || !onFill}
+                      onClick={() => {
+                        setEditingIngredient(item);
+                        setFieldValues(
+                          Object.fromEntries(
+                            missing.map((nutrient) => [missingFields[nutrient]?.[0], '']),
+                          ),
+                        );
+                      }}
+                    >
+                      Preencher Dados
+                    </button>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+          {actionError && <p role="alert">{actionError}</p>}
+        </section>
+      )}
+      {editingIngredient && (
+        <div className="dialog-backdrop">
+          <form
+            className="dialog-card"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="missing-data-title"
+            onSubmit={submitMissing}
+          >
+            <h3 id="missing-data-title">
+              Completar composição · {displayText(editingIngredient.nome)}
+            </h3>
+            {(editingIngredient.nutrientes_faltantes || editingIngredient.nutrientes || []).map(
+              (nutrient) => {
+                const field = missingFields[nutrient];
+                if (!field) return null;
+                return (
+                  <label key={nutrient}>
+                    {field[1]}
+                    <input
+                      type="number"
+                      min="0"
+                      step="any"
+                      required
+                      value={fieldValues[field[0]] ?? ''}
+                      onChange={(event) =>
+                        setFieldValues((old) => ({
+                          ...old,
+                          [field[0]]: event.target.value === '' ? '' : Number(event.target.value),
+                        }))
+                      }
+                    />
+                  </label>
+                );
+              },
+            )}
+            {actionError && <p role="alert">{actionError}</p>}
+            <div className="missing-actions">
+              <button
+                type="button"
+                className="button secondary"
+                onClick={() => setEditingIngredient(null)}
+              >
+                Cancelar
+              </button>
+              <button type="submit" className="button primary" disabled={actionBusy}>
+                {actionBusy ? 'Salvando…' : 'Salvar e reformular'}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
       {result.totals && (
         <>
           <div className="result-metrics">
@@ -153,6 +301,18 @@ export default function TracoPanel({ result, snapshot, onUse }) {
           </div>
         </details>
       ))}
+      {result.exclusion_trace?.length > 0 && (
+        <details className="profile-details" open>
+          <summary>Exclusões explícitas auditadas</summary>
+          <ul>
+            {result.exclusion_trace.map((entry) => (
+              <li key={entry.insumo_id}>
+                {displayText(entry.nome)} · {entry.message}
+              </li>
+            ))}
+          </ul>
+        </details>
+      )}
       {!result.totals && <p className="notice">{displayText(result.message)}</p>}
       {result.optimization_trace && (
         <details className="profile-details">

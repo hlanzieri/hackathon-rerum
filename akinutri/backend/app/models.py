@@ -51,6 +51,12 @@ class GrupoProducao(OwnedRecord, Base):
     nome: Mapped[str] = mapped_column(String(120), unique=True, index=True)
     fase: Mapped[str] = mapped_column(String(30), index=True)
     descricao: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    numero_animais: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    del_medio: Mapped[float | None] = mapped_column(Float, nullable=True)
+    peso_medio_kg: Mapped[float | None] = mapped_column(Float, nullable=True)
+    producao_media_l_dia: Mapped[float | None] = mapped_column(Float, nullable=True)
+    ecc_medio: Mapped[float | None] = mapped_column(Float, nullable=True)
+    fracao_multiparas: Mapped[float | None] = mapped_column(Float, nullable=True)
     ativo: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     criado_em: Mapped[datetime] = mapped_column(
         DateTime, default=lambda: datetime.now(timezone.utc)

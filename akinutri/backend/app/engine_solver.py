@@ -7,7 +7,97 @@ from scipy.optimize import linprog
 from .engine_rules import bounds_for
 
 
-def solve(base, profile, ingredients, items, intake):
+def solve(base, profile, ingredients, items, intake, excluded_ids=None, *, group_context=None):
+    excluded_ids = set(excluded_ids or ())
+    excluded = [
+        {"insumo_id": ingredient.get("id", index), "nome": ingredient["nome"]}
+        for index, (ingredient, item) in enumerate(zip(ingredients, items))
+        if ingredient.get("id", item.get("insumo_id", index)) in excluded_ids
+    ]
+    # Validate the complete composition before building any LP rows. Unknown values
+    # are reported as missing data; they are never interpreted as zero.
+    missing = {}
+    incomplete_ids = set()
+    for rule in base["rules"]:
+        metric = rule["metric"]
+        if metric == "ms_kg":
+            continue
+        for index, (ingredient, item) in enumerate(zip(ingredients, items)):
+            key = ingredient.get("id", item.get("insumo_id", index))
+            composition_key = "fdn_pct" if metric == "fdn_volumoso_pct" else metric
+            applicable = metric != "fdn_volumoso_pct" or ingredient["categoria"] == "volumoso"
+            if applicable and ingredient.get(composition_key) is None and item["maximo_kg_ms"] > 0:
+                incomplete_ids.add(key)
+                if key not in excluded_ids:
+                    pending = missing.setdefault(key, {"insumo_id": key, "nome": ingredient["nome"], "nutrientes_faltantes": []})["nutrientes_faltantes"]
+                    nutrient = {"pb_pct": "PB", "fdn_pct": "FDN", "amido_pct": "Amido", "el_mcal_kg": "EL", "ca_pct": "Cálcio", "p_pct": "Fósforo"}.get(composition_key, composition_key)
+                    if nutrient not in pending:
+                        pending.append(nutrient)
+    invalid_exclusions = excluded_ids - incomplete_ids
+    if invalid_exclusions:
+        return {
+            "status": "falha_solver",
+            "message": f"Exclusao explicita requer composicao incompleta; insumo(s) invalido(s): {sorted(invalid_exclusions)}.",
+            "missing_composition": [],
+            "quantities": None,
+        }
+    if excluded_ids:
+        for ingredient, item in zip(ingredients, items):
+            key = ingredient.get("id", item.get("insumo_id"))
+            if key in excluded_ids and item["minimo_kg_ms"] > 0:
+                return {
+                    "status": "dados_insuficientes",
+                    "message": f"{ingredient['nome']}: exclusao conflita com minimo de inclusao positivo.",
+                    "insumos_incompletos": [],
+                    "excluded_ingredients": excluded,
+                    "quantities": None,
+                }
+        remaining = [
+            (ingredient, item)
+            for ingredient, item in zip(ingredients, items)
+            if ingredient.get("id", item.get("insumo_id")) not in excluded_ids
+        ]
+        if not remaining:
+            return {
+                "status": "inviavel",
+                "message": "A exclusao removeu todos os insumos da formulação.",
+                "excluded_ingredients": excluded,
+                "quantities": None,
+            }
+        optimized = solve(
+            base,
+            profile,
+            [ingredient for ingredient, _ in remaining],
+            [item for _, item in remaining],
+            intake,
+            group_context=group_context,
+        )
+        if optimized.get("quantities") is not None:
+            by_id = {
+                ingredient.get("id", item.get("insumo_id")): quantity
+                for (ingredient, item), quantity in zip(remaining, optimized["quantities"])
+            }
+            optimized["quantities"] = [
+                0.0 if ingredient.get("id", item.get("insumo_id")) in excluded_ids
+                else by_id[ingredient.get("id", item.get("insumo_id"))]
+                for ingredient, item in zip(ingredients, items)
+            ]
+        optimized["excluded_ingredients"] = excluded
+        return optimized
+    if missing:
+        return {
+            "status": "dados_insuficientes",
+            "message": "Composição nutricional incompleta em insumos selecionados.",
+            "mensagem": "Composição nutricional incompleta em insumos selecionados.",
+            "insumos_incompletos": list(missing.values()),
+            "missing_composition": [
+                {"insumo_id": entry["insumo_id"], "nome": entry["nome"],
+                 "nutrientes": entry["nutrientes_faltantes"]}
+                for entry in missing.values()
+            ],
+            "excluded_ingredients": excluded,
+            "quantities": None,
+        }
     costs = [i["preco_kg_mn"] / (i["ms_pct"] / 100) for i in ingredients]
     a, b, eq, rhs, labels, equality_labels = [], [], [], [], [], []
     for rule in base["rules"]:
@@ -32,19 +122,13 @@ def solve(base, profile, ingredients, items, intake):
                     else 0.0
                 )
             else:
-                value = ingredient[metric]
-            if value is None and item["maximo_kg_ms"] > 0:
-                return {
-                    "status": "dados_insuficientes",
-                    "message": f"{ingredient['nome']}: falta {metric}.",
-                    "quantities": None,
-                }
-            vector.append(value or 0.0)
+                value = ingredient["fdn_pct"] if metric == "fdn_volumoso_pct" else ingredient[metric]
+            vector.append(0.0 if value is None else value)
         # Weighted concentration constraint: sum((nutrient - limit) * x) <= 0.
         a.extend([[low - v for v in vector], [v - high for v in vector]])
         b.extend([0.0, 0.0])
         labels.extend([f"{rule['id']}:min", f"{rule['id']}:max"])
-    bounds = [(i["minimo_kg_ms"], i["maximo_kg_ms"]) for i in items]
+    bounds = [(item["minimo_kg_ms"], item["maximo_kg_ms"]) for item in items]
     try:
         result = linprog(
             costs,
@@ -74,6 +158,7 @@ def solve(base, profile, ingredients, items, intake):
         "objective": "min BRL/animal/dia",
         "numeric_status": result.status,
         "constraint_ids": labels,
+        "group_context": group_context,
     }
     if not result.success:
         return {
@@ -85,6 +170,7 @@ def solve(base, profile, ingredients, items, intake):
             ),
             "quantities": None,
             "solver": meta,
+            "excluded_ingredients": excluded,
         }
     if not np.isfinite(result.x).all() or not math.isfinite(float(result.fun)):
         return {
@@ -155,4 +241,5 @@ def solve(base, profile, ingredients, items, intake):
         "optimization_trace": explanation,
         "objective_value": float(result.fun),
         "message": "Menor custo encontrado para o perfil demonstrativo, sem relaxar restricoes.",
+        "excluded_ingredients": excluded,
     }

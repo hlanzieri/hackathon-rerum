@@ -26,6 +26,7 @@ from .models import (
     SessaoInferencia,
     ResultadoDieta,
     ExplicacaoTraco,
+    GrupoProducao,
 )
 from .schemas import (
     LoteCreate,
@@ -33,6 +34,8 @@ from .schemas import (
     InsumoCreate,
     InsumoRead,
     InferenciaRequest,
+    FormulacaoRequest,
+    InferenceResponse,
     CmsRequest,
     ComparisonRequest,
     MixingRequest,
@@ -188,6 +191,50 @@ def checked_base(record):
 
 def infer(data, mode, db, *, created_at=None):
     lote = require(db, Lote, data.lote_id)
+    group_context = None
+    if mode == "formular":
+        group = require(db, GrupoProducao, data.grupo_id)
+        if not group.ativo:
+            raise HTTPException(409, "O grupo de produção está arquivado.")
+        required_facts = (
+            group.numero_animais,
+            group.del_medio,
+            group.peso_medio_kg,
+            group.producao_media_l_dia,
+            group.ecc_medio,
+            group.fracao_multiparas,
+        )
+        if any(value is None for value in required_facts):
+            raise HTTPException(
+                422,
+                "O grupo não possui parâmetros completos: número de animais, DEL, peso, produção, ECC e fração de multíparas.",
+            )
+        if group.fase not in {"lactacao", "seca"}:
+            raise HTTPException(
+                422,
+                f"Formulação indisponível para grupo em fase {group.fase}; os perfis atuais cobrem lactação e período seco distante do parto.",
+            )
+        if group.fase != lote.estado:
+            raise HTTPException(
+                422, f"Fase incompatível: grupo em {group.fase} e lote em {lote.estado}."
+            )
+        if group.fase == "lactacao" and (
+            group.producao_media_l_dia <= 0 or group.del_medio <= 0
+        ):
+            raise HTTPException(422, "Grupo em lactação exige DEL e produção médios positivos.")
+        if group.fase == "seca" and group.producao_media_l_dia != 0:
+            raise HTTPException(422, "Grupo seco exige produção média igual a zero.")
+        group_context = {
+            "id": group.id,
+            "nome": group.nome,
+            "fase": group.fase,
+            "numero_animais": group.numero_animais,
+            "del_medio": group.del_medio,
+            "peso_medio_kg": group.peso_medio_kg,
+            "producao_media_l_dia": group.producao_media_l_dia,
+            "ecc_medio": group.ecc_medio,
+            "fracao_multiparas": group.fracao_multiparas,
+        }
     base_record = require(db, BaseConhecimento, app.state.base_id)
     checked_base(base_record)
     base = base_record.conteudo
@@ -205,22 +252,33 @@ def infer(data, mode, db, *, created_at=None):
     cms_estimate = None
     if data.estimativa_cms is not None:
         estimation = data.estimativa_cms
+        if group_context:
+            estimation = estimation.model_copy(
+                update={
+                    "peso_kg": group_context["peso_medio_kg"],
+                    "dias_lactacao": max(1, int(group_context["del_medio"])),
+                    "estado": group_context["fase"],
+                    "escore_corporal": group_context["ecc_medio"],
+                    "fracao_multiparas": group_context["fracao_multiparas"],
+                }
+            )
+        expected_group = group_context or {}
         if (
             estimation.peso_kg,
             estimation.dias_lactacao,
             estimation.estado,
             estimation.raca,
         ) != (
-            lote.peso_kg,
-            lote.dias_lactacao,
-            lote.estado,
+            expected_group.get("peso_medio_kg", lote.peso_kg),
+            max(1, int(expected_group["del_medio"])) if expected_group else lote.dias_lactacao,
+            expected_group.get("fase", lote.estado),
             require(db, Raca, lote.raca_id).nome,
         ):
             raise HTTPException(
                 422,
                 "Estimativa de CMS pertence a outro contexto de lote. Recalcule ou informe consumo manual.",
             )
-        cms_estimate = estimate_intake(estimation)
+        cms_estimate = estimate_intake(estimation, group_context=group_context)
         if (
             cms_estimate["cms_kg_dia"] is None
             or abs(cms_estimate["cms_kg_dia"] - data.consumo_ms_kg)
@@ -236,6 +294,18 @@ def infer(data, mode, db, *, created_at=None):
         "particula_adequada": data.particula_adequada,
         "milho_seco_predominante": data.milho_seco_predominante,
     }
+    if group_context:
+        facts.update(
+            estado=group_context["fase"],
+            quantidade=group_context["numero_animais"],
+            peso_kg=group_context["peso_medio_kg"],
+            producao_l_dia=group_context["producao_media_l_dia"],
+            dias_lactacao=(
+                max(1, int(group_context["del_medio"]))
+                if group_context["fase"] == "lactacao"
+                else None
+            ),
+        )
     profile, profile_trace = select_profile(base, facts)
     result = {
         "status": "fora_escopo",
@@ -246,15 +316,28 @@ def infer(data, mode, db, *, created_at=None):
         "trace": [],
         "totals": None,
         "items": [],
+        "missing_composition": [],
+        "insumos_incompletos": [],
+        "excluded_ingredients": [],
         "notice": base["notice"],
         "knowledge_version": base_record.versao,
         "knowledge_sha256": base_record.sha256,
+        **({"grupo": group_context} if group_context else {}),
     }
     if profile:
         quantities = [i["quantidade_kg_mn"] for i in items]
         if mode == "formular":
-            solution = solve(base, profile, ingredients, items, data.consumo_ms_kg)
+            solution = solve(
+                base, profile, ingredients, items, data.consumo_ms_kg,
+                data.insumos_excluidos_explicitamente,
+                group_context=group_context,
+            )
             result.update({k: v for k, v in solution.items() if k != "quantities"})
+            if solution.get("excluded_ingredients"):
+                result["exclusion_trace"] = [
+                    {**entry, "status": "exclusao_explicita_auditada", "message": "Insumo removido do espaco de otimizacao por solicitacao do usuario."}
+                    for entry in solution["excluded_ingredients"]
+                ]
             quantities = solution["quantities"]
         elif not any(quantities):
             raise HTTPException(
@@ -287,14 +370,21 @@ def infer(data, mode, db, *, created_at=None):
                 )
                 if not ok:
                     status = "restricoes_violadas"
+            excluded = result.get("excluded_ingredients", []) if mode == "formular" else []
             if mode == "formular" and status != "atende_perfil_demo":
                 status = "falha_pos_verificacao"
-            values["custo_lote_dia"] = values["custo_animal_dia"] * lote.quantidade
+            values["custo_lote_dia"] = values["custo_animal_dia"] * (
+                group_context["numero_animais"] if group_context else lote.quantidade
+            )
             result.update(
                 status=status,
                 trace=trace,
                 totals=values,
-                message="Avaliacao do perfil demonstrativo concluida. Consulte as regras e os limites de aplicacao.",
+                message=(
+                    "Formulação recalculada com exclusões explícitas auditadas."
+                    if excluded
+                    else "Avaliacao do perfil demonstrativo concluida. Consulte as regras e os limites de aplicacao."
+                ),
             )
             result["items"] = [
                 {
@@ -309,8 +399,10 @@ def infer(data, mode, db, *, created_at=None):
     snapshot = {
         "request": data.model_dump(),
         "lote": lote_data,
+        **({"grupo": group_context} if group_context else {}),
         "raca": require(db, Raca, lote.raca_id).nome,
         "insumos": ingredients,
+        "solver_exclusions": result.get("exclusion_trace", []),
         "base": base,
         "base_sha256": base_record.sha256,
         "engine_version": app.version,
@@ -355,13 +447,13 @@ def infer(data, mode, db, *, created_at=None):
     return result
 
 
-@app.post("/api/verificar")
+@app.post("/api/verificar", response_model=InferenceResponse)
 def verificar(data: InferenciaRequest, db: Session = Depends(get_scoped_db)):
     return infer(data, "verificar", db)
 
 
-@app.post("/api/formular")
-def formular(data: InferenciaRequest, db: Session = Depends(get_scoped_db)):
+@app.post("/api/formular", response_model=InferenceResponse)
+def formular(data: FormulacaoRequest, db: Session = Depends(get_scoped_db)):
     return infer(data, "formular", db)
 
 

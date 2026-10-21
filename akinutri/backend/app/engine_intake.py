@@ -14,7 +14,7 @@ MODEL = json.loads(
 SOURCE = "https://www.ncbi.nlm.nih.gov/books/NBK600610/"
 
 
-def estimate_intake(data):
+def estimate_intake(data, *, group_context=None):
     inputs = data.model_dump()
     result = {
         "status": "fora_escopo",
@@ -22,6 +22,7 @@ def estimate_intake(data):
         "equation_id": MODEL["equation_id"],
         "source_url": MODEL["source_url"],
         "inputs": inputs,
+        "grupo": group_context,
         "model": MODEL,
         "model_sha256": digest(MODEL),
         "notice": "Estimativa populacional, nao prescricao. Equacao de fatores animais para Holandesas em lactacao; conjunto descrito na fonte: 1 a 368 dias em lactacao. ECC na escala de 1 a 5. Ajuste manual permitido.",

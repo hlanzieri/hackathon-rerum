@@ -73,7 +73,12 @@ def mixing_report(session, request):
             )
         index = {id: n for n, id in enumerate(order)}
         active.sort(key=lambda i: index[i["insumo_id"]])
-    animals = snapshot["lote"]["quantidade"]
+    group = snapshot.get("grupo")
+    animals = (
+        group["numero_animais"]
+        if group and group.get("numero_animais") is not None
+        else snapshot["lote"]["quantidade"]
+    )
     items = [
         {
             "insumo_id": i["insumo_id"],
@@ -92,6 +97,7 @@ def mixing_report(session, request):
     return {
         "session_id": result["session_id"],
         "lote": snapshot["lote"]["nome"],
+        "grupo": group["nome"] if group else None,
         "animais": animals,
         "batidas_dia": request.batidas_dia,
         "items": items,

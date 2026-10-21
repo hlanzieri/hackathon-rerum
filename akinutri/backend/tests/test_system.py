@@ -53,6 +53,11 @@ def test_missing_composition_not_assumed_zero(client):
     assert client.put(f"/api/insumos/{id}", json=ingredient).status_code == 200
     result = client.post("/api/formular", json=payload).json()
     assert result["status"] == "dados_insuficientes"
+    assert result["insumos_incompletos"] == [
+        {"insumo_id": id, "nome": ingredient["nome"], "nutrientes_faltantes": ["PB"]}
+    ]
+    assert result["mensagem"] == "Composição nutricional incompleta em insumos selecionados."
+    assert next(i for i in client.get("/api/insumos").json() if i["id"] == id)["pb_pct"] is None
     payload["itens"][0]["quantidade_kg_mn"] = 40
     verified = client.post("/api/verificar", json=payload).json()
     assert verified["totals"]["pb_pct"] is None
@@ -60,6 +65,29 @@ def test_missing_composition_not_assumed_zero(client):
         next(t for t in verified["trace"] if t["id"] == "PB-01")["status"]
         == "dados_insuficientes"
     )
+
+
+def test_explicit_incomplete_ingredient_exclusion_is_audited(client):
+    payload = request_for(client)
+    ingredient = client.get("/api/insumos").json()[0]
+    original_id = ingredient.pop("id")
+    ingredient["nome"] += " incompleto"
+    ingredient_id = client.post("/api/insumos", json=ingredient).json()["id"]
+    ingredient["pb_pct"] = None
+    assert client.put(f"/api/insumos/{ingredient_id}", json=ingredient).status_code == 200
+    for item in payload["itens"]:
+        if item["insumo_id"] == original_id:
+            item["insumo_id"] = ingredient_id
+    payload["insumos_excluidos_explicitamente"] = [ingredient_id]
+    response = client.post("/api/formular", json=payload)
+    assert response.status_code == 200, response.text
+    result = response.json()
+    assert result["status"] == "atende_perfil_demo"
+    assert result["exclusion_trace"][0]["status"] == "exclusao_explicita_auditada"
+    assert result["totals"]["pb_pct"] is not None
+    session = client.get(f"/api/sessoes/{result['session_id']}").json()
+    assert session["snapshot"]["request"]["insumos_excluidos_explicitamente"] == [ingredient_id]
+    assert session["snapshot"]["solver_exclusions"] == result["exclusion_trace"]
 
 
 @pytest.mark.parametrize(

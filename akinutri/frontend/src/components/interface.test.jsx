@@ -153,6 +153,38 @@ test('unknown nutrient has an explicit readable state badge', () => {
   render(<TracoPanel result={result} />);
   expect(screen.getAllByText('Dados Insuficientes').length).toBeGreaterThan(0);
 });
+test('missing composition lists nutrients and exposes audited exclusion and fill actions', async () => {
+  const user = userEvent.setup();
+  const onExclude = vi.fn();
+  const onFill = vi.fn();
+  render(
+    <TracoPanel
+      result={{
+        ...result,
+        insumos_incompletos: [
+          {
+            insumo_id: 12,
+            nome: 'Mistura mineral referência',
+            nutrientes_faltantes: ['PB', 'FDN'],
+          },
+        ],
+        mensagem: 'Composição nutricional incompleta em insumos selecionados.',
+      }}
+      onExclude={onExclude}
+      onFill={onFill}
+    />,
+  );
+  expect(screen.getByText('Mistura mineral referência')).toBeTruthy();
+  expect(screen.getByText('Faltam: PB, FDN')).toBeTruthy();
+  await user.click(screen.getByRole('button', { name: 'Excluir da Formulação (Auditado)' }));
+  expect(onExclude).toHaveBeenCalledWith(12);
+  await user.click(screen.getByRole('button', { name: 'Preencher Dados' }));
+  expect(screen.getByRole('dialog')).toBeTruthy();
+  await user.type(screen.getByRole('spinbutton', { name: 'Proteína bruta (PB) %' }), '18');
+  await user.type(screen.getByRole('spinbutton', { name: 'FDN %' }), '32');
+  await user.click(screen.getByRole('button', { name: 'Salvar e reformular' }));
+  expect(onFill).toHaveBeenCalledWith(12, { pb_pct: 18, fdn_pct: 32 });
+});
 test('each ingredient price is editable without altering the catalog', async () => {
   const user = userEvent.setup();
   const changes = [];

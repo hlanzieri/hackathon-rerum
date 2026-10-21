@@ -43,6 +43,48 @@ export default function Workspace({ workspace: w, onBatch }) {
       </div>
       <fieldset disabled={w.busy} className="workspace-fields">
         <legend className="sr-only">Fatos do lote e dados da dieta</legend>
+        <section className="card group-context-card" aria-label="Grupo de produção da formulação">
+          <label className="existing-label">
+            Grupo de produção {w.mode === 'formular' && <span aria-hidden="true">*</span>}
+            <select
+              required={w.mode === 'formular'}
+              value={w.grupoId}
+              onChange={(event) => w.selectGrupo(event.target.value)}
+            >
+              <option value="">Selecione um grupo</option>
+              {w.grupos.map((group) => (
+                <option key={group.id} value={group.id}>
+                  {group.nome} · {group.fase}
+                </option>
+              ))}
+            </select>
+          </label>
+          {w.grupoSelecionado ? (
+            <>
+              <div className="group-facts">
+                <strong>{w.grupoSelecionado.nome}</strong>
+                <span>Fase: {w.grupoSelecionado.fase}</span>
+                <span>Animais: {w.grupoSelecionado.numero_animais ?? 'Pendente'}</span>
+                <span>DEL médio: {w.grupoSelecionado.del_medio ?? 'Pendente'} dias</span>
+                <span>Peso médio: {w.grupoSelecionado.peso_medio_kg ?? 'Pendente'} kg</span>
+                <span>
+                  Produção média: {w.grupoSelecionado.producao_media_l_dia ?? 'Pendente'} L/dia
+                </span>
+                <span>ECC médio: {w.grupoSelecionado.ecc_medio ?? 'Pendente'}</span>
+              </div>
+              {!w.grupoStatsValid && (
+                <p className="notice">Complete os parâmetros agregados do grupo em Animais e GP.</p>
+              )}
+              {w.grupoStatsValid && w.grupoSelecionado.fase !== w.lote.estado && (
+                <p className="notice">
+                  A fase do grupo precisa ser compatível com o estado do lote selecionado.
+                </p>
+              )}
+            </>
+          ) : (
+            <p className="save-hint">Cadastre e configure um grupo em Animais e GP.</p>
+          )}
+        </section>
         <div className="workspace-grid">
           <section className="card lot-card">
             <div className="section-heading">
@@ -183,8 +225,18 @@ export default function Workspace({ workspace: w, onBatch }) {
               <p>Defina manualmente ou aplique uma sugestão do estimador.</p>
             </div>
             <IntakeEstimator
-              key={`${w.loteId}-${w.lote.raca_id}-${w.lote.peso_kg}-${w.lote.dias_lactacao}-${w.lote.estado}`}
-              lote={w.lote}
+              key={`${w.loteId}-${w.grupoId}-${w.lote.raca_id}-${w.lote.estado}`}
+              lote={
+                w.grupoSelecionado
+                  ? {
+                      ...w.lote,
+                      peso_kg: w.grupoSelecionado.peso_medio_kg ?? w.lote.peso_kg,
+                      dias_lactacao: w.grupoSelecionado.del_medio ?? w.lote.dias_lactacao,
+                      estado: w.grupoSelecionado.fase,
+                    }
+                  : w.lote
+              }
+              group={w.grupoSelecionado}
               raca={w.racas.find((r) => r.id === w.lote.raca_id)?.nome || ''}
               onApply={w.applyEstimate}
             />
@@ -247,6 +299,7 @@ export default function Workspace({ workspace: w, onBatch }) {
                 className="button primary"
                 disabled={
                   !w.loteId ||
+                  (w.mode === 'formular' && !w.grupoCompativel) ||
                   w.busy ||
                   w.intake === '' ||
                   Number(w.intake) < 3 ||
@@ -284,6 +337,17 @@ export default function Workspace({ workspace: w, onBatch }) {
         result={w.result}
         snapshot={w.snapshot}
         onUse={w.result?.totals && w.mode === 'formular' ? w.useFormulated : null}
+        onExclude={
+          w.mode === 'formular'
+            ? (id) => {
+                const alreadyExcluded = (w.result?.excluded_ingredients || []).map(
+                  (item) => item.insumo_id,
+                );
+                return w.run({ excludedIds: [...new Set([...alreadyExcluded, id])] });
+              }
+            : null
+        }
+        onFill={w.mode === 'formular' ? w.fillMissingIngredient : null}
       />
     </>
   );

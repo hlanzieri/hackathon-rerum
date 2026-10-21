@@ -63,6 +63,21 @@ def migrate_ownership(target_engine):
 
     with target_engine.begin() as connection:
         inspector = inspect(connection)
+        group_columns = (
+            {column["name"] for column in inspector.get_columns("grupos_producao")}
+            if inspector.has_table("grupos_producao")
+            else set()
+        )
+        for name, definition in (
+            ("numero_animais", "INTEGER"),
+            ("del_medio", "FLOAT"),
+            ("peso_medio_kg", "FLOAT"),
+            ("producao_media_l_dia", "FLOAT"),
+            ("ecc_medio", "FLOAT"),
+            ("fracao_multiparas", "FLOAT"),
+        ):
+            if group_columns and name not in group_columns:
+                connection.execute(text(f'ALTER TABLE grupos_producao ADD COLUMN "{name}" {definition}'))
         for table in Base.metadata.sorted_tables:
             columns = {column["name"] for column in inspector.get_columns(table.name)}
             if "usuario_id" in table.c and "usuario_id" not in columns:

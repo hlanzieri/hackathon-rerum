@@ -17,7 +17,14 @@ export function initialRows(data) {
   );
 }
 export default function useWorkspace() {
-  const [data, setData] = useState({ insumos: [], racas: [], lotes: [], base: null, history: [] });
+  const [data, setData] = useState({
+    insumos: [],
+    racas: [],
+    lotes: [],
+    grupos: [],
+    base: null,
+    history: [],
+  });
   const [lote, setLote] = useState({ ...scenarios[0].lote }),
     [loteId, setLoteId] = useState(null),
     [editing, setEditing] = useState(true);
@@ -35,6 +42,7 @@ export default function useWorkspace() {
     milho_seco_predominante: true,
   });
   const [lastSessions, setLastSessions] = useState({ manual: null, formulated: null });
+  const [grupoId, setGrupoId] = useState('');
   const [estimateInputs, setEstimateInputs] = useState(null);
   const invalidate = useCallback(() => {
     setResult(null);
@@ -42,13 +50,13 @@ export default function useWorkspace() {
     setError('');
   }, []);
   const refresh = useCallback(async (signal) => {
-    const [insumos, racas, lotes, base, history] = await Promise.all(
-      ['/insumos', '/racas', '/lotes', '/regras', '/sessoes'].map((path) =>
+    const [insumos, racas, lotes, grupos, base, history] = await Promise.all(
+      ['/insumos', '/racas', '/lotes', '/grupos-producao', '/regras', '/sessoes'].map((path) =>
         api(path, 'GET', undefined, { signal }),
       ),
     );
     if (signal?.aborted) return;
-    setData({ insumos, racas, lotes, base, history });
+    setData({ insumos, racas, lotes, grupos, base, history });
     setRows((old) =>
       Object.keys(old).length
         ? Object.fromEntries(
@@ -66,6 +74,22 @@ export default function useWorkspace() {
         : initialRows(insumos),
     );
   }, []);
+  const grupoSelecionado = data.grupos.find((group) => String(group.id) === String(grupoId));
+  const grupoStatsValid = Boolean(
+    grupoSelecionado &&
+      grupoSelecionado.numero_animais > 0 &&
+      grupoSelecionado.del_medio >= 0 &&
+      grupoSelecionado.peso_medio_kg > 0 &&
+      grupoSelecionado.producao_media_l_dia >= 0 &&
+      grupoSelecionado.ecc_medio >= 1 &&
+      grupoSelecionado.fracao_multiparas >= 0 &&
+      grupoSelecionado.fracao_multiparas <= 1,
+  );
+  const grupoCompativel = Boolean(
+    grupoStatsValid &&
+      grupoSelecionado.fase === lote.estado &&
+      ['lactacao', 'seca'].includes(grupoSelecionado.fase),
+  );
   useEffect(() => {
     const controller = new AbortController();
     refresh(controller.signal)
@@ -129,7 +153,7 @@ export default function useWorkspace() {
       setBusy(false);
     }
   }
-  async function run() {
+  async function run(options = {}) {
     setBusy(true);
     setError('');
     setResult(null);
@@ -147,12 +171,21 @@ export default function useWorkspace() {
           };
         });
       if (!items.length) throw new Error('Selecione ao menos um insumo.');
+      if (mode === 'formular' && !grupoCompativel) {
+        throw new Error(
+          grupoSelecionado
+            ? 'O grupo precisa ter parâmetros completos e fase compatível com o lote.'
+            : 'Selecione um grupo de produção válido antes de formular.',
+        );
+      }
       const response = await api(`/${mode}`, 'POST', {
         lote_id: loteId,
+        ...(mode === 'formular' ? { grupo_id: Number(grupoId) } : {}),
         consumo_ms_kg: Number(intake),
         ...manejo,
         itens: items,
         estimativa_cms: estimateInputs,
+        insumos_excluidos_explicitamente: options.excludedIds || [],
       });
       const [session, history] = await Promise.all([
         api(`/sessoes/${response.session_id}`),
@@ -171,6 +204,13 @@ export default function useWorkspace() {
       setBusy(false);
     }
   }
+  async function fillMissingIngredient(ingredientId, values) {
+    const ingredient = data.insumos.find((item) => item.id === ingredientId);
+    if (!ingredient) throw new Error('Insumo não encontrado no catálogo.');
+    await api(`/insumos/${ingredientId}`, 'PUT', { ...ingredient, ...values });
+    await refresh();
+    return run();
+  }
   async function openSession(id) {
     setBusy(true);
     setError('');
@@ -178,6 +218,7 @@ export default function useWorkspace() {
       const session = await api(`/sessoes/${id}`);
       setResult(session.result);
       setSnapshot(session.snapshot);
+      setGrupoId(String(session.snapshot?.grupo?.id || ''));
       return true;
     } catch (e) {
       setError(e.message);
@@ -202,6 +243,15 @@ export default function useWorkspace() {
   }
   return {
     ...data,
+    grupoId,
+    grupoSelecionado,
+    grupoStatsValid,
+    grupoCompativel,
+    selectGrupo: (id) => {
+      setGrupoId(String(id || ''));
+      setEstimateInputs(null);
+      invalidate();
+    },
     lote,
     setLote: (value) => {
       setLote(value);
@@ -241,6 +291,7 @@ export default function useWorkspace() {
     selectLote,
     saveLote,
     run,
+    fillMissingIngredient,
     openSession,
     useFormulated,
   };

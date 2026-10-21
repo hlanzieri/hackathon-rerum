@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { Calculator, ArrowDownToLine } from 'lucide-react';
 import { api, number } from '../api';
-export default function IntakeEstimator({ lote, raca, onApply }) {
-  const [ecc, setEcc] = useState(3),
-    [parity, setParity] = useState(lote.ordem_paricao === 1 ? 0 : 1),
+export default function IntakeEstimator({ lote, raca, onApply, group }) {
+  const [ecc, setEcc] = useState(group?.ecc_medio ?? 3),
+    [parity, setParity] = useState(group?.fracao_multiparas ?? (lote.ordem_paricao === 1 ? 0 : 1)),
     [milk, setMilk] = useState('');
   const [mode, setMode] = useState('corrected'),
     [reference, setReference] = useState(0.7),
@@ -58,6 +58,7 @@ export default function IntakeEstimator({ lote, raca, onApply }) {
               max="5"
               step=".1"
               value={ecc}
+              readOnly={Boolean(group)}
               onChange={(e) => {
                 setEcc(e.target.value);
                 setResult(null);
@@ -73,6 +74,7 @@ export default function IntakeEstimator({ lote, raca, onApply }) {
               max="1"
               step=".01"
               value={parity}
+              readOnly={Boolean(group)}
               onChange={(e) => {
                 setParity(e.target.value);
                 setResult(null);
