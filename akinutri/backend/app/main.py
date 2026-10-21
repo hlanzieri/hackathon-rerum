@@ -41,7 +41,8 @@ from .schemas import (
     MixingRequest,
 )
 from .seed import seed
-from .engine_rules import select_profile, evaluate, totals
+from .engine_rules import select_profile, evaluate, totals, forward_chain
+from .engine_explanation import explain_question, explain_session, attach_reasoning
 from .engine_solver import solve
 from .engine_intake import estimate_intake
 from .audit import verify_base, sign_result, verify_session
@@ -294,6 +295,8 @@ def infer(data, mode, db, *, created_at=None):
             )
     facts = {
         **lote_data,
+        "insumos": ingredients,
+        "consumo_ms_kg": data.consumo_ms_kg,
         "sistema": data.sistema,
         "particula_adequada": data.particula_adequada,
         "milho_seco_predominante": data.milho_seco_predominante,
@@ -310,7 +313,31 @@ def infer(data, mode, db, *, created_at=None):
                 else None
             ),
         )
-    profile, profile_trace = select_profile(base, facts)
+    if data.dcad_meq_100g is not None:
+        facts["dcad_meq_100g"] = data.dcad_meq_100g
+    evidence = {k: v.model_dump() for k, v in data.evidence.items()}
+    unknown = set(evidence) - set(facts) - {"composicao", "consumo_ms_kg"}
+    if unknown:
+        raise HTTPException(
+            422, f"Evidencia para fatos desconhecidos: {sorted(unknown)}"
+        )
+    chain = forward_chain(base, facts, evidence)
+    profile, profile_trace = select_profile(base, facts, evidence)
+    evidence_blocks = any(
+        evidence.get(k, {}).get("cf", 1) <= 0 for k in ("composicao", "consumo_ms_kg")
+    )
+    transition_blocks = "restricao_transicao" in chain["memory"]
+    if (
+        transition_blocks
+        or evidence_blocks
+        or chain["blocked"]
+        or any(
+            c["cf"] <= 0
+            for k, c in chain["memory"].items()
+            if k in {x["fact"] for p in base["profiles"] for x in p["conditions"]}
+        )
+    ):
+        profile = None
     result = {
         "status": "fora_escopo",
         "message": "Nenhum perfil suportado corresponde aos fatos. Confira o traco de selecao; pre-parto ate 21 dias e inicio da lactacao nao sao cobertos.",
@@ -328,6 +355,19 @@ def infer(data, mode, db, *, created_at=None):
         "knowledge_sha256": base_record.sha256,
         **({"grupo": group_context} if group_context else {}),
     }
+    if evidence_blocks:
+        result.update(
+            status="dados_insuficientes",
+            message="Evidencia de composicao ou consumo sem suporte positivo. Revise origem e CF antes de formular.",
+        )
+    elif transition_blocks:
+        result["message"] = (
+            "R-03 bloqueou a formulacao: dieta anionica e manejo de calcio exigem limites revisados e composicao ionica, ausentes nesta base. Solicite revisao tecnica."
+        )
+    elif chain["blocked"] or any(p["profile_id"] == "conflito" for p in profile_trace):
+        result["message"] = (
+            "Decisao bloqueada por conflito entre regras ou perfis. Consulte a explicacao e revise fatos, especificidade ou prioridade."
+        )
     if profile:
         quantities = [i["quantidade_kg_mn"] for i in items]
         if mode == "formular":
@@ -410,6 +450,7 @@ def infer(data, mode, db, *, created_at=None):
                 }
                 for i, q in zip(ingredients, quantities)
             ]
+    attach_reasoning(result, base, chain, profile, evidence)
     snapshot = {
         "request": data.model_dump(),
         "lote": lote_data,
@@ -505,6 +546,21 @@ def session_detail(id: int, db: Session = Depends(get_scoped_db)):
         "modo": s.modo,
         "integrity": integrity,
     }
+
+
+@app.get("/api/explicacao/por-que-pergunta")
+def why_question(fato: str, db: Session = Depends(get_scoped_db)):
+    base = require(db, BaseConhecimento, app.state.base_id)
+    checked_base(base)
+    return explain_question(base.conteudo, fato)
+
+
+@app.get("/api/explicacao/{kind}")
+def explanation(kind: str, sessao_id: int, db: Session = Depends(get_scoped_db)):
+    if kind not in {"por-que-perfil", "como-concluiu", "gargalo-formulacao"}:
+        raise HTTPException(404, "Explicacao desconhecida.")
+    session = session_detail(sessao_id, db)
+    return explain_session(kind, session["snapshot"], session["result"])
 
 
 @app.post("/api/estimar-cms")

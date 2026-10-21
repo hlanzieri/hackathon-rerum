@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { api, number } from '../api';
 import { scenarios } from './LoteForm';
 import './AkiBotWizard.css';
+import { QuestionWhy } from './ExplanationPanel';
 
 const labels = [
   '🐄 Vacas em Lactação - Alta Produção (35 L/dia)',
@@ -41,6 +42,10 @@ export default function AkiBotWizard({ workspace: w, onComplete }) {
   const savedLote = useRef(null);
   const submitted = useRef(null);
   const [step, setStep] = useState(0);
+  const [compositionSource, setCompositionSource] = useState('tabela');
+  const [compositionCf, setCompositionCf] = useState(0.75);
+  const [particle, setParticle] = useState(true);
+  const [dryCorn, setDryCorn] = useState(true);
   const [profile, setProfile] = useState(null);
   const [intake, setIntake] = useState('');
   const [manual, setManual] = useState(false);
@@ -142,6 +147,7 @@ export default function AkiBotWizard({ workspace: w, onComplete }) {
     if (
       busy ||
       !ingredientsValid ||
+      !validNumber(compositionCf, -1, 1) ||
       !validNumber(intake, 3, 40) ||
       (mode === 'formular' ? !group : !quantitiesValid)
     )
@@ -155,8 +161,9 @@ export default function AkiBotWizard({ workspace: w, onComplete }) {
         ...(mode === 'formular' ? { grupo_id: Number(groupId) } : {}),
         consumo_ms_kg: Number(intake),
         sistema: 'tmr',
-        particula_adequada: true,
-        milho_seco_predominante: true,
+        particula_adequada: particle,
+        milho_seco_predominante: dryCorn,
+        evidence: { composicao: { source: compositionSource, cf: Number(compositionCf) } },
         estimativa_cms: estimate,
         itens: selected.map((i) => ({
           insumo_id: i.id,
@@ -227,7 +234,70 @@ export default function AkiBotWizard({ workspace: w, onComplete }) {
       <p>Selecione as opções do seu lote e prepare a análise nutricional.</p>
       <progress aria-label="Progresso do assistente" value={step + 1} max="5" />
       <h3 tabIndex="-1">{titles[step]}</h3>
+      {step === 0 && (
+        <>
+          <QuestionWhy fact="dias_ate_parto" />
+          <QuestionWhy
+            fact="particula_adequada"
+            label="Por que confirmar o tamanho de partícula?"
+          />
+        </>
+      )}
       <fieldset disabled={busy}>
+        {step === 0 && (
+          <div>
+            <label>
+              <input
+                type="checkbox"
+                checked={particle}
+                onChange={(e) => setParticle(e.target.checked)}
+              />
+              Tamanho de partícula adequado (hipótese inicial da demonstração)
+            </label>
+            <label>
+              <input
+                type="checkbox"
+                checked={dryCorn}
+                onChange={(e) => setDryCorn(e.target.checked)}
+              />
+              Milho seco predominante (hipótese inicial da demonstração)
+            </label>
+          </div>
+        )}
+        {step === 2 && (
+          <div>
+            <label>
+              Origem declarada da composição
+              <select
+                value={compositionSource}
+                onChange={(e) => {
+                  setCompositionSource(e.target.value);
+                  setCompositionCf(e.target.value === 'tabela' ? 0.75 : 1);
+                }}
+              >
+                <option value="tabela">Tabela de referência · CF inicial 0,75</option>
+                <option value="laboratorio">Análise laboratorial · CF inicial 1</option>
+                <option value="usuario">Informação do usuário · CF inicial 1</option>
+              </select>
+            </label>
+            <label>
+              CF da composição
+              <input
+                type="number"
+                min="-1"
+                max="1"
+                step="0.05"
+                required
+                value={compositionCf}
+                onChange={(e) => setCompositionCf(e.target.value)}
+              />
+            </label>
+            <p>
+              Peso didático aplicado ao conjunto dos insumos. A origem é declarada; CF não é
+              probabilidade nem certificação de análise.
+            </p>
+          </div>
+        )}
         {step === 0 && (
           <>
             {labels.map((label, index) => (

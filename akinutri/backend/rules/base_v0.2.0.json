@@ -1,0 +1,1096 @@
+{
+  "version": "0.2.0",
+  "status": "demonstracao_nao_validada_para_prescricao",
+  "notice": "Perfis e composicoes simplificados para demonstracao de engenharia. Atender estas restricoes nao comprova adequacao nutricional completa. Nao cobre proteina metabolizavel, DCAD, vitaminas, biodisponibilidade ou transicao pre-parto.",
+  "numeric_tolerance": 1e-06,
+  "sources": {
+    "NASEM2021": "https://www.ncbi.nlm.nih.gov/books/NBK600592/",
+    "PSU_AMIDO": "https://extension.psu.edu/carbohydrate-nutrition-for-lactating-dairy-cattle",
+    "PSU_PB": "https://extension.psu.edu/from-feed-to-milk-understanding-rumen-function",
+    "MVP": "Hipotese simplificada de demonstracao; requer revisao por zootecnista. Nao equivale a requisito NRC/NASEM."
+  },
+  "profiles": [
+    {
+      "id": "lactacao_alta",
+      "label": "Lactacao de alta producao",
+      "conditions": [
+        {
+          "fact": "estado",
+          "op": "eq",
+          "value": "lactacao"
+        },
+        {
+          "fact": "producao_l_dia",
+          "op": "gte",
+          "value": 30
+        },
+        {
+          "fact": "dias_lactacao",
+          "op": "gte",
+          "value": 60
+        },
+        {
+          "fact": "sistema",
+          "op": "eq",
+          "value": "tmr"
+        },
+        {
+          "fact": "particula_adequada",
+          "op": "eq",
+          "value": true
+        },
+        {
+          "fact": "milho_seco_predominante",
+          "op": "eq",
+          "value": true
+        },
+        {
+          "fact": "fase_fisiologica",
+          "op": "eq",
+          "value": "lactacao_estabelecida"
+        }
+      ],
+      "limits": {
+        "ms_kg": [
+          1,
+          1
+        ],
+        "pb_pct": [
+          17,
+          19
+        ],
+        "fdn_pct": [
+          25,
+          38
+        ],
+        "fdn_volumoso_pct": [
+          19,
+          100
+        ],
+        "amido_pct": [
+          20,
+          30
+        ],
+        "el_mcal_kg": [
+          1.6,
+          2.0
+        ],
+        "ca_pct": [
+          0.65,
+          1.0
+        ],
+        "p_pct": [
+          0.32,
+          0.45
+        ]
+      },
+      "rule_cf": 0.95,
+      "salience": 0,
+      "governance": {
+        "reviewed_by": null,
+        "review_date": null,
+        "status": "pendente_revisao_especialista",
+        "technical_justification": "Perfil didatico com limites simplificados.",
+        "bibliographic_source": "Hipotese MVP",
+        "acquisition_method": "formalizacao_de_fontes_e_hipoteses_do_MVP",
+        "review_evidence": null
+      }
+    },
+    {
+      "id": "lactacao_moderada",
+      "label": "Lactacao de producao moderada",
+      "conditions": [
+        {
+          "fact": "estado",
+          "op": "eq",
+          "value": "lactacao"
+        },
+        {
+          "fact": "producao_l_dia",
+          "op": "lt",
+          "value": 30
+        },
+        {
+          "fact": "dias_lactacao",
+          "op": "gte",
+          "value": 60
+        },
+        {
+          "fact": "sistema",
+          "op": "eq",
+          "value": "tmr"
+        },
+        {
+          "fact": "particula_adequada",
+          "op": "eq",
+          "value": true
+        },
+        {
+          "fact": "milho_seco_predominante",
+          "op": "eq",
+          "value": true
+        },
+        {
+          "fact": "fase_fisiologica",
+          "op": "eq",
+          "value": "lactacao_estabelecida"
+        }
+      ],
+      "limits": {
+        "ms_kg": [
+          1,
+          1
+        ],
+        "pb_pct": [
+          15,
+          18
+        ],
+        "fdn_pct": [
+          28,
+          45
+        ],
+        "fdn_volumoso_pct": [
+          19,
+          100
+        ],
+        "amido_pct": [
+          20,
+          30
+        ],
+        "el_mcal_kg": [
+          1.4,
+          1.9
+        ],
+        "ca_pct": [
+          0.6,
+          1.0
+        ],
+        "p_pct": [
+          0.3,
+          0.45
+        ]
+      },
+      "rule_cf": 0.95,
+      "salience": 0,
+      "governance": {
+        "reviewed_by": null,
+        "review_date": null,
+        "status": "pendente_revisao_especialista",
+        "technical_justification": "Perfil didatico com limites simplificados.",
+        "bibliographic_source": "Hipotese MVP",
+        "acquisition_method": "formalizacao_de_fontes_e_hipoteses_do_MVP",
+        "review_evidence": null
+      }
+    },
+    {
+      "id": "seca_distante",
+      "label": "Periodo seco distante do parto",
+      "conditions": [
+        {
+          "fact": "estado",
+          "op": "eq",
+          "value": "seca"
+        },
+        {
+          "fact": "dias_ate_parto",
+          "op": "gt",
+          "value": 21
+        },
+        {
+          "fact": "sistema",
+          "op": "eq",
+          "value": "tmr"
+        },
+        {
+          "fact": "fase_fisiologica",
+          "op": "eq",
+          "value": "seca_distante"
+        }
+      ],
+      "limits": {
+        "ms_kg": [
+          1,
+          1
+        ],
+        "pb_pct": [
+          12,
+          14
+        ],
+        "fdn_pct": [
+          38,
+          55
+        ],
+        "fdn_volumoso_pct": [
+          30,
+          100
+        ],
+        "amido_pct": [
+          8,
+          18
+        ],
+        "el_mcal_kg": [
+          1.15,
+          1.4
+        ],
+        "ca_pct": [
+          0.4,
+          0.8
+        ],
+        "p_pct": [
+          0.25,
+          0.4
+        ]
+      },
+      "rule_cf": 0.95,
+      "salience": 0,
+      "governance": {
+        "reviewed_by": null,
+        "review_date": null,
+        "status": "pendente_revisao_especialista",
+        "technical_justification": "Perfil didatico com limites simplificados.",
+        "bibliographic_source": "Hipotese MVP",
+        "acquisition_method": "formalizacao_de_fontes_e_hipoteses_do_MVP",
+        "review_evidence": null
+      }
+    }
+  ],
+  "rules": [
+    {
+      "id": "MS-01",
+      "metric": "ms_kg",
+      "label": "Consumo de materia seca",
+      "unit": "kg MS/animal/dia",
+      "scale_by_intake": true,
+      "source": "MVP",
+      "basis": "Consumo informado pelo usuario; nao estimado pelo sistema.",
+      "if": {
+        "fact": "ms_kg",
+        "operator": "outside_inclusive_profile_range"
+      },
+      "then": {
+        "status": "violada"
+      },
+      "else": {
+        "status": "atendida"
+      },
+      "rule_cf": 0.95,
+      "salience": 0,
+      "governance": {
+        "reviewed_by": null,
+        "review_date": null,
+        "status": "pendente_revisao_especialista",
+        "technical_justification": "Consumo informado pelo usuario; nao estimado pelo sistema.",
+        "bibliographic_source": "Hipotese simplificada de demonstracao; requer revisao por zootecnista. Nao equivale a requisito NRC/NASEM.",
+        "acquisition_method": "formalizacao_de_fontes_e_hipoteses_do_MVP",
+        "review_evidence": null
+      }
+    },
+    {
+      "id": "PB-01",
+      "metric": "pb_pct",
+      "label": "Proteina bruta",
+      "unit": "% MS",
+      "source": "PSU_PB",
+      "basis": "Faixas do perfil sao adaptacoes didaticas; nao substituem proteina metabolizavel.",
+      "if": {
+        "fact": "pb_pct",
+        "operator": "outside_inclusive_profile_range"
+      },
+      "then": {
+        "status": "violada"
+      },
+      "else": {
+        "status": "atendida"
+      },
+      "rule_cf": 0.95,
+      "salience": 0,
+      "governance": {
+        "reviewed_by": null,
+        "review_date": null,
+        "status": "pendente_revisao_especialista",
+        "technical_justification": "Faixas do perfil sao adaptacoes didaticas; nao substituem proteina metabolizavel.",
+        "bibliographic_source": "https://extension.psu.edu/from-feed-to-milk-understanding-rumen-function",
+        "acquisition_method": "formalizacao_de_fontes_e_hipoteses_do_MVP",
+        "review_evidence": null
+      }
+    },
+    {
+      "id": "FDN-01",
+      "metric": "fdn_pct",
+      "label": "FDN total",
+      "unit": "% MS",
+      "source": "NASEM2021",
+      "basis": "Minimo 25% depende de TMR, particula adequada e milho seco; demais limites sao hipoteses MVP.",
+      "if": {
+        "fact": "fdn_pct",
+        "operator": "outside_inclusive_profile_range"
+      },
+      "then": {
+        "status": "violada"
+      },
+      "else": {
+        "status": "atendida"
+      },
+      "rule_cf": 0.95,
+      "salience": 0,
+      "governance": {
+        "reviewed_by": null,
+        "review_date": null,
+        "status": "pendente_revisao_especialista",
+        "technical_justification": "Minimo 25% depende de TMR, particula adequada e milho seco; demais limites sao hipoteses MVP.",
+        "bibliographic_source": "https://www.ncbi.nlm.nih.gov/books/NBK600592/",
+        "acquisition_method": "formalizacao_de_fontes_e_hipoteses_do_MVP",
+        "review_evidence": null
+      }
+    },
+    {
+      "id": "FDNV-01",
+      "metric": "fdn_volumoso_pct",
+      "label": "FDN de volumosos",
+      "unit": "% MS da dieta",
+      "source": "NASEM2021",
+      "basis": "19% no contexto de referencia. Perfil seco e limites adicionais sao hipoteses MVP.",
+      "if": {
+        "fact": "fdn_volumoso_pct",
+        "operator": "outside_inclusive_profile_range"
+      },
+      "then": {
+        "status": "violada"
+      },
+      "else": {
+        "status": "atendida"
+      },
+      "rule_cf": 0.95,
+      "salience": 0,
+      "governance": {
+        "reviewed_by": null,
+        "review_date": null,
+        "status": "pendente_revisao_especialista",
+        "technical_justification": "19% no contexto de referencia. Perfil seco e limites adicionais sao hipoteses MVP.",
+        "bibliographic_source": "https://www.ncbi.nlm.nih.gov/books/NBK600592/",
+        "acquisition_method": "formalizacao_de_fontes_e_hipoteses_do_MVP",
+        "review_evidence": null
+      }
+    },
+    {
+      "id": "AMIDO-01",
+      "metric": "amido_pct",
+      "label": "Amido",
+      "unit": "% MS",
+      "source": "PSU_AMIDO",
+      "basis": "20-30% e faixa orientativa para lactacao; faixa seca e hipotese MVP.",
+      "if": {
+        "fact": "amido_pct",
+        "operator": "outside_inclusive_profile_range"
+      },
+      "then": {
+        "status": "violada"
+      },
+      "else": {
+        "status": "atendida"
+      },
+      "rule_cf": 0.95,
+      "salience": 0,
+      "governance": {
+        "reviewed_by": null,
+        "review_date": null,
+        "status": "pendente_revisao_especialista",
+        "technical_justification": "20-30% e faixa orientativa para lactacao; faixa seca e hipotese MVP.",
+        "bibliographic_source": "https://extension.psu.edu/carbohydrate-nutrition-for-lactating-dairy-cattle",
+        "acquisition_method": "formalizacao_de_fontes_e_hipoteses_do_MVP",
+        "review_evidence": null
+      }
+    },
+    {
+      "id": "EL-01",
+      "metric": "el_mcal_kg",
+      "label": "Energia liquida de lactacao",
+      "unit": "Mcal/kg MS",
+      "source": "MVP",
+      "basis": "Densidade energetica simplificada; nao estima exigencia individual.",
+      "if": {
+        "fact": "el_mcal_kg",
+        "operator": "outside_inclusive_profile_range"
+      },
+      "then": {
+        "status": "violada"
+      },
+      "else": {
+        "status": "atendida"
+      },
+      "rule_cf": 0.95,
+      "salience": 0,
+      "governance": {
+        "reviewed_by": null,
+        "review_date": null,
+        "status": "pendente_revisao_especialista",
+        "technical_justification": "Densidade energetica simplificada; nao estima exigencia individual.",
+        "bibliographic_source": "Hipotese simplificada de demonstracao; requer revisao por zootecnista. Nao equivale a requisito NRC/NASEM.",
+        "acquisition_method": "formalizacao_de_fontes_e_hipoteses_do_MVP",
+        "review_evidence": null
+      }
+    },
+    {
+      "id": "CA-01",
+      "metric": "ca_pct",
+      "label": "Calcio",
+      "unit": "% MS",
+      "source": "MVP",
+      "basis": "Faixa didatica sem ajuste por biodisponibilidade.",
+      "if": {
+        "fact": "ca_pct",
+        "operator": "outside_inclusive_profile_range"
+      },
+      "then": {
+        "status": "violada"
+      },
+      "else": {
+        "status": "atendida"
+      },
+      "rule_cf": 0.95,
+      "salience": 0,
+      "governance": {
+        "reviewed_by": null,
+        "review_date": null,
+        "status": "pendente_revisao_especialista",
+        "technical_justification": "Faixa didatica sem ajuste por biodisponibilidade.",
+        "bibliographic_source": "Hipotese simplificada de demonstracao; requer revisao por zootecnista. Nao equivale a requisito NRC/NASEM.",
+        "acquisition_method": "formalizacao_de_fontes_e_hipoteses_do_MVP",
+        "review_evidence": null
+      }
+    },
+    {
+      "id": "P-01",
+      "metric": "p_pct",
+      "label": "Fosforo",
+      "unit": "% MS",
+      "source": "MVP",
+      "basis": "Faixa didatica sem ajuste por biodisponibilidade.",
+      "if": {
+        "fact": "p_pct",
+        "operator": "outside_inclusive_profile_range"
+      },
+      "then": {
+        "status": "violada"
+      },
+      "else": {
+        "status": "atendida"
+      },
+      "rule_cf": 0.95,
+      "salience": 0,
+      "governance": {
+        "reviewed_by": null,
+        "review_date": null,
+        "status": "pendente_revisao_especialista",
+        "technical_justification": "Faixa didatica sem ajuste por biodisponibilidade.",
+        "bibliographic_source": "Hipotese simplificada de demonstracao; requer revisao por zootecnista. Nao equivale a requisito NRC/NASEM.",
+        "acquisition_method": "formalizacao_de_fontes_e_hipoteses_do_MVP",
+        "review_evidence": null
+      }
+    }
+  ],
+  "certainty_model": {
+    "name": "MYCIN",
+    "formula": "min(CF_premissas) * rule_cf",
+    "global": "minimo dos suportes efetivamente usados; nulo se bloqueado ou sem conclusao",
+    "notice": "CF nao e probabilidade. Pesos didaticos pendentes de calibracao e revisao.",
+    "sources": {
+      "usuario": 1.0,
+      "laboratorio": 1.0,
+      "tabela": 0.75
+    }
+  },
+  "inference_rules": [
+    {
+      "id": "FASE-LAC",
+      "conditions": [
+        {
+          "fact": "estado",
+          "op": "eq",
+          "value": "lactacao"
+        },
+        {
+          "fact": "dias_lactacao",
+          "op": "gte",
+          "value": 60
+        }
+      ],
+      "assert": {
+        "fact": "fase_fisiologica",
+        "value": "lactacao_estabelecida"
+      },
+      "rule_cf": 0.95,
+      "salience": 0,
+      "governance": {
+        "reviewed_by": null,
+        "review_date": null,
+        "status": "pendente_revisao_especialista",
+        "technical_justification": "Classificacao correspondente ao escopo atual.",
+        "bibliographic_source": "Hipotese didatica; requer revisao tecnica",
+        "acquisition_method": "formalizacao_de_fontes_e_hipoteses_do_MVP",
+        "review_evidence": null
+      }
+    },
+    {
+      "id": "FASE-SECA",
+      "conditions": [
+        {
+          "fact": "estado",
+          "op": "eq",
+          "value": "seca"
+        },
+        {
+          "fact": "dias_ate_parto",
+          "op": "gt",
+          "value": 21
+        }
+      ],
+      "assert": {
+        "fact": "fase_fisiologica",
+        "value": "seca_distante"
+      },
+      "rule_cf": 0.95,
+      "salience": 0,
+      "governance": {
+        "reviewed_by": null,
+        "review_date": null,
+        "status": "pendente_revisao_especialista",
+        "technical_justification": "Escopo atual: periodo seco distante.",
+        "bibliographic_source": "Hipotese didatica; requer revisao tecnica",
+        "acquisition_method": "formalizacao_de_fontes_e_hipoteses_do_MVP",
+        "review_evidence": null
+      }
+    },
+    {
+      "id": "R-01",
+      "conditions": [
+        {
+          "fact": "estado",
+          "op": "eq",
+          "value": "seca"
+        },
+        {
+          "fact": "dias_ate_parto",
+          "op": "lte",
+          "value": 21
+        }
+      ],
+      "assert": {
+        "fact": "fase_fisiologica",
+        "value": "transicao_pre_parto"
+      },
+      "rule_cf": 0.95,
+      "salience": 0,
+      "governance": {
+        "reviewed_by": null,
+        "review_date": null,
+        "status": "pendente_revisao_especialista",
+        "technical_justification": "Pre-parto usa dias ate o parto, nunca dias em lactacao.",
+        "bibliographic_source": "Hipotese didatica; requer revisao tecnica",
+        "acquisition_method": "formalizacao_de_fontes_e_hipoteses_do_MVP",
+        "review_evidence": null
+      }
+    },
+    {
+      "id": "FASE-POS",
+      "conditions": [
+        {
+          "fact": "estado",
+          "op": "eq",
+          "value": "lactacao"
+        },
+        {
+          "fact": "dias_lactacao",
+          "op": "lte",
+          "value": 21
+        }
+      ],
+      "assert": {
+        "fact": "fase_fisiologica",
+        "value": "transicao_pos_parto"
+      },
+      "rule_cf": 0.95,
+      "salience": 0,
+      "governance": {
+        "reviewed_by": null,
+        "review_date": null,
+        "status": "pendente_revisao_especialista",
+        "technical_justification": "Distinguir pos-parto de pre-parto.",
+        "bibliographic_source": "Hipotese didatica; requer revisao tecnica",
+        "acquisition_method": "formalizacao_de_fontes_e_hipoteses_do_MVP",
+        "review_evidence": null
+      }
+    },
+    {
+      "id": "R-02",
+      "conditions": [
+        {
+          "fact": "fase_fisiologica",
+          "op": "eq",
+          "value": "transicao_pre_parto"
+        },
+        {
+          "fact": "dcad_meq_100g",
+          "op": "gt",
+          "value": 0
+        }
+      ],
+      "assert": {
+        "fact": "risco_hipocalcemia",
+        "value": "alto"
+      },
+      "rule_cf": 0.95,
+      "salience": 0,
+      "governance": {
+        "reviewed_by": null,
+        "review_date": null,
+        "status": "pendente_revisao_especialista",
+        "technical_justification": "Alerta didatico condicional; nao constitui diagnostico individual.",
+        "bibliographic_source": "Hipotese didatica; requer revisao tecnica",
+        "acquisition_method": "formalizacao_de_fontes_e_hipoteses_do_MVP",
+        "review_evidence": null
+      }
+    },
+    {
+      "id": "R-03",
+      "conditions": [
+        {
+          "fact": "risco_hipocalcemia",
+          "op": "eq",
+          "value": "alto"
+        }
+      ],
+      "assert": {
+        "fact": "restricao_transicao",
+        "value": "revisao_obrigatoria_dieta_anionica_e_calcio"
+      },
+      "rule_cf": 0.95,
+      "salience": 0,
+      "governance": {
+        "reviewed_by": null,
+        "review_date": null,
+        "status": "pendente_revisao_especialista",
+        "technical_justification": "Bloquear formulacao ate revisao: nao ha limites DCAD/Ca validados nem composicao ionica no catalogo.",
+        "bibliographic_source": "Hipotese didatica; requer revisao tecnica",
+        "acquisition_method": "formalizacao_de_fontes_e_hipoteses_do_MVP",
+        "review_evidence": null
+      }
+    },
+    {
+      "id": "PERFIL-lactacao_alta",
+      "conditions": [
+        {
+          "fact": "estado",
+          "op": "eq",
+          "value": "lactacao"
+        },
+        {
+          "fact": "producao_l_dia",
+          "op": "gte",
+          "value": 30
+        },
+        {
+          "fact": "dias_lactacao",
+          "op": "gte",
+          "value": 60
+        },
+        {
+          "fact": "sistema",
+          "op": "eq",
+          "value": "tmr"
+        },
+        {
+          "fact": "particula_adequada",
+          "op": "eq",
+          "value": true
+        },
+        {
+          "fact": "milho_seco_predominante",
+          "op": "eq",
+          "value": true
+        },
+        {
+          "fact": "fase_fisiologica",
+          "op": "eq",
+          "value": "lactacao_estabelecida"
+        }
+      ],
+      "assert": {
+        "fact": "perfil_candidato",
+        "value": "lactacao_alta"
+      },
+      "rule_cf": 0.95,
+      "salience": 0,
+      "governance": {
+        "reviewed_by": null,
+        "review_date": null,
+        "status": "pendente_revisao_especialista",
+        "technical_justification": "Perfil didatico com limites simplificados.",
+        "bibliographic_source": "Hipotese MVP",
+        "acquisition_method": "formalizacao_de_fontes_e_hipoteses_do_MVP",
+        "review_evidence": null
+      }
+    },
+    {
+      "id": "PERFIL-lactacao_moderada",
+      "conditions": [
+        {
+          "fact": "estado",
+          "op": "eq",
+          "value": "lactacao"
+        },
+        {
+          "fact": "producao_l_dia",
+          "op": "lt",
+          "value": 30
+        },
+        {
+          "fact": "dias_lactacao",
+          "op": "gte",
+          "value": 60
+        },
+        {
+          "fact": "sistema",
+          "op": "eq",
+          "value": "tmr"
+        },
+        {
+          "fact": "particula_adequada",
+          "op": "eq",
+          "value": true
+        },
+        {
+          "fact": "milho_seco_predominante",
+          "op": "eq",
+          "value": true
+        },
+        {
+          "fact": "fase_fisiologica",
+          "op": "eq",
+          "value": "lactacao_estabelecida"
+        }
+      ],
+      "assert": {
+        "fact": "perfil_candidato",
+        "value": "lactacao_moderada"
+      },
+      "rule_cf": 0.95,
+      "salience": 0,
+      "governance": {
+        "reviewed_by": null,
+        "review_date": null,
+        "status": "pendente_revisao_especialista",
+        "technical_justification": "Perfil didatico com limites simplificados.",
+        "bibliographic_source": "Hipotese MVP",
+        "acquisition_method": "formalizacao_de_fontes_e_hipoteses_do_MVP",
+        "review_evidence": null
+      }
+    },
+    {
+      "id": "PERFIL-seca_distante",
+      "conditions": [
+        {
+          "fact": "estado",
+          "op": "eq",
+          "value": "seca"
+        },
+        {
+          "fact": "dias_ate_parto",
+          "op": "gt",
+          "value": 21
+        },
+        {
+          "fact": "sistema",
+          "op": "eq",
+          "value": "tmr"
+        },
+        {
+          "fact": "fase_fisiologica",
+          "op": "eq",
+          "value": "seca_distante"
+        }
+      ],
+      "assert": {
+        "fact": "perfil_candidato",
+        "value": "seca_distante"
+      },
+      "rule_cf": 0.95,
+      "salience": 0,
+      "governance": {
+        "reviewed_by": null,
+        "review_date": null,
+        "status": "pendente_revisao_especialista",
+        "technical_justification": "Perfil didatico com limites simplificados.",
+        "bibliographic_source": "Hipotese MVP",
+        "acquisition_method": "formalizacao_de_fontes_e_hipoteses_do_MVP",
+        "review_evidence": null
+      }
+    },
+    {
+      "id": "PARECER-OK",
+      "conditions": [
+        {
+          "fact": "avaliacao:MS-01",
+          "op": "eq",
+          "value": "atendida"
+        },
+        {
+          "fact": "avaliacao:PB-01",
+          "op": "eq",
+          "value": "atendida"
+        },
+        {
+          "fact": "avaliacao:FDN-01",
+          "op": "eq",
+          "value": "atendida"
+        },
+        {
+          "fact": "avaliacao:FDNV-01",
+          "op": "eq",
+          "value": "atendida"
+        },
+        {
+          "fact": "avaliacao:AMIDO-01",
+          "op": "eq",
+          "value": "atendida"
+        },
+        {
+          "fact": "avaliacao:EL-01",
+          "op": "eq",
+          "value": "atendida"
+        },
+        {
+          "fact": "avaliacao:CA-01",
+          "op": "eq",
+          "value": "atendida"
+        },
+        {
+          "fact": "avaliacao:P-01",
+          "op": "eq",
+          "value": "atendida"
+        }
+      ],
+      "assert": {
+        "fact": "parecer_nutricional",
+        "value": "atende_perfil_demo"
+      },
+      "rule_cf": 1.0,
+      "salience": 0,
+      "governance": {
+        "reviewed_by": null,
+        "review_date": null,
+        "status": "pendente_revisao_especialista",
+        "technical_justification": "Classificacao correspondente ao escopo atual.",
+        "bibliographic_source": "Hipotese didatica; requer revisao tecnica",
+        "acquisition_method": "formalizacao_de_fontes_e_hipoteses_do_MVP",
+        "review_evidence": null
+      }
+    },
+    {
+      "id": "PARECER-MS-01",
+      "conditions": [
+        {
+          "fact": "avaliacao:MS-01",
+          "op": "eq",
+          "value": "violada"
+        }
+      ],
+      "assert": {
+        "fact": "parecer_nutricional",
+        "value": "restricoes_violadas"
+      },
+      "rule_cf": 1.0,
+      "salience": 0,
+      "governance": {
+        "reviewed_by": null,
+        "review_date": null,
+        "status": "pendente_revisao_especialista",
+        "technical_justification": "Classificacao correspondente ao escopo atual.",
+        "bibliographic_source": "Hipotese didatica; requer revisao tecnica",
+        "acquisition_method": "formalizacao_de_fontes_e_hipoteses_do_MVP",
+        "review_evidence": null
+      }
+    },
+    {
+      "id": "PARECER-PB-01",
+      "conditions": [
+        {
+          "fact": "avaliacao:PB-01",
+          "op": "eq",
+          "value": "violada"
+        }
+      ],
+      "assert": {
+        "fact": "parecer_nutricional",
+        "value": "restricoes_violadas"
+      },
+      "rule_cf": 1.0,
+      "salience": 0,
+      "governance": {
+        "reviewed_by": null,
+        "review_date": null,
+        "status": "pendente_revisao_especialista",
+        "technical_justification": "Classificacao correspondente ao escopo atual.",
+        "bibliographic_source": "Hipotese didatica; requer revisao tecnica",
+        "acquisition_method": "formalizacao_de_fontes_e_hipoteses_do_MVP",
+        "review_evidence": null
+      }
+    },
+    {
+      "id": "PARECER-FDN-01",
+      "conditions": [
+        {
+          "fact": "avaliacao:FDN-01",
+          "op": "eq",
+          "value": "violada"
+        }
+      ],
+      "assert": {
+        "fact": "parecer_nutricional",
+        "value": "restricoes_violadas"
+      },
+      "rule_cf": 1.0,
+      "salience": 0,
+      "governance": {
+        "reviewed_by": null,
+        "review_date": null,
+        "status": "pendente_revisao_especialista",
+        "technical_justification": "Classificacao correspondente ao escopo atual.",
+        "bibliographic_source": "Hipotese didatica; requer revisao tecnica",
+        "acquisition_method": "formalizacao_de_fontes_e_hipoteses_do_MVP",
+        "review_evidence": null
+      }
+    },
+    {
+      "id": "PARECER-FDNV-01",
+      "conditions": [
+        {
+          "fact": "avaliacao:FDNV-01",
+          "op": "eq",
+          "value": "violada"
+        }
+      ],
+      "assert": {
+        "fact": "parecer_nutricional",
+        "value": "restricoes_violadas"
+      },
+      "rule_cf": 1.0,
+      "salience": 0,
+      "governance": {
+        "reviewed_by": null,
+        "review_date": null,
+        "status": "pendente_revisao_especialista",
+        "technical_justification": "Classificacao correspondente ao escopo atual.",
+        "bibliographic_source": "Hipotese didatica; requer revisao tecnica",
+        "acquisition_method": "formalizacao_de_fontes_e_hipoteses_do_MVP",
+        "review_evidence": null
+      }
+    },
+    {
+      "id": "PARECER-AMIDO-01",
+      "conditions": [
+        {
+          "fact": "avaliacao:AMIDO-01",
+          "op": "eq",
+          "value": "violada"
+        }
+      ],
+      "assert": {
+        "fact": "parecer_nutricional",
+        "value": "restricoes_violadas"
+      },
+      "rule_cf": 1.0,
+      "salience": 0,
+      "governance": {
+        "reviewed_by": null,
+        "review_date": null,
+        "status": "pendente_revisao_especialista",
+        "technical_justification": "Classificacao correspondente ao escopo atual.",
+        "bibliographic_source": "Hipotese didatica; requer revisao tecnica",
+        "acquisition_method": "formalizacao_de_fontes_e_hipoteses_do_MVP",
+        "review_evidence": null
+      }
+    },
+    {
+      "id": "PARECER-EL-01",
+      "conditions": [
+        {
+          "fact": "avaliacao:EL-01",
+          "op": "eq",
+          "value": "violada"
+        }
+      ],
+      "assert": {
+        "fact": "parecer_nutricional",
+        "value": "restricoes_violadas"
+      },
+      "rule_cf": 1.0,
+      "salience": 0,
+      "governance": {
+        "reviewed_by": null,
+        "review_date": null,
+        "status": "pendente_revisao_especialista",
+        "technical_justification": "Classificacao correspondente ao escopo atual.",
+        "bibliographic_source": "Hipotese didatica; requer revisao tecnica",
+        "acquisition_method": "formalizacao_de_fontes_e_hipoteses_do_MVP",
+        "review_evidence": null
+      }
+    },
+    {
+      "id": "PARECER-CA-01",
+      "conditions": [
+        {
+          "fact": "avaliacao:CA-01",
+          "op": "eq",
+          "value": "violada"
+        }
+      ],
+      "assert": {
+        "fact": "parecer_nutricional",
+        "value": "restricoes_violadas"
+      },
+      "rule_cf": 1.0,
+      "salience": 0,
+      "governance": {
+        "reviewed_by": null,
+        "review_date": null,
+        "status": "pendente_revisao_especialista",
+        "technical_justification": "Classificacao correspondente ao escopo atual.",
+        "bibliographic_source": "Hipotese didatica; requer revisao tecnica",
+        "acquisition_method": "formalizacao_de_fontes_e_hipoteses_do_MVP",
+        "review_evidence": null
+      }
+    },
+    {
+      "id": "PARECER-P-01",
+      "conditions": [
+        {
+          "fact": "avaliacao:P-01",
+          "op": "eq",
+          "value": "violada"
+        }
+      ],
+      "assert": {
+        "fact": "parecer_nutricional",
+        "value": "restricoes_violadas"
+      },
+      "rule_cf": 1.0,
+      "salience": 0,
+      "governance": {
+        "reviewed_by": null,
+        "review_date": null,
+        "status": "pendente_revisao_especialista",
+        "technical_justification": "Classificacao correspondente ao escopo atual.",
+        "bibliographic_source": "Hipotese didatica; requer revisao tecnica",
+        "acquisition_method": "formalizacao_de_fontes_e_hipoteses_do_MVP",
+        "review_evidence": null
+      }
+    }
+  ],
+  "question_explanations": {
+    "particula_adequada": "O tamanho de particula integra as condicoes do perfil e o contexto de aplicacao da regra FDN-01. Sem essa confirmacao, o perfil de lactacao nao e aplicado.",
+    "milho_seco_predominante": "O processamento do milho delimita o contexto das faixas de FDN e amido do perfil.",
+    "dcad_meq_100g": "A regra R-02 usa o DCAD em mEq/100 g de materia seca para emitir um alerta didatico de transicao. Nao autoriza prescricao.",
+    "dias_ate_parto": "Distingue periodo seco distante e transicao pre-parto nas regras FASE-SECA e R-01."
+  }
+}

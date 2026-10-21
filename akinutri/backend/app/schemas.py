@@ -108,7 +108,14 @@ class ItemEntrada(DTO):
         return self
 
 
+class FactEvidence(DTO):
+    cf: float = Field(ge=-1, le=1)
+    source: Literal["usuario", "laboratorio", "tabela"]
+
+
 class InferenciaRequest(DTO):
+    dcad_meq_100g: float | None = Field(default=None, ge=-100, le=100)
+    evidence: dict[str, FactEvidence] = Field(default_factory=dict)
     lote_id: int = Field(gt=0)
     grupo_id: int | None = Field(default=None, gt=0)
     consumo_ms_kg: float = Field(ge=3, le=40)

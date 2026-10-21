@@ -1,6 +1,7 @@
 """LP variables are kg dry matter per animal per day. Prices arrive per kg as-fed."""
 
 import math
+import time
 import numpy as np
 import scipy
 from scipy.optimize import linprog
@@ -191,11 +192,33 @@ def solve(
         "variable_unit": "kg MS/animal/dia",
         "objective": "min BRL/animal/dia",
         "numeric_status": result.status,
-        "constraint_ids": labels,
+        "constraint_ids": labels + equality_labels,
+        "constraints": [
+            {"id": name, "coefficients": row, "rhs": value, "relation": relation}
+            for names, rows, values, relation in [
+                (labels, a, b, "lte"),
+                (equality_labels, eq, rhs, "eq"),
+            ]
+            for name, row, value in zip(names, rows, values)
+        ],
+        "ingredient_bounds": [
+            {
+                "insumo_id": ingredient.get("id", index),
+                "minimum_kg_ms": lo,
+                "maximum_kg_ms": hi,
+            }
+            for index, (ingredient, (lo, hi)) in enumerate(zip(ingredients, bounds))
+        ],
         "group_context": group_context,
     }
     if not result.success:
+        bottleneck = None
+        if result.status == 2:
+            bottleneck = irreducible_conflict(
+                a, b, eq, rhs, labels, equality_labels, bounds, ingredients
+            )
         return {
+            "bottleneck": bottleneck,
             "status": "inviavel" if result.status == 2 else "falha_solver",
             "message": (
                 "Nao existe dieta para estas restricoes e limites de inclusao."
@@ -276,4 +299,59 @@ def solve(
         "objective_value": float(result.fun),
         "message": "Menor custo encontrado para o perfil demonstrativo, sem relaxar restricoes.",
         "excluded_ingredients": excluded,
+    }
+
+
+def irreducible_conflict(a, b, eq, rhs, labels, equality_labels, bounds, ingredients):
+    """Deletion filter returns one IIS, never claims a unique causal constraint.
+
+    Separate bounded diagnostic budget; unknown status stops certification.
+    """
+    rows = [(label, "ub", row, value) for label, row, value in zip(labels, a, b)]
+    rows += [
+        (label, "eq", row, value) for label, row, value in zip(equality_labels, eq, rhs)
+    ]
+    for index, (lo, hi) in enumerate(bounds):
+        name = ingredients[index].get("id", index)
+        row = [0.0] * len(bounds)
+        row[index] = 1.0
+        rows.extend(
+            [
+                (f"INCLUSAO-{name}:max", "ub", row, hi),
+                (f"INCLUSAO-{name}:min", "ub", [-v for v in row], -lo),
+            ]
+        )
+    active = list(rows)
+    complete = True
+    deadline = time.monotonic() + 3
+    for candidate in rows:
+        if time.monotonic() >= deadline:
+            complete = False
+            break
+        trial = [r for r in active if r[0] != candidate[0]]
+        ub = [r for r in trial if r[1] == "ub"]
+        equal = [r for r in trial if r[1] == "eq"]
+        check = linprog(
+            [0.0] * len(bounds),
+            A_ub=[r[2] for r in ub] or None,
+            b_ub=[r[3] for r in ub] or None,
+            A_eq=[r[2] for r in equal] or None,
+            b_eq=[r[3] for r in equal] or None,
+            bounds=[(None, None)] * len(bounds),
+            method="highs-ds",
+            options={"time_limit": 0.1, "primal_feasibility_tolerance": 1e-9},
+        )
+        if check.status == 2:
+            active = trial
+        elif check.status != 0:
+            complete = False
+            break
+    return {
+        "method": "deletion_filter",
+        "certified_irreducible": complete,
+        "constraints": [
+            {"id": r[0], "coefficients": r[2], "rhs": r[3], "relation": r[1]}
+            for r in active
+        ],
+        "message": "Estas restricoes sao conjuntamente inviaveis. O conjunto pode nao ser unico; nao indica uma unica causa nem autoriza relaxamento automatico.",
     }

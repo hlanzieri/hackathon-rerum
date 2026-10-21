@@ -13,6 +13,24 @@ export default function KnowledgePage({ base }) {
         </button>
       </div>
       <p className="notice">{displayText(base.notice)}</p>
+      {base.certainty_model && <p>{base.certainty_model.notice}</p>}
+      {(base.inference_rules || []).map((rule) => (
+        <details className="rule-profile" key={rule.id}>
+          <summary>
+            {rule.id} · CF {rule.rule_cf} · Prioridade {rule.salience}
+          </summary>
+          <p>
+            IF {rule.conditions.map((c) => `${c.fact} ${c.op} ${String(c.value)}`).join(' AND ')}{' '}
+            THEN {rule.assert.fact} = {String(rule.assert.value)}
+          </p>
+          <p>
+            Revisão: {displayText(rule.governance.status)} ·{' '}
+            {rule.governance.reviewed_by || 'Revisor não registrado'}
+          </p>
+          <p>{rule.governance.technical_justification}</p>
+          <p>Fonte: {rule.governance.bibliographic_source}</p>
+        </details>
+      ))}
       {base.profiles.map((profile) => (
         <details className="rule-profile" key={profile.id}>
           <summary>
@@ -43,6 +61,12 @@ export default function KnowledgePage({ base }) {
                     <td>
                       {rule.label}
                       <small>{rule.basis}</small>
+                      {rule.governance && (
+                        <small>
+                          CF {rule.rule_cf} · {displayText(rule.governance.status)} ·{' '}
+                          {rule.governance.reviewed_by || 'Revisão pendente'}
+                        </small>
+                      )}
                     </td>
                     <td>
                       {rule.scale_by_intake ? 'Consumo alvo' : profile.limits[rule.metric][0]}

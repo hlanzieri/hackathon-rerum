@@ -1,6 +1,6 @@
 import hashlib
 import hmac
-from .engine_rules import canonical, evaluate, select_profile, totals
+from .engine_rules import canonical, evaluate, select_profile, totals, forward_chain
 
 
 def digest(data):
@@ -34,6 +34,8 @@ def verify_session(snapshot, result):
     request = snapshot["request"]
     facts = {
         **snapshot["lote"],
+        "insumos": snapshot["insumos"],
+        "consumo_ms_kg": request["consumo_ms_kg"],
         **{
             k: request[k]
             for k in ("sistema", "particula_adequada", "milho_seco_predominante")
@@ -50,7 +52,46 @@ def verify_session(snapshot, result):
                 max(1, int(group["del_medio"])) if group["fase"] == "lactacao" else None
             ),
         )
-    profile, profile_trace = select_profile(snapshot["base"], facts)
+    if request.get("dcad_meq_100g") is not None:
+        facts["dcad_meq_100g"] = request["dcad_meq_100g"]
+    profile, profile_trace = select_profile(
+        snapshot["base"], facts, request.get("evidence", {})
+    )
+    if "reasoning" in result:
+        from .engine_explanation import attach_reasoning
+
+        chain = forward_chain(snapshot["base"], facts, request.get("evidence", {}))
+        evidence_blocks = any(
+            request.get("evidence", {}).get(k, {}).get("cf", 1) <= 0
+            for k in ("composicao", "consumo_ms_kg")
+        )
+        if (
+            "restricao_transicao" in chain["memory"]
+            or evidence_blocks
+            or chain["blocked"]
+            or any(
+                c["cf"] <= 0
+                for k, c in chain["memory"].items()
+                if k
+                in {
+                    x["fact"]
+                    for p in snapshot["base"]["profiles"]
+                    for x in p["conditions"]
+                }
+            )
+        ):
+            profile = None
+        expected = {
+            k: v for k, v in result.items() if k not in {"reasoning", "global_cf"}
+        }
+        attach_reasoning(
+            expected, snapshot["base"], chain, profile, request.get("evidence", {})
+        )
+        if (
+            expected["reasoning"] != result["reasoning"]
+            or expected["global_cf"] != result["global_cf"]
+        ):
+            raise ValueError("Falha de integridade no encadeamento ou CF.")
     if (profile["id"] if profile else None) != result[
         "profile"
     ] or profile_trace != result["profile_trace"]:

@@ -1,3 +1,4 @@
+import ExplanationPanel from './ExplanationPanel';
 import React, { useState } from 'react';
 import { CheckCircle2, AlertTriangle, Download, ChevronDown } from 'lucide-react';
 import { number, money, download, displayText } from '../api';
@@ -386,6 +387,7 @@ export default function TracoPanel({
           </div>
         ))}
       </details>
+      <ExplanationPanel key={result.session_id} result={result} />
       <p className="audit-note">
         SHA-256 da base: <code>{result.knowledge_sha256}</code>
       </p>

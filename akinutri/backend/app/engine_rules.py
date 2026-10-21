@@ -15,7 +15,7 @@ OPS = {
     "lt": operator.lt,
 }
 METRICS = ("pb_pct", "fdn_pct", "amido_pct", "el_mcal_kg", "ca_pct", "p_pct")
-RULE_PATH = Path(__file__).resolve().parents[1] / "rules" / "base_v0.1.0.json"
+RULE_PATH = Path(__file__).resolve().parents[1] / "rules" / "base_v0.2.0.json"
 
 
 def canonical(data):
@@ -26,6 +26,29 @@ def canonical(data):
 
 def load_base(path=RULE_PATH):
     data = json.loads(Path(path).read_text(encoding="utf-8"))
+    for item in data["rules"] + data["profiles"] + data.get("inference_rules", []):
+        if data.get("inference_rules"):
+            valid_cf(item["rule_cf"])
+            if not isinstance(item.get("salience"), int):
+                raise ValueError("Salience deve ser inteiro.")
+            governance = item["governance"]
+            if governance["status"] == "validado_por_especialista" and not all(
+                governance.get(k)
+                for k in ("reviewed_by", "review_date", "review_evidence")
+            ):
+                raise ValueError(
+                    "Validacao exige revisor, data e evidencia documental."
+                )
+    production_rules = data.get("inference_rules", [])
+    if len({r["id"] for r in production_rules}) != len(production_rules):
+        raise ValueError("Regras de inferencia duplicadas.")
+    for rule in production_rules:
+        if not rule["conditions"] or any(
+            c["op"] not in OPS for c in rule["conditions"]
+        ):
+            raise ValueError("Premissas invalidas na regra de inferencia.")
+        if set(rule["assert"]) != {"fact", "value"}:
+            raise ValueError("Conclusao de inferencia invalida.")
     # Reject unknown operators/metrics at startup rather than execute expressions.
     if (
         not math.isfinite(data["numeric_tolerance"])
@@ -67,7 +90,17 @@ def load_base(path=RULE_PATH):
     return data, digest
 
 
-def select_profile(base, facts):
+def select_profile(base, facts, evidence=None):
+    chain = forward_chain(base, facts, evidence)
+    facts = {k: v["value"] for k, v in chain["memory"].items()}
+    if chain["blocked"]:
+        return None, [
+            {
+                "profile_id": "conflito",
+                "conditions": [],
+                "conflicts": chain["conflicts"],
+            }
+        ]
     matches, trace = [], []
     for profile in base["profiles"]:
         conditions = []
@@ -76,6 +109,7 @@ def select_profile(base, facts):
             status = (
                 "dados_insuficientes"
                 if observed is None
+                or chain["memory"].get(condition["fact"], {}).get("cf", 0) <= 0
                 else (
                     "atendida"
                     if OPS[condition["op"]](observed, condition["value"])
@@ -87,7 +121,21 @@ def select_profile(base, facts):
         if all(c["status"] == "atendida" for c in conditions):
             matches.append(profile)
     if len(matches) > 1:
-        raise ValueError("Base ambigua: mais de um perfil aplicavel.")
+        matches.sort(
+            key=lambda p: (len(p["conditions"]), p.get("salience", 0)), reverse=True
+        )
+        rank = lambda p: (len(p["conditions"]), p.get("salience", 0))
+        if rank(matches[0]) == rank(matches[1]):
+            return None, trace + [
+                {
+                    "profile_id": "conflito",
+                    "conditions": [],
+                    "conflicting_profiles": [
+                        p["id"] for p in matches if rank(p) == rank(matches[0])
+                    ],
+                }
+            ]
+
     return (matches[0] if matches else None), trace
 
 
@@ -161,3 +209,133 @@ def evaluate(base, profile, values, intake):
         )
     )
     return status, trace
+
+
+def valid_cf(value):
+    if (
+        isinstance(value, bool)
+        or not isinstance(value, (int, float))
+        or not math.isfinite(value)
+        or not -1 <= value <= 1
+    ):
+        raise ValueError("CF deve ser finito e pertencer a [-1, 1].")
+    return float(value)
+
+
+def combine_cf(a, b):
+    """MYCIN combination, only appropriate for independent evidence."""
+    a, b = valid_cf(a), valid_cf(b)
+    if a >= 0 and b >= 0:
+        return a + b * (1 - a)
+    if a <= 0 and b <= 0:
+        return a + b * (1 + a)
+    denominator = 1 - min(abs(a), abs(b))
+    if denominator == 0:
+        raise ValueError("Evidencias opostas com certeza absoluta.")
+    return (a + b) / denominator
+
+
+def forward_chain(base, facts, evidence=None):
+    """Synchronous rounds; conservative support for correlated derivations.
+
+    Negative CF is evidence against the stored proposition and cannot satisfy
+    a positive premise. Each round recomputes derived facts from active rules,
+    so a more specific conclusion retracts obsolete downstream conclusions.
+    """
+    evidence = evidence or {}
+    memory = {
+        k: {
+            "value": v,
+            "cf": valid_cf(evidence.get(k, {}).get("cf", 1)),
+            "source": evidence.get(k, {}).get("source", "declarado_pelo_usuario"),
+            "rules": [],
+        }
+        for k, v in facts.items()
+        if v is not None
+    }
+    initial = copy.deepcopy(memory)
+    rules = base.get("inference_rules", [])
+    trace, conflicts, seen = [], [], set()
+    for round_number in range(1, 129):
+        proposals = {}
+        for rule in rules:
+            premises = rule["conditions"]
+            if not all(
+                c["fact"] in memory
+                and memory[c["fact"]]["cf"] > 0
+                and OPS[c["op"]](memory[c["fact"]]["value"], c["value"])
+                for c in premises
+            ):
+                continue
+            support = min(memory[c["fact"]]["cf"] for c in premises) * valid_cf(
+                rule["rule_cf"]
+            )
+            conclusion = rule["assert"]
+            proposal = {
+                "rule": rule,
+                "cf": support,
+                "premises": {
+                    c["fact"]: copy.deepcopy(memory[c["fact"]]) for c in premises
+                },
+            }
+            proposals.setdefault(conclusion["fact"], []).append(proposal)
+        updated = copy.deepcopy(initial)
+        current_conflicts = []
+        for fact, candidates in sorted(proposals.items()):
+            rank = lambda p: (
+                len(p["rule"]["conditions"]),
+                p["rule"].get("salience", 0),
+            )
+            best_rank = max(map(rank, candidates))
+            winners = [p for p in candidates if rank(p) == best_rank]
+            values = {canonical(p["rule"]["assert"]["value"]) for p in winners}
+            if fact in initial or len(values) > 1:
+                current_conflicts.append(
+                    {
+                        "fact": fact,
+                        "rules": [p["rule"]["id"] for p in winners],
+                        "message": "Contradicao: revisar fatos ou prioridade/especificidade das regras.",
+                    }
+                )
+                continue
+            winner = sorted(winners, key=lambda p: p["rule"]["id"])[0]
+            updated[fact] = {
+                "value": winner["rule"]["assert"]["value"],
+                "cf": min(p["cf"] for p in winners),
+                "source": "inferencia",
+                "rules": [p["rule"]["id"] for p in winners],
+            }
+            for candidate in winners:
+                event = {
+                    "round": round_number,
+                    "rule_id": candidate["rule"]["id"],
+                    "premises": candidate["premises"],
+                    "conclusion": fact,
+                    "value": updated[fact]["value"],
+                    "cf": candidate["cf"],
+                    "rule_cf": candidate["rule"]["rule_cf"],
+                }
+                if memory.get(fact) != updated[fact]:
+                    trace.append(event)
+        conflicts = current_conflicts
+        if updated == memory:
+            break
+        signature = canonical(updated)
+        if signature in seen:
+            conflicts.append(
+                {"message": "Ciclo de inferencia sem ponto fixo; revisar regras."}
+            )
+            memory = updated
+            break
+        seen.add(signature)
+        memory = updated
+    else:
+        conflicts.append({"message": "Limite de rodadas excedido; revisar regras."})
+    return {
+        "initial_facts": initial,
+        "memory": memory,
+        "steps": trace,
+        "conflicts": conflicts,
+        "blocked": bool(conflicts),
+        "policy": "especificidade, salience; empate contraditorio bloqueia; suporte correlacionado usa minimo",
+    }

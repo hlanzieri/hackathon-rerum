@@ -139,7 +139,7 @@ def test_snapshot_remains_after_price_change(client):
     after = client.get(f"/api/sessoes/{result['session_id']}").json()
     assert before == after
     assert after["snapshot"]["base_sha256"] == result["knowledge_sha256"]
-    assert after["snapshot"]["base"]["version"] == "0.1.0"
+    assert after["snapshot"]["base"]["version"] == load_base()[0]["version"]
 
 
 @pytest.mark.parametrize(

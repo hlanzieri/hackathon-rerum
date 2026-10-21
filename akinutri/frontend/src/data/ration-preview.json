@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "knowledge_sha256": "6482e01912f0b726991b3600b489cb3d6f242621760d860138a7e850b5a2f6f8",
-  "knowledge_version": "0.1.0",
+  "knowledge_sha256": "3ac03bca296cb303b2310c0941113bd60defca95f0c69b7deae8b9b97ba4cc8f",
+  "knowledge_version": "0.2.0",
   "equation_id": "NASEM2021-2-1",
   "assumptions": {
     "estado": "lactacao",
