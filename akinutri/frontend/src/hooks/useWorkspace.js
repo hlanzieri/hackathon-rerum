@@ -232,27 +232,33 @@ export default function useWorkspace() {
         particula_adequada: saved.particula_adequada,
         milho_seco_predominante: saved.milho_seco_predominante,
       });
-      setRows((old) =>
+      const savedItems = new Map(saved.itens.map((item) => [item.insumo_id, item]));
+      const savedIngredients = new Map(
+        session.snapshot.insumos.map((ingredient) => [ingredient.id, ingredient]),
+      );
+      const calculatedItems = new Map(
+        (session.result.items || []).map((item) => [item.insumo_id, item]),
+      );
+      setRows(
         Object.fromEntries(
-          data.insumos.map((i) => {
-            const item = saved.itens.find((row) => row.insumo_id === i.id);
-            const quantity = session.result.items?.find(
-              (row) => row.insumo_id === i.id,
-            )?.quantidade_kg_mn;
+          data.insumos.map((ingredient) => {
+            const savedItem = savedItems.get(ingredient.id);
+            const savedIngredient = savedIngredients.get(ingredient.id);
+            const calculatedItem = calculatedItems.get(ingredient.id);
             return [
-              i.id,
+              ingredient.id,
               {
-                ...old[i.id],
-                selected: Boolean(item),
-                ...(item
-                  ? {
-                      ...item,
-                      quantidade_kg_mn: quantity ?? item.quantidade_kg_mn,
-                      preco_kg_mn:
-                        item.preco_kg_mn ??
-                        session.snapshot.insumos.find((row) => row.id === i.id)?.preco_kg_mn,
-                    }
-                  : {}),
+                selected: Boolean(savedItem),
+                quantidade_kg_mn:
+                  calculatedItem?.quantidade_kg_mn ?? savedItem?.quantidade_kg_mn ?? 0,
+                preco_kg_mn:
+                  savedItem?.preco_kg_mn ??
+                  savedIngredient?.preco_kg_mn ??
+                  ingredient.preco_kg_mn,
+                minimo_kg_ms: savedItem?.minimo_kg_ms ?? 0,
+                maximo_kg_ms:
+                  savedItem?.maximo_kg_ms ??
+                  (ingredient.categoria === 'mineral' ? 0.5 : 40),
               },
             ];
           }),

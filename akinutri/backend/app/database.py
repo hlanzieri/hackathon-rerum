@@ -1,4 +1,5 @@
 import os
+import re
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -105,6 +106,94 @@ def migrate_ownership(target_engine):
                 connection.execute(
                     text(f"ALTER TABLE users ADD COLUMN {name} {definition}")
                 )
+    migrate_scoped_unique_constraints(target_engine)
+
+
+def migrate_scoped_unique_constraints(target_engine):
+    """Replace legacy global keys with per-user keys in existing SQLite files."""
+    scoped_tables = (
+        ("grupos_producao", "nome", "uq_grupo_usuario_nome"),
+        ("animais", "brinco", "uq_animal_usuario_brinco"),
+        ("insumos", "nome", "uq_insumo_usuario_nome"),
+    )
+
+    def has_legacy_unique(connection, table, column):
+        for index in connection.execute(text(f'PRAGMA index_list("{table}")')).mappings():
+            if not index["unique"]:
+                continue
+            columns = [
+                row["name"]
+                for row in connection.execute(
+                    text(f'PRAGMA index_info("{index["name"]}")')
+                ).mappings()
+            ]
+            if columns == [column]:
+                return True
+        return False
+
+    # SQLite cannot remove a table-level UNIQUE constraint. Rebuild only tables
+    # that still have the legacy global key, preserving IDs and all columns.
+    with target_engine.connect() as connection:
+        connection.execution_options(isolation_level="AUTOCOMMIT").exec_driver_sql(
+            "PRAGMA foreign_keys=OFF"
+        )
+        connection.commit()
+        try:
+            with connection.begin():
+                for table, column, constraint_name in scoped_tables:
+                    if not has_legacy_unique(connection, table, column):
+                        continue
+                    create_sql = connection.execute(
+                        text(
+                            "SELECT sql FROM sqlite_master "
+                            "WHERE type = 'table' AND name = :name"
+                        ),
+                        {"name": table},
+                    ).scalar_one()
+                    indexes = connection.execute(
+                        text(
+                            "SELECT sql FROM sqlite_master "
+                            "WHERE type = 'index' AND tbl_name = :name AND sql IS NOT NULL"
+                        ),
+                        {"name": table},
+                    ).scalars().all()
+                    columns = [
+                        entry["name"]
+                        for entry in connection.execute(
+                            text(f'PRAGMA table_info("{table}")')
+                        ).mappings()
+                    ]
+                    quoted_columns = ", ".join(f'"{name}"' for name in columns)
+                    # SQLAlchemy emits this legacy constraint as UNIQUE (column).
+                    create_sql = re.sub(
+                        rf",\s*UNIQUE\s*\(\s*\"?{re.escape(column)}\"?\s*\)",
+                        "",
+                        create_sql,
+                        flags=re.IGNORECASE,
+                    )
+                    create_sql = create_sql.rsplit(")", 1)[0] + (
+                        f', CONSTRAINT "{constraint_name}" '
+                        f'UNIQUE ("usuario_id", "{column}")\n)'
+                    )
+                    legacy_table = f"{table}_legacy_global_unique"
+                    connection.execute(
+                        text(f'ALTER TABLE "{table}" RENAME TO "{legacy_table}"')
+                    )
+                    connection.execute(text(create_sql))
+                    connection.execute(
+                        text(
+                            f'INSERT INTO "{table}" ({quoted_columns}) '
+                            f'SELECT {quoted_columns} FROM "{legacy_table}"'
+                        )
+                    )
+                    connection.execute(text(f'DROP TABLE "{legacy_table}"'))
+                    for index_sql in indexes:
+                        if not index_sql.lstrip().upper().startswith("CREATE UNIQUE"):
+                            connection.execute(text(index_sql))
+        finally:
+            connection.execution_options(isolation_level="AUTOCOMMIT").exec_driver_sql(
+                "PRAGMA foreign_keys=ON"
+            )
 
 
 @event.listens_for(Session, "do_orm_execute")

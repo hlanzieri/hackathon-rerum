@@ -182,6 +182,7 @@ class ComparisonRequest(DTO):
 class MixingRequest(DTO):
     batidas_dia: int = Field(default=1, ge=1, le=24)
     capacidade_kg: float | None = Field(default=None, gt=0, le=1000000)
+    resolucao_balanca_kg: float = Field(default=1, gt=0, le=1000)
     ordem_insumos: list[int] | None = None
 
 

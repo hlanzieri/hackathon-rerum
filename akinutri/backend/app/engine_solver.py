@@ -21,7 +21,7 @@ def solve(
     # are reported as missing data; they are never interpreted as zero.
     missing = {}
     incomplete_ids = set()
-    for rule in base["rules"]:
+    for rule in sorted(base["rules"], key=lambda rule: rule["id"]):
         metric = rule["metric"]
         if metric == "ms_kg":
             continue
@@ -129,9 +129,38 @@ def solve(
             "excluded_ingredients": excluded,
             "quantities": None,
         }
-    costs = [i["preco_kg_mn"] / (i["ms_pct"] / 100) for i in ingredients]
+    for ingredient in ingredients:
+        ms_pct = ingredient.get("ms_pct")
+        price = ingredient.get("preco_kg_mn")
+        if (
+            not isinstance(ms_pct, (int, float))
+            or not math.isfinite(ms_pct)
+            or ms_pct <= 0
+            or not isinstance(price, (int, float))
+            or not math.isfinite(price)
+            or price < 0
+        ):
+            return {
+                "status": "falha_solver",
+                "message": f"MS ou preco invalido para {ingredient.get('nome', 'insumo')}.",
+                "quantities": None,
+            }
+    try:
+        costs = [i["preco_kg_mn"] / (i["ms_pct"] / 100) for i in ingredients]
+    except (ZeroDivisionError, OverflowError):
+        return {
+            "status": "falha_solver",
+            "message": "Falha na conversao numerica do custo por kg de MS.",
+            "quantities": None,
+        }
+    if not all(math.isfinite(cost) for cost in costs):
+        return {
+            "status": "falha_solver",
+            "message": "Custo por kg de MS fora da faixa numerica.",
+            "quantities": None,
+        }
     a, b, eq, rhs, labels, equality_labels = [], [], [], [], [], []
-    for rule in base["rules"]:
+    for rule in sorted(base["rules"], key=lambda rule: rule["id"]):
         metric = rule["metric"]
         low, high = bounds_for(rule, profile, intake)
         if metric == "ms_kg":

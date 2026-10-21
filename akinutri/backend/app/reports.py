@@ -1,4 +1,16 @@
+from decimal import Decimal, ROUND_HALF_UP
+
 from .engine_rules import canonical
+
+
+def round_to_scale(value: float, resolution: float) -> float:
+    """Round an operational quantity to the scale increment, half up."""
+    value_decimal = Decimal(str(value))
+    resolution_decimal = Decimal(str(resolution))
+    units = (value_decimal / resolution_decimal).quantize(
+        Decimal("1"), rounding=ROUND_HALF_UP
+    )
+    return float(units * resolution_decimal)
 
 
 def compare_sessions(manual, formulated, days):
@@ -82,16 +94,19 @@ def mixing_report(session, request):
         if group and group.get("numero_animais") is not None
         else snapshot["lote"]["quantidade"]
     )
-    items = [
-        {
-            "insumo_id": i["insumo_id"],
-            "nome": i["nome"],
-            "sequencia": n + 1,
-            "kg_mn_dia": i["quantidade_kg_mn"] * animals,
-            "kg_mn_batida": i["quantidade_kg_mn"] * animals / request.batidas_dia,
-        }
-        for n, i in enumerate(active)
-    ]
+    items = []
+    for n, item in enumerate(active):
+        kg_raw = item["quantidade_kg_mn"] * animals / request.batidas_dia
+        kg_mn_batida = round_to_scale(kg_raw, request.resolucao_balanca_kg)
+        items.append(
+            {
+                "insumo_id": item["insumo_id"],
+                "nome": item["nome"],
+                "sequencia": n + 1,
+                "kg_mn_dia": kg_mn_batida * request.batidas_dia,
+                "kg_mn_batida": kg_mn_batida,
+            }
+        )
     total = sum(i["kg_mn_batida"] for i in items)
     if request.capacidade_kg is not None and total > request.capacidade_kg:
         raise ValueError(
@@ -103,6 +118,7 @@ def mixing_report(session, request):
         "grupo": group["nome"] if group else None,
         "animais": animals,
         "batidas_dia": request.batidas_dia,
+        "resolucao_balanca_kg": request.resolucao_balanca_kg,
         "items": items,
         "total_kg_mn_batida": total,
         "total_kg_mn_dia": total * request.batidas_dia,
@@ -111,5 +127,5 @@ def mixing_report(session, request):
             if order is not None
             else "listagem_por_id_confirmar_ordem_com_responsavel"
         ),
-        "notice": "Ordem de carregamento deve ser confirmada pelo responsavel conforme equipamento e ingredientes. Listagem inicial nao e protocolo tecnico de mistura. Dieta demonstrativa; sem acrescimo automatico de sobras ou agua. Valores calculados sem arredondar.",
+        "notice": "Ordem de carregamento deve ser confirmada pelo responsavel conforme equipamento e ingredientes. Listagem inicial nao e protocolo tecnico de mistura. Dieta demonstrativa; sem acrescimo automatico de sobras ou agua. Valores desta ficha foram arredondados para a resolucao operacional da balanca; dieta e snapshot preservam a precisao matematica exata.",
     }

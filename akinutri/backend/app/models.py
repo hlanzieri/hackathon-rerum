@@ -47,8 +47,11 @@ class Lote(OwnedRecord, Base):
 
 class GrupoProducao(OwnedRecord, Base):
     __tablename__ = "grupos_producao"
+    __table_args__ = (
+        UniqueConstraint("usuario_id", "nome", name="uq_grupo_usuario_nome"),
+    )
     id: Mapped[int] = mapped_column(primary_key=True)
-    nome: Mapped[str] = mapped_column(String(120), unique=True, index=True)
+    nome: Mapped[str] = mapped_column(String(120), index=True)
     fase: Mapped[str] = mapped_column(String(30), index=True)
     descricao: Mapped[str | None] = mapped_column(String(500), nullable=True)
     numero_animais: Mapped[int | None] = mapped_column(Integer, nullable=True)
@@ -65,8 +68,11 @@ class GrupoProducao(OwnedRecord, Base):
 
 class Animal(OwnedRecord, Base):
     __tablename__ = "animais"
+    __table_args__ = (
+        UniqueConstraint("usuario_id", "brinco", name="uq_animal_usuario_brinco"),
+    )
     id: Mapped[int] = mapped_column(primary_key=True)
-    brinco: Mapped[str] = mapped_column(String(60), unique=True, index=True)
+    brinco: Mapped[str] = mapped_column(String(60), index=True)
     nome: Mapped[str] = mapped_column(String(120))
     data_nascimento: Mapped[date] = mapped_column(Date)
     sexo: Mapped[str] = mapped_column(String(20))
@@ -122,8 +128,11 @@ class HistoricoMovimentacaoAnimal(OwnedRecord, Base):
 
 class InsumoAlimentar(OwnedRecord, Base):
     __tablename__ = "insumos"
+    __table_args__ = (
+        UniqueConstraint("usuario_id", "nome", name="uq_insumo_usuario_nome"),
+    )
     id: Mapped[int] = mapped_column(primary_key=True)
-    nome: Mapped[str] = mapped_column(String(120), unique=True)
+    nome: Mapped[str] = mapped_column(String(120), index=True)
     categoria: Mapped[str] = mapped_column(String(30))
     ms_pct: Mapped[float] = mapped_column(Float)
     pb_pct: Mapped[float | None] = mapped_column(Float, nullable=True)

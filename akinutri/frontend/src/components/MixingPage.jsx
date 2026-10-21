@@ -7,6 +7,7 @@ export default function MixingPage({ history, initialSession }) {
   );
   const [batches, setBatches] = useState(1),
     [capacity, setCapacity] = useState(''),
+    [scaleResolution, setScaleResolution] = useState(1),
     [report, setReport] = useState(null),
     [busy, setBusy] = useState(false),
     [error, setError] = useState('');
@@ -18,6 +19,7 @@ export default function MixingPage({ history, initialSession }) {
       setReport(
         await api(`/sessoes/${session}/batida`, 'POST', {
           batidas_dia: Number(batches),
+          resolucao_balanca_kg: Number(scaleResolution),
           ...(capacity !== '' ? { capacidade_kg: Number(capacity) } : {}),
           ...(order ? { ordem_insumos: order } : {}),
         }),
@@ -97,6 +99,21 @@ export default function MixingPage({ history, initialSession }) {
                 }}
               />
             </label>
+            <label>
+              Resolução da balança · kg
+              <input
+                required
+                type="number"
+                min=".001"
+                max="1000"
+                step="any"
+                value={scaleResolution}
+                onChange={(e) => {
+                  setScaleResolution(e.target.value);
+                  setReport(null);
+                }}
+              />
+            </label>
             <button className="button primary">{busy ? 'Calculando…' : 'Gerar relatório'}</button>
           </fieldset>
         </form>
@@ -114,7 +131,7 @@ export default function MixingPage({ history, initialSession }) {
               <h2>{report.lote}</h2>
               <p>
                 Sessão #{report.session_id} · {report.animais} animais · {report.batidas_dia}{' '}
-                batida(s)/dia
+                batida(s)/dia · balança de {number(report.resolucao_balanca_kg, 3)} kg
               </p>
             </div>
             <div className="actions no-print">

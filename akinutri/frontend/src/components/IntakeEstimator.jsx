@@ -7,6 +7,7 @@ export default function IntakeEstimator({ lote, raca, onApply, group }) {
     [milk, setMilk] = useState('');
   const [mode, setMode] = useState('corrected'),
     [reference, setReference] = useState(0.7),
+    [milkConfirmed, setMilkConfirmed] = useState(false),
     [result, setResult] = useState(null),
     [busy, setBusy] = useState(false),
     [error, setError] = useState('');
@@ -88,6 +89,7 @@ export default function IntakeEstimator({ lote, raca, onApply, group }) {
               onChange={(e) => {
                 setMode(e.target.value);
                 setMilk('');
+                setMilkConfirmed(false);
                 setResult(null);
               }}
             >
@@ -95,6 +97,13 @@ export default function IntakeEstimator({ lote, raca, onApply, group }) {
               <option value="energy">Energia diária do leite · Mcal/dia</option>
             </select>
           </label>
+          {group && (
+            <div className="group-production-context">
+              <span>Produção média do grupo</span>
+              <strong>{number(group.producao_media_l_dia)} L/animal/dia</strong>
+              <small>Referência cadastral; não é convertida automaticamente.</small>
+            </div>
+          )}
           <label>
             {mode === 'corrected' ? 'Leite corrigido · kg/dia' : 'Energia do leite · Mcal/dia'}
             <input
@@ -107,6 +116,7 @@ export default function IntakeEstimator({ lote, raca, onApply, group }) {
               value={milk}
               onChange={(e) => {
                 setMilk(e.target.value);
+                setMilkConfirmed(false);
                 setResult(null);
               }}
             />
@@ -128,8 +138,20 @@ export default function IntakeEstimator({ lote, raca, onApply, group }) {
               />
             </label>
           )}
+          <label className="span2 checkbox-target">
+            <input
+              required
+              type="checkbox"
+              checked={milkConfirmed}
+              onChange={(e) => {
+                setMilkConfirmed(e.target.checked);
+                setResult(null);
+              }}
+            />
+            Confirmo que o valor informado é {mode === 'corrected' ? 'leite corrigido' : 'energia diária do leite'} e será usado na equação.
+          </label>
         </div>
-        <button className="button secondary" disabled={busy}>
+        <button className="button secondary" disabled={busy || !milkConfirmed}>
           {busy ? 'Calculando…' : 'Calcular sugestão'}
         </button>
       </form>
