@@ -1,5 +1,5 @@
 {
-  "version": "0.2.0",
+  "version": "0.2.0+recalibracao.1",
   "status": "demonstracao_nao_validada_para_prescricao",
   "notice": "Perfis e composicoes simplificados para demonstracao de engenharia. Atender estas restricoes nao comprova adequacao nutricional completa. Nao cobre proteina metabolizavel, DCAD, vitaminas, biodisponibilidade ou transicao pre-parto.",
   "numeric_tolerance": 1e-06,
@@ -7,7 +7,8 @@
     "NASEM2021": "https://www.ncbi.nlm.nih.gov/books/NBK600592/",
     "PSU_AMIDO": "https://extension.psu.edu/carbohydrate-nutrition-for-lactating-dairy-cattle",
     "PSU_PB": "https://extension.psu.edu/from-feed-to-milk-understanding-rumen-function",
-    "MVP": "Hipotese simplificada de demonstracao; requer revisao por zootecnista. Nao equivale a requisito NRC/NASEM."
+    "MVP": "Hipotese simplificada de demonstracao; requer revisao por zootecnista. Nao equivale a requisito NRC/NASEM.",
+    "POLITICA_T2": "Hipoteses de demonstracao solicitadas pela equipe em 21/10/2026, pendentes de revisao zootecnica. Nao equivalem a equacoes NASEM."
   },
   "profiles": [
     {
@@ -492,12 +493,12 @@
   "certainty_model": {
     "name": "MYCIN",
     "formula": "min(CF_premissas) * rule_cf",
-    "global": "minimo dos suportes efetivamente usados; nulo se bloqueado ou sem conclusao",
+    "global": "Composicao ponderada por MS efetivamente usada; global limitado pelo menor suporte das regras, ajustes, perfil e consumo. Nulo sem diagnostico.",
     "notice": "CF nao e probabilidade. Pesos didaticos pendentes de calibracao e revisao.",
     "sources": {
-      "usuario": 1.0,
       "laboratorio": 1.0,
-      "tabela": 0.75
+      "tabela": 0.85,
+      "usuario": 0.7
     }
   },
   "inference_rules": [
@@ -1085,12 +1086,191 @@
         "acquisition_method": "formalizacao_de_fontes_e_hipoteses_do_MVP",
         "review_evidence": null
       }
+    },
+    {
+      "id": "T2-ID-01",
+      "conditions": [
+        {
+          "fact": "idade_meses",
+          "op": "lte",
+          "value": 36
+        }
+      ],
+      "assert": {
+        "fact": "reserva_crescimento",
+        "value": true
+      },
+      "rule_cf": 0.95,
+      "salience": 0,
+      "governance": {
+        "reviewed_by": null,
+        "review_date": null,
+        "status": "pendente_revisao_especialista",
+        "technical_justification": "Politica experimental solicitada pela equipe; sem validacao de eficacia ou garantia de escore corporal/solidos do leite.",
+        "bibliographic_source": "Hipoteses de demonstracao solicitadas pela equipe em 21/10/2026, pendentes de revisao zootecnica. Nao equivalem a equacoes NASEM.",
+        "acquisition_method": "formalizacao_de_fontes_e_hipoteses_do_MVP",
+        "review_evidence": null
+      }
+    },
+    {
+      "id": "T2-PAR-01",
+      "conditions": [
+        {
+          "fact": "ordem_paricao",
+          "op": "eq",
+          "value": 1
+        }
+      ],
+      "assert": {
+        "fact": "reserva_crescimento",
+        "value": true
+      },
+      "rule_cf": 0.95,
+      "salience": 0,
+      "governance": {
+        "reviewed_by": null,
+        "review_date": null,
+        "status": "pendente_revisao_especialista",
+        "technical_justification": "Politica experimental solicitada pela equipe; sem validacao de eficacia ou garantia de escore corporal/solidos do leite.",
+        "bibliographic_source": "Hipoteses de demonstracao solicitadas pela equipe em 21/10/2026, pendentes de revisao zootecnica. Nao equivalem a equacoes NASEM.",
+        "acquisition_method": "formalizacao_de_fontes_e_hipoteses_do_MVP",
+        "review_evidence": null
+      }
+    },
+    {
+      "id": "T2-DEST-01",
+      "conditions": [
+        {
+          "fact": "destinacao_economica",
+          "op": "eq",
+          "value": "queijo_artesanal"
+        }
+      ],
+      "assert": {
+        "fact": "objetivo_leite",
+        "value": "solidos_demo"
+      },
+      "rule_cf": 0.95,
+      "salience": 0,
+      "governance": {
+        "reviewed_by": null,
+        "review_date": null,
+        "status": "pendente_revisao_especialista",
+        "technical_justification": "Politica experimental solicitada pela equipe; sem validacao de eficacia ou garantia de escore corporal/solidos do leite.",
+        "bibliographic_source": "Hipoteses de demonstracao solicitadas pela equipe em 21/10/2026, pendentes de revisao zootecnica. Nao equivalem a equacoes NASEM.",
+        "acquisition_method": "formalizacao_de_fontes_e_hipoteses_do_MVP",
+        "review_evidence": null
+      }
+    },
+    {
+      "id": "T2-DEST-02",
+      "conditions": [
+        {
+          "fact": "destinacao_economica",
+          "op": "eq",
+          "value": "leite_fluido"
+        }
+      ],
+      "assert": {
+        "fact": "objetivo_leite",
+        "value": "volume_demo"
+      },
+      "rule_cf": 0.95,
+      "salience": 0,
+      "governance": {
+        "reviewed_by": null,
+        "review_date": null,
+        "status": "pendente_revisao_especialista",
+        "technical_justification": "Politica experimental solicitada pela equipe; sem validacao de eficacia ou garantia de escore corporal/solidos do leite.",
+        "bibliographic_source": "Hipoteses de demonstracao solicitadas pela equipe em 21/10/2026, pendentes de revisao zootecnica. Nao equivalem a equacoes NASEM.",
+        "acquisition_method": "formalizacao_de_fontes_e_hipoteses_do_MVP",
+        "review_evidence": null
+      }
     }
   ],
   "question_explanations": {
     "particula_adequada": "O tamanho de particula integra as condicoes do perfil e o contexto de aplicacao da regra FDN-01. Sem essa confirmacao, o perfil de lactacao nao e aplicado.",
     "milho_seco_predominante": "O processamento do milho delimita o contexto das faixas de FDN e amido do perfil.",
     "dcad_meq_100g": "A regra R-02 usa o DCAD em mEq/100 g de materia seca para emitir um alerta didatico de transicao. Nao autoriza prescricao.",
-    "dias_ate_parto": "Distingue periodo seco distante e transicao pre-parto nas regras FASE-SECA e R-01."
-  }
+    "dias_ate_parto": "Distingue periodo seco distante e transicao pre-parto nas regras FASE-SECA e R-01.",
+    "idade_meses": "Idade ate 36 meses OU primeira paricao ativa uma unica reserva experimental de 10% sobre a mantenca informada. Sem valores e fonte, a analise e bloqueada.",
+    "ordem_paricao": "Primeira paricao ativa a reserva de crescimento; idade e paricao nao duplicam o acrescimo.",
+    "destinacao_economica": "Leite fluido preserva limites; queijo artesanal aplica pisos experimentais PB 18% e FDN de volumosos 21% MS. Nao estima rendimento de queijo nem qualidade da fibra."
+  },
+  "family_version": "0.2.0",
+  "certainty_policy": {
+    "version": 1,
+    "source_weights": {
+      "laboratorio": 1.0,
+      "tabela": 0.85,
+      "usuario": 0.7
+    },
+    "composition_aggregation": "weighted_by_active_dry_matter",
+    "notice": "Pesos de politica solicitados, sem calibracao empirica. Nao representam probabilidade nem autenticam laudos."
+  },
+  "profile_adjustments": [
+    {
+      "id": "T2-QUEIJO-01",
+      "conditions": [
+        {
+          "fact": "estado",
+          "op": "eq",
+          "value": "lactacao"
+        },
+        {
+          "fact": "objetivo_leite",
+          "op": "eq",
+          "value": "solidos_demo"
+        }
+      ],
+      "action": {
+        "type": "minimum_floor",
+        "limits": {
+          "pb_pct": 18.0,
+          "fdn_volumoso_pct": 21.0
+        }
+      },
+      "rule_cf": 0.95,
+      "salience": 0,
+      "governance": {
+        "reviewed_by": null,
+        "review_date": null,
+        "status": "pendente_revisao_especialista",
+        "technical_justification": "Politica experimental solicitada pela equipe; sem validacao de eficacia ou garantia de escore corporal/solidos do leite.",
+        "bibliographic_source": "Hipoteses de demonstracao solicitadas pela equipe em 21/10/2026, pendentes de revisao zootecnica. Nao equivalem a equacoes NASEM.",
+        "acquisition_method": "formalizacao_de_fontes_e_hipoteses_do_MVP",
+        "review_evidence": null
+      }
+    },
+    {
+      "id": "T2-CRESC-01",
+      "conditions": [
+        {
+          "fact": "reserva_crescimento",
+          "op": "eq",
+          "value": true
+        }
+      ],
+      "action": {
+        "type": "maintenance_reserve",
+        "fraction": 0.1,
+        "inputs": {
+          "pb_pct": "mantenca_pb_kg_dia",
+          "el_mcal_kg": "mantenca_el_mcal_dia"
+        },
+        "source_fact": "fonte_mantenca"
+      },
+      "rule_cf": 0.95,
+      "salience": 0,
+      "governance": {
+        "reviewed_by": null,
+        "review_date": null,
+        "status": "pendente_revisao_especialista",
+        "technical_justification": "Politica experimental solicitada pela equipe; sem validacao de eficacia ou garantia de escore corporal/solidos do leite.",
+        "bibliographic_source": "Hipoteses de demonstracao solicitadas pela equipe em 21/10/2026, pendentes de revisao zootecnica. Nao equivalem a equacoes NASEM.",
+        "acquisition_method": "formalizacao_de_fontes_e_hipoteses_do_MVP",
+        "review_evidence": null
+      }
+    }
+  ]
 }

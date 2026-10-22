@@ -172,6 +172,7 @@ export default function useWorkspace() {
             throw new Error(`Preencha os valores de ${i.nome}; campo vazio não significa zero.`);
           return {
             insumo_id: i.id,
+            evidencia_composicao: row.evidencia_composicao ?? { source: 'tabela', cf: 0.85 },
             ...Object.fromEntries(keys.map((key) => [key, Number(row[key])])),
           };
         });
@@ -254,6 +255,8 @@ export default function useWorkspace() {
               ingredient.id,
               {
                 selected: Boolean(savedItem),
+                evidencia_composicao:
+                  savedItem?.evidencia_composicao ?? savedIngredient?.evidencia_composicao ?? null,
                 quantidade_kg_mn:
                   calculatedItem?.quantidade_kg_mn ?? savedItem?.quantidade_kg_mn ?? 0,
                 preco_kg_mn:

@@ -26,7 +26,12 @@ def canonical(data):
 
 def load_base(path=RULE_PATH):
     data = json.loads(Path(path).read_text(encoding="utf-8"))
-    for item in data["rules"] + data["profiles"] + data.get("inference_rules", []):
+    for item in (
+        data["rules"]
+        + data["profiles"]
+        + data.get("inference_rules", [])
+        + data.get("profile_adjustments", [])
+    ):
         if data.get("inference_rules"):
             valid_cf(item["rule_cf"])
             if not isinstance(item.get("salience"), int):
@@ -86,6 +91,31 @@ def load_base(path=RULE_PATH):
         for lo, hi in profile["limits"].values():
             if not all(math.isfinite(v) for v in (lo, hi)) or lo < 0 or lo > hi:
                 raise ValueError("Limites invalidos.")
+    for adjustment in data.get("profile_adjustments", []):
+        action = adjustment["action"]
+        if not adjustment["conditions"] or any(
+            c["op"] not in OPS for c in adjustment["conditions"]
+        ):
+            raise ValueError("Premissas de ajuste invalidas.")
+        if action["type"] == "maintenance_reserve":
+            if (
+                not math.isfinite(action["fraction"])
+                or not 0 <= action["fraction"] <= 1
+                or action["inputs"]
+                != {
+                    "pb_pct": "mantenca_pb_kg_dia",
+                    "el_mcal_kg": "mantenca_el_mcal_dia",
+                }
+            ):
+                raise ValueError("Reserva de mantenca invalida.")
+        elif action["type"] == "minimum_floor":
+            if not action["limits"] or any(
+                k not in expected or not math.isfinite(v) or v < 0
+                for k, v in action["limits"].items()
+            ):
+                raise ValueError("Piso de ajuste invalido.")
+        else:
+            raise ValueError("Acao de ajuste desconhecida.")
     digest = hashlib.sha256(canonical(data).encode("utf-8")).hexdigest()
     return data, digest
 
@@ -136,7 +166,83 @@ def select_profile(base, facts, evidence=None):
                 }
             ]
 
-    return (matches[0] if matches else None), trace
+    if not matches:
+        return None, trace
+    profile, adjustments, missing = adjusted_profile(base, matches[0], chain)
+    if adjustments or missing:
+        trace.append(
+            {
+                "profile_id": "ajustes_t2",
+                "conditions": [],
+                "adjustments": adjustments,
+                "missing_inputs": missing,
+            }
+        )
+    return (None if missing else profile), trace
+
+
+def adjusted_profile(base, profile, chain):
+    """Apply JSON policies once to a copy; never mutate a published profile.
+
+    Maintenance is an explicit technical input, not inferred from whole-diet
+    density. Conversion: kg PB/day -> % DM; Mcal/day -> Mcal/kg DM.
+    """
+    profile = copy.deepcopy(profile)
+    memory = chain["memory"]
+    applied, missing = [], []
+    for adjustment in base.get("profile_adjustments", []):
+        if not all(
+            c["fact"] in memory
+            and memory[c["fact"]]["cf"] > 0
+            and OPS[c["op"]](memory[c["fact"]]["value"], c["value"])
+            for c in adjustment["conditions"]
+        ):
+            continue
+        action = adjustment["action"]
+        before = copy.deepcopy(profile["limits"])
+        inputs = {}
+        if action["type"] == "maintenance_reserve":
+            required = [
+                *action["inputs"].values(),
+                action["source_fact"],
+                "consumo_ms_kg",
+            ]
+            absent = [
+                k
+                for k in required
+                if k not in memory or not memory[k]["value"] or memory[k]["cf"] <= 0
+            ]
+            missing.extend(absent)
+            if absent:
+                continue
+            inputs = {k: memory[k]["value"] for k in required}
+            intake = inputs["consumo_ms_kg"]
+            for metric, fact in action["inputs"].items():
+                delta = action["fraction"] * inputs[fact] / intake
+                if metric == "pb_pct":
+                    delta *= 100
+                profile["limits"][metric][0] += delta
+        else:
+            for metric, floor in action["limits"].items():
+                profile["limits"][metric][0] = max(profile["limits"][metric][0], floor)
+        # Incompatible nutrient minima/maxima remain strict constraints. The LP
+        # compiles them as separate inequalities and diagnoses infeasibility.
+        premise_cf = min(memory[c["fact"]]["cf"] for c in adjustment["conditions"])
+        if inputs:
+            premise_cf = min(premise_cf, *(memory[k]["cf"] for k in inputs))
+        applied.append(
+            {
+                "rule_id": adjustment["id"],
+                "before": before,
+                "after": copy.deepcopy(profile["limits"]),
+                "inputs": inputs,
+                "cf": premise_cf * adjustment["rule_cf"],
+                "governance": adjustment["governance"],
+            }
+        )
+    if applied:
+        profile["adjustments"] = applied
+    return profile, applied, sorted(set(missing))
 
 
 def bounds_for(rule, profile, intake):

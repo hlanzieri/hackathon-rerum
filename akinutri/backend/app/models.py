@@ -40,6 +40,12 @@ class Lote(OwnedRecord, Base):
     ordem_paricao: Mapped[int] = mapped_column(Integer)
     estado: Mapped[str] = mapped_column(String(30))
     destinacao: Mapped[str] = mapped_column(String(30))
+    destinacao_economica: Mapped[str] = mapped_column(
+        String(30), default="leite_fluido", server_default="leite_fluido"
+    )
+    mantenca_pb_kg_dia: Mapped[float | None] = mapped_column(Float, nullable=True)
+    mantenca_el_mcal_dia: Mapped[float | None] = mapped_column(Float, nullable=True)
+    fonte_mantenca: Mapped[str | None] = mapped_column(String(500), nullable=True)
     producao_l_dia: Mapped[float] = mapped_column(Float)
     dias_lactacao: Mapped[int | None] = mapped_column(Integer, nullable=True)
     dias_ate_parto: Mapped[int | None] = mapped_column(Integer, nullable=True)

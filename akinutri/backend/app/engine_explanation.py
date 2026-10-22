@@ -4,6 +4,42 @@ import copy
 from .engine_rules import forward_chain
 
 
+def composition_support(base, chain, result, evidence):
+    policy = base.get("certainty_policy")
+    if not policy:
+        return {
+            "cf": evidence.get("composicao", {}).get("cf", 0.75),
+            "source": evidence.get("composicao", {}).get(
+                "source", "tabela_demonstrativa"
+            ),
+        }
+    default = evidence.get(
+        "composicao", {"source": "tabela", "cf": policy["source_weights"]["tabela"]}
+    )
+    by_id = {
+        i["id"]: i for i in chain["initial_facts"].get("insumos", {}).get("value", [])
+    }
+    entries = []
+    active = [i for i in result.get("items", []) if i["quantidade_kg_ms"] > 0]
+    total = sum(i["quantidade_kg_ms"] for i in active)
+    for item in active:
+        origin = by_id[item["insumo_id"]].get("evidencia_composicao", default)
+        entries.append(
+            {
+                "insumo_id": item["insumo_id"],
+                "kg_ms": item["quantidade_kg_ms"],
+                "weight": item["quantidade_kg_ms"] / total,
+                **origin,
+            }
+        )
+    return {
+        "cf": sum(i["weight"] * i["cf"] for i in entries) if entries else default["cf"],
+        "source": "ponderada_por_ms_utilizada",
+        "items": entries,
+        "policy": policy,
+    }
+
+
 def attach_reasoning(result, base, chain, profile, evidence):
     reasoning = copy.deepcopy(chain)
     reasoning["profile"] = result["profile"]
@@ -25,14 +61,18 @@ def attach_reasoning(result, base, chain, profile, evidence):
             "source": "inferencia",
             "rules": [profile["id"]],
         }
-        composition_cf = evidence.get("composicao", {}).get("cf", 0.75)
+        composition = composition_support(base, chain, result, evidence)
+        composition_cf = composition["cf"]
         intake_cf = evidence.get("consumo_ms_kg", {}).get("cf", 1)
-        reasoning["composition_evidence"] = {
-            "cf": composition_cf,
-            "source": evidence.get("composicao", {}).get(
-                "source", "tabela_demonstrativa"
-            ),
-        }
+        reasoning["composition_evidence"] = composition
+        if base.get("certainty_policy"):
+            reasoning["profile_adjustments"] = profile.get("adjustments", [])
+            support.extend(a["cf"] for a in profile.get("adjustments", []))
+            if any(i["cf"] <= 0 for i in composition["items"]):
+                result["status"] = "dados_insuficientes"
+                result["message"] = (
+                    "Um insumo utilizado nao possui evidencia positiva de composicao. Revise origem e CF."
+                )
         for entry in result["trace"]:
             cf = min(profile_cf, composition_cf, intake_cf) * entry.get("rule_cf", 1)
             if entry["status"] == "dados_insuficientes":
@@ -78,18 +118,31 @@ def attach_reasoning(result, base, chain, profile, evidence):
     # A solver failure or infeasibility has no diagnostic confidence score.
     result["global_cf"] = (
         min(support)
-        if support and result.get("totals") and not reasoning["blocked"]
+        if support
+        and result.get("totals")
+        and not reasoning["blocked"]
+        and not (
+            base.get("certainty_policy") and result["status"] == "dados_insuficientes"
+        )
         else None
     )
     reasoning["certainty_notice"] = (
         "CF e suporte heuristico, nao probabilidade nem validacao clinica. Pesos didaticos pendentes de revisao. Global = minimo dos suportes utilizados."
     )
+    if base.get("certainty_policy"):
+        reasoning["certainty_notice"] = (
+            "CF e suporte heuristico, nao probabilidade. Composicao = media dos CF das fontes ponderada pelos kg MS dos insumos efetivamente usados. Global = menor suporte entre regras, perfil ajustado, consumo e avaliacoes; nao aumenta certeza pela repeticao. Pesos de politica sem calibracao empirica."
+        )
     result["reasoning"] = reasoning
 
 
 def explain_question(base, fact):
     references = []
-    for rule in base.get("inference_rules", []) + base["profiles"]:
+    for rule in (
+        base.get("inference_rules", [])
+        + base["profiles"]
+        + base.get("profile_adjustments", [])
+    ):
         if any(c["fact"] == fact for c in rule["conditions"]):
             references.append(rule["id"])
     for rule in base["rules"]:

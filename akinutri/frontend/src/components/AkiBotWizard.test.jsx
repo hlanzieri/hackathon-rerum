@@ -149,7 +149,7 @@ test('group is required first and changing it clears consumption and saved conte
   const user = userEvent.setup();
   render(<AkiBotWizard workspace={workspace} onComplete={vi.fn()} />);
   expect(screen.getByRole('button', { name: 'Avançar' }).disabled).toBe(true);
-  expect(screen.queryByRole('spinbutton')).toBeNull();
+  expect(screen.queryByLabelText('CMS · kg MS/animal/dia')).toBeNull();
   await user.selectOptions(screen.getByLabelText('Grupo de produção'), '7');
   expect(screen.getByText(/20 animais/)).toBeTruthy();
   await advance(user);

@@ -24,6 +24,7 @@ export default function InsumosTable({ insumos, rows, setRows, mode }) {
             <th scope="col">R$ / kg MN</th>
             <th scope="col">{mode === 'verificar' ? 'kg MN / dia' : 'Mín. kg MS'}</th>
             <th scope="col">Máx. kg MS</th>
+            <th scope="col">Origem da composição</th>
           </tr>
         </thead>
         <tbody>
@@ -96,6 +97,23 @@ export default function InsumosTable({ insumos, rows, setRows, mode }) {
                   value={rows[i.id]?.maximo_kg_ms ?? 40}
                   onChange={(e) => change(i.id, 'maximo_kg_ms', e.target.value)}
                 />
+              </td>
+              <td>
+                <select
+                  aria-label={`Origem da composição ${displayText(i.nome)}`}
+                  disabled={!rows[i.id]?.selected}
+                  value={rows[i.id]?.evidencia_composicao?.source ?? 'tabela'}
+                  onChange={(e) =>
+                    change(i.id, 'evidencia_composicao', {
+                      source: e.target.value,
+                      cf: { laboratorio: 1, tabela: 0.85, usuario: 0.7 }[e.target.value],
+                    })
+                  }
+                >
+                  <option value="tabela">Tabela · 0,85</option>
+                  <option value="laboratorio">Laboratório · 1,00</option>
+                  <option value="usuario">Campo · 0,70</option>
+                </select>
               </td>
             </tr>
           ))}

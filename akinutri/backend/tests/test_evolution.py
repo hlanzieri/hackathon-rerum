@@ -106,7 +106,7 @@ def test_applied_estimate_is_recomputed_and_preserved(client):
 
 
 @pytest.mark.parametrize(
-    "change", [{"estado": "seca"}, {"raca": "Gir Leiteiro"}, {"dias_lactacao": 400}]
+    "change", [{"raca": "Raca sem modelo"}, {"dias_lactacao": 400}]
 )
 def test_estimator_does_not_claim_unsupported_population(client, change):
     body = {
@@ -217,7 +217,11 @@ def test_mixing_totals_and_user_order(client):
     data = response.json()
     assert data["items"][0]["insumo_id"] == active[-1]
     from app.reports import round_to_scale
-    expected = sum(round_to_scale(i["quantidade_kg_mn"] * 25 / 2, data["resolucao_balanca_kg"]) for i in formula["items"])
+
+    expected = sum(
+        round_to_scale(i["quantidade_kg_mn"] * 25 / 2, data["resolucao_balanca_kg"])
+        for i in formula["items"]
+    )
     assert data["total_kg_mn_dia"] == pytest.approx(expected * 2)
     assert data["total_kg_mn_batida"] * 2 == pytest.approx(data["total_kg_mn_dia"])
     assert sum(i["kg_mn_batida"] for i in data["items"]) == pytest.approx(

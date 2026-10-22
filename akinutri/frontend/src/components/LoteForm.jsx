@@ -132,6 +132,36 @@ export default function LoteForm({ value, onChange, racas, save, busy }) {
             <option value="dupla_aptidao">Dupla aptidão</option>
           </select>
         </label>
+        <label className="span2">
+          Destino do leite
+          <select
+            value={value.destinacao_economica ?? 'leite_fluido'}
+            onChange={(e) => set('destinacao_economica', e.target.value)}
+          >
+            <option value="leite_fluido">Leite fluido</option>
+            <option value="queijo_artesanal">Queijo artesanal · perfil experimental</option>
+          </select>
+        </label>
+        {(Number(value.idade_meses) <= 36 || Number(value.ordem_paricao) === 1) && (
+          <>
+            <p className="span2 notice">
+              Reserva experimental de crescimento: 10% sobre a mantença informada, sem duplicação
+              por idade e parição. Valores devem corresponder aos animais analisados; não garantem
+              escore corporal.
+            </p>
+            {num('PB de mantença · kg/animal/dia', 'mantenca_pb_kg_dia', 0.001, 5, 'any')}
+            {num('EL de mantença · Mcal/animal/dia', 'mantenca_el_mcal_dia', 0.001, 40, 'any')}
+            <label className="span2">
+              Fonte da estimativa de mantença
+              <input
+                required
+                maxLength="500"
+                value={value.fonte_mantenca ?? ''}
+                onChange={(e) => set('fonte_mantenca', e.target.value)}
+              />
+            </label>
+          </>
+        )}
       </div>
       <button className="button secondary" disabled={busy}>
         Salvar lote e continuar

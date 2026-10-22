@@ -141,6 +141,7 @@ def test_formulation_requires_group_and_comparison_rejects_different_groups(clie
 @pytest.mark.parametrize("scenario_index", [0, 1, 2])
 def test_formulation_from_scratch_without_ration_quantities(client, scenario_index):
     from conftest import SCENARIOS
+
     payload = request_for(client, SCENARIOS[scenario_index])
     assert all("quantidade_kg_mn" not in item for item in payload["itens"])
     response = client.post("/api/formular", json=payload)

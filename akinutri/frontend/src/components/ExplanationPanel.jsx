@@ -46,6 +46,27 @@ export default function ExplanationPanel({ result }) {
         {result.global_cf == null ? 'Não aplicável' : number(result.global_cf, 3)}
       </p>
       <p>{result.reasoning.certainty_notice}</p>
+      {result.reasoning.composition_evidence?.items?.length > 0 && (
+        <details>
+          <summary>Fontes e pesos dos insumos utilizados</summary>
+          <ul>
+            {result.reasoning.composition_evidence.items.map((item) => (
+              <li key={item.insumo_id}>
+                Insumo #{item.insumo_id} · {item.source} · CF {number(item.cf, 2)} ·{' '}
+                {number(item.weight * 100, 1)}% da MS
+              </li>
+            ))}
+          </ul>
+        </details>
+      )}
+      {result.reasoning.profile_adjustments?.map((adjustment) => (
+        <details key={adjustment.rule_id}>
+          <summary>{adjustment.rule_id} · ajuste experimental dos limites</summary>
+          <pre style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>
+            {JSON.stringify(adjustment, null, 2)}
+          </pre>
+        </details>
+      ))}
       <div className="missing-actions">
         <button type="button" className="button secondary" onClick={() => load('por-que-perfil')}>
           Por que este perfil?

@@ -64,6 +64,17 @@ def migrate_ownership(target_engine):
 
     with target_engine.begin() as connection:
         inspector = inspect(connection)
+        lot_columns = {column["name"] for column in inspector.get_columns("lotes")}
+        for name, definition in (
+            ("destinacao_economica", "VARCHAR(30) NOT NULL DEFAULT 'leite_fluido'"),
+            ("mantenca_pb_kg_dia", "FLOAT"),
+            ("mantenca_el_mcal_dia", "FLOAT"),
+            ("fonte_mantenca", "VARCHAR(500)"),
+        ):
+            if name not in lot_columns:
+                connection.execute(
+                    text(f'ALTER TABLE lotes ADD COLUMN "{name}" {definition}')
+                )
         group_columns = (
             {column["name"] for column in inspector.get_columns("grupos_producao")}
             if inspector.has_table("grupos_producao")
@@ -118,7 +129,9 @@ def migrate_scoped_unique_constraints(target_engine):
     )
 
     def has_legacy_unique(connection, table, column):
-        for index in connection.execute(text(f'PRAGMA index_list("{table}")')).mappings():
+        for index in connection.execute(
+            text(f'PRAGMA index_list("{table}")')
+        ).mappings():
             if not index["unique"]:
                 continue
             columns = [
@@ -150,13 +163,17 @@ def migrate_scoped_unique_constraints(target_engine):
                         ),
                         {"name": table},
                     ).scalar_one()
-                    indexes = connection.execute(
-                        text(
-                            "SELECT sql FROM sqlite_master "
-                            "WHERE type = 'index' AND tbl_name = :name AND sql IS NOT NULL"
-                        ),
-                        {"name": table},
-                    ).scalars().all()
+                    indexes = (
+                        connection.execute(
+                            text(
+                                "SELECT sql FROM sqlite_master "
+                                "WHERE type = 'index' AND tbl_name = :name AND sql IS NOT NULL"
+                            ),
+                            {"name": table},
+                        )
+                        .scalars()
+                        .all()
+                    )
                     columns = [
                         entry["name"]
                         for entry in connection.execute(

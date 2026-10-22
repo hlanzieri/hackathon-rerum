@@ -194,7 +194,9 @@ def infer(data, mode, db, *, created_at=None):
     # Quantity is an input only for evaluation; formulation starts with free LP
     # variables and must not depend on a pre-existing ration.
     if mode == "verificar" and not any(i.quantidade_kg_mn > 0 for i in data.itens):
-        raise HTTPException(422, "Informe ao menos uma quantidade positiva para verificar a dieta.")
+        raise HTTPException(
+            422, "Informe ao menos uma quantidade positiva para verificar a dieta."
+        )
     lote = require(db, Lote, data.lote_id)
     group_context = None
     if data.grupo_id is not None:
@@ -270,8 +272,8 @@ def infer(data, mode, db, *, created_at=None):
             expected_group.get("peso_medio_kg", lote.peso_kg),
             (
                 max(1, int(expected_group["del_medio"]))
-                if expected_group
-                else lote.dias_lactacao
+                if expected_group and expected_group["fase"] == "lactacao"
+                else None if expected_group else lote.dias_lactacao
             ),
             expected_group.get("fase", lote.estado),
             require(db, Raca, lote.raca_id).nome,
@@ -280,6 +282,8 @@ def infer(data, mode, db, *, created_at=None):
                 422,
                 "Estimativa de CMS pertence a outro contexto de lote. Recalcule ou informe consumo manual.",
             )
+        if estimation.dias_ate_parto != lote.dias_ate_parto:
+            raise HTTPException(422, "Dias ate parto da estimativa divergem do lote.")
         if group_context and (
             estimation.escore_corporal != group_context["ecc_medio"]
             or estimation.fracao_multiparas != group_context["fracao_multiparas"]
@@ -320,6 +324,19 @@ def infer(data, mode, db, *, created_at=None):
     if data.dcad_meq_100g is not None:
         facts["dcad_meq_100g"] = data.dcad_meq_100g
     evidence = {k: v.model_dump() for k, v in data.evidence.items()}
+    # Freeze per-ingredient evidence in the same facts used by historical audit.
+    if base.get("certainty_policy"):
+        fallback = evidence.get(
+            "composicao",
+            {
+                "source": "tabela",
+                "cf": base["certainty_policy"]["source_weights"]["tabela"],
+            },
+        )
+        for ingredient, item in zip(ingredients, items):
+            ingredient["evidencia_composicao"] = (
+                item.get("evidencia_composicao") or fallback
+            )
     unknown = set(evidence) - set(facts) - {"composicao", "consumo_ms_kg"}
     if unknown:
         raise HTTPException(
@@ -363,6 +380,11 @@ def infer(data, mode, db, *, created_at=None):
         result.update(
             status="dados_insuficientes",
             message="Evidencia de composicao ou consumo sem suporte positivo. Revise origem e CF antes de formular.",
+        )
+    elif any(p.get("missing_inputs") for p in profile_trace):
+        result.update(
+            status="dados_insuficientes",
+            message="Ajuste T2 pendente: informe PB e energia de mantenca por animal/dia e sua fonte, ou revise os limites conflitantes. Consulte o traco de selecao.",
         )
     elif transition_blocks:
         result["message"] = (

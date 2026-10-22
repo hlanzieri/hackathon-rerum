@@ -38,7 +38,14 @@ export default function AkiBotWizard({ workspace: w, onComplete }) {
   const submitted = useRef(null);
   const [step, setStep] = useState(0);
   const [compositionSource, setCompositionSource] = useState('tabela');
-  const [compositionCf, setCompositionCf] = useState(0.75);
+  const [compositionCf, setCompositionCf] = useState(0.85);
+  const [milkDestination, setMilkDestination] = useState('leite_fluido');
+  const [age, setAge] = useState(48);
+  const [calvingOrder, setCalvingOrder] = useState(3);
+  const [maintenancePb, setMaintenancePb] = useState('');
+  const [maintenanceEnergy, setMaintenanceEnergy] = useState('');
+  const [maintenanceSource, setMaintenanceSource] = useState('');
+  const growing = Number(age) <= 36 || Number(calvingOrder) === 1;
   const [particle, setParticle] = useState(true);
   const [dryCorn, setDryCorn] = useState(true);
   const [profile, setProfile] = useState(null);
@@ -86,6 +93,13 @@ export default function AkiBotWizard({ workspace: w, onComplete }) {
           ...template,
           lote: {
             ...template.lote,
+            destinacao_economica: milkDestination,
+            idade_meses: Number(age),
+            ordem_paricao: Number(calvingOrder),
+            mantenca_pb_kg_dia: growing && maintenancePb !== '' ? Number(maintenancePb) : null,
+            mantenca_el_mcal_dia:
+              growing && maintenanceEnergy !== '' ? Number(maintenanceEnergy) : null,
+            fonte_mantenca: growing ? maintenanceSource || null : null,
             raca_id: Number(breedId),
             dias_ate_parto: group.fase === 'seca' ? Number(daysToCalving) : null,
             nome: group.nome,
@@ -124,6 +138,12 @@ export default function AkiBotWizard({ workspace: w, onComplete }) {
     selected.every((i) => validNumber(rows[i.id].quantidade_kg_mn, 0, 200));
   const canAdvance = [
     Boolean(group) &&
+      validNumber(age, 18, 240) &&
+      validNumber(calvingOrder, 1, 15) &&
+      (!growing ||
+        (validNumber(maintenancePb, 0.001, 5) &&
+          validNumber(maintenanceEnergy, 0.001, 40) &&
+          maintenanceSource.trim().length > 0)) &&
       profile !== null &&
       Boolean(breedId) &&
       (group.fase !== 'seca' || validNumber(daysToCalving, 1, 100)),
@@ -138,13 +158,18 @@ export default function AkiBotWizard({ workspace: w, onComplete }) {
     try {
       const result = await api('/estimar-cms', 'POST', {
         peso_kg: scenario.lote.peso_kg,
-        dias_lactacao: scenario.lote.dias_lactacao || 1,
+        dias_lactacao: scenario.lote.estado === 'seca' ? null : scenario.lote.dias_lactacao,
+        dias_ate_parto: scenario.lote.estado === 'seca' ? scenario.lote.dias_ate_parto : null,
         estado: scenario.lote.estado,
         raca: w.racas.find((r) => r.id === scenario.lote.raca_id)?.nome || 'Não informada',
         escore_corporal: group.ecc_medio,
         fracao_multiparas: group.fracao_multiparas,
-        leite_corrigido_kg_dia: scenario.lote.producao_l_dia || 1,
-        energia_referencia_mcal_kg: 0.7,
+        ...(scenario.lote.estado === 'seca'
+          ? {}
+          : {
+              leite_corrigido_kg_dia: scenario.lote.producao_l_dia,
+              energia_referencia_mcal_kg: 0.7,
+            }),
       });
       if (!validNumber(result.cms_kg_dia ?? '', 3, 40))
         throw new Error(
@@ -272,12 +297,12 @@ export default function AkiBotWizard({ workspace: w, onComplete }) {
                 value={compositionSource}
                 onChange={(e) => {
                   setCompositionSource(e.target.value);
-                  setCompositionCf(e.target.value === 'tabela' ? 0.75 : 1);
+                  setCompositionCf({ tabela: 0.85, laboratorio: 1, usuario: 0.7 }[e.target.value]);
                 }}
               >
-                <option value="tabela">Tabela de referência · CF inicial 0,75</option>
+                <option value="tabela">Tabela de referência · CF inicial 0,85</option>
                 <option value="laboratorio">Análise laboratorial · CF inicial 1</option>
-                <option value="usuario">Informação do usuário · CF inicial 1</option>
+                <option value="usuario">Estimativa de campo · CF inicial 0,70</option>
               </select>
             </label>
             <label>
@@ -301,6 +326,93 @@ export default function AkiBotWizard({ workspace: w, onComplete }) {
         {step === 0 && (
           <>
             <p>Olá! Escolha o grupo de produção para iniciar a conversa.</p>
+            <label>
+              Idade média · meses
+              <input
+                type="number"
+                min="18"
+                max="240"
+                value={age}
+                onChange={(e) => {
+                  setAge(e.target.value);
+                  savedLote.current = null;
+                }}
+              />
+            </label>
+            <label>
+              Ordem de parição
+              <input
+                type="number"
+                min="1"
+                max="15"
+                value={calvingOrder}
+                onChange={(e) => {
+                  setCalvingOrder(e.target.value);
+                  savedLote.current = null;
+                }}
+              />
+            </label>
+            {growing && (
+              <>
+                <p>
+                  Reserva experimental: 10% da mantença técnica informada, convertidos para a
+                  densidade da dieta.
+                </p>
+                <label>
+                  PB de mantença · kg/animal/dia
+                  <input
+                    type="number"
+                    min="0.001"
+                    max="5"
+                    step="any"
+                    value={maintenancePb}
+                    onChange={(e) => {
+                      setMaintenancePb(e.target.value);
+                      savedLote.current = null;
+                    }}
+                  />
+                </label>
+                <label>
+                  EL de mantença · Mcal/animal/dia
+                  <input
+                    type="number"
+                    min="0.001"
+                    max="40"
+                    step="any"
+                    value={maintenanceEnergy}
+                    onChange={(e) => {
+                      setMaintenanceEnergy(e.target.value);
+                      savedLote.current = null;
+                    }}
+                  />
+                </label>
+                <label>
+                  Fonte da estimativa de mantença
+                  <input
+                    maxLength="500"
+                    value={maintenanceSource}
+                    onChange={(e) => {
+                      setMaintenanceSource(e.target.value);
+                      savedLote.current = null;
+                    }}
+                  />
+                </label>
+              </>
+            )}
+            <label>
+              Destino do leite
+              <select
+                value={milkDestination}
+                onChange={(e) => {
+                  setMilkDestination(e.target.value);
+                  savedLote.current = null;
+                  submitted.current = null;
+                }}
+              >
+                <option value="leite_fluido">Leite fluido</option>
+                <option value="queijo_artesanal">Queijo artesanal · experimental</option>
+              </select>
+            </label>
             <label>
               Grupo de produção
               <select value={groupId} onChange={(e) => selectGroup(e.target.value)}>

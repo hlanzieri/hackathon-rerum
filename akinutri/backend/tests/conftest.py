@@ -1,9 +1,49 @@
 import pytest
+import faulthandler
+import os
+import sys
+import threading
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from app import main
 from app.database import Base, get_db
+
+
+def pytest_addoption(parser):
+    parser.addoption(
+        "--test-timeout",
+        type=float,
+        default=30,
+        help="Limite em segundos por teste, incluindo setup/teardown; encerra o processo em caso de travamento.",
+    )
+
+
+@pytest.hookimpl(hookwrapper=True)
+def pytest_runtest_protocol(item, nextitem):
+    seconds = item.config.getoption("--test-timeout")
+    if seconds <= 0:
+        raise pytest.UsageError("--test-timeout deve ser positivo.")
+
+    def abort():
+        capture = item.config.pluginmanager.getplugin("capturemanager")
+        if capture:
+            capture.suspend_global_capture(in_=True)
+        sys.stderr.write(
+            f"\nTIMEOUT: {item.nodeid} excedeu {seconds}s (setup/teste/teardown).\n"
+        )
+        faulthandler.dump_traceback(file=sys.stderr, all_threads=True)
+        sys.stderr.flush()
+        os._exit(124)
+
+    watchdog = threading.Timer(seconds, abort)
+    watchdog.daemon = True
+    watchdog.start()
+    try:
+        yield
+    finally:
+        watchdog.cancel()
+        watchdog.join(timeout=1)
 
 
 @pytest.fixture
@@ -21,21 +61,28 @@ def client(tmp_path, monkeypatch, request):
         with factory() as db:
             yield db
 
+    previous_overrides = main.app.dependency_overrides.copy()
     main.app.dependency_overrides[get_db] = get_test_db
-    with TestClient(main.app) as value:
-        if request.module.__name__.split(".")[-1] not in {"test_auth", "test_security"}:
-            response = value.post(
-                "/api/auth/register",
-                json={
-                    "nome": "Operador de testes",
-                    "email": "operator@example.com",
-                    "senha": "senha-segura-123",
-                },
-            )
-            assert response.status_code == 201
-        yield value
-    main.app.dependency_overrides.clear()
-    engine.dispose()
+    try:
+        with TestClient(main.app) as value:
+            if request.module.__name__.split(".")[-1] not in {
+                "test_auth",
+                "test_security",
+            }:
+                response = value.post(
+                    "/api/auth/register",
+                    json={
+                        "nome": "Operador de testes",
+                        "email": "operator@example.com",
+                        "senha": "senha-segura-123",
+                    },
+                )
+                assert response.status_code == 201
+            yield value
+    finally:
+        main.app.dependency_overrides.clear()
+        main.app.dependency_overrides.update(previous_overrides)
+        engine.dispose()
 
 
 SCENARIOS = [

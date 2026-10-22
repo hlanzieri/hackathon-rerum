@@ -47,6 +47,10 @@ class LoteCreate(DTO):
     ordem_paricao: int = Field(ge=1, le=15)
     estado: Literal["lactacao", "seca"]
     destinacao: Literal["leite", "reproducao", "dupla_aptidao"] = "leite"
+    destinacao_economica: Literal["leite_fluido", "queijo_artesanal"] = "leite_fluido"
+    mantenca_pb_kg_dia: float | None = Field(default=None, gt=0, le=5)
+    mantenca_el_mcal_dia: float | None = Field(default=None, gt=0, le=40)
+    fonte_mantenca: str | None = Field(default=None, min_length=1, max_length=500)
     producao_l_dia: float = Field(ge=0, le=80)
     dias_lactacao: int | None = Field(default=None, ge=1, le=700)
     dias_ate_parto: int | None = Field(default=None, ge=1, le=100)
@@ -100,6 +104,7 @@ class ItemEntrada(DTO):
     minimo_kg_ms: float = Field(default=0, ge=0, le=40)
     maximo_kg_ms: float = Field(default=40, ge=0, le=40)
     preco_kg_mn: float | None = Field(default=None, ge=0, le=10000)
+    evidencia_composicao: "FactEvidence | None" = None
 
     @model_validator(mode="after")
     def bounds(self):
@@ -109,8 +114,17 @@ class ItemEntrada(DTO):
 
 
 class FactEvidence(DTO):
-    cf: float = Field(ge=-1, le=1)
+    cf: float | None = Field(default=None, ge=-1, le=1)
     source: Literal["usuario", "laboratorio", "tabela"]
+
+    @model_validator(mode="after")
+    def source_weight(self):
+        ceiling = {"laboratorio": 1.0, "tabela": 0.85, "usuario": 0.70}[self.source]
+        if self.cf is None:
+            self.cf = ceiling
+        if self.cf > ceiling:
+            raise ValueError("CF excede o peso maximo declarado para a fonte.")
+        return self
 
 
 class InferenciaRequest(DTO):
@@ -153,7 +167,8 @@ class FormulacaoRequest(InferenciaRequest):
 
 class CmsRequest(DTO):
     peso_kg: float = Field(ge=200, le=1000)
-    dias_lactacao: int = Field(ge=1, le=700)
+    dias_lactacao: int | None = Field(default=None, ge=1, le=700)
+    dias_ate_parto: int | None = Field(default=None, ge=1, le=100)
     escore_corporal: float = Field(ge=1, le=5)
     fracao_multiparas: float = Field(ge=0, le=1)
     energia_leite_mcal_dia: float | None = Field(default=None, gt=0, le=100)
@@ -164,6 +179,24 @@ class CmsRequest(DTO):
 
     @model_validator(mode="after")
     def milk_energy_source(self):
+        if self.estado == "seca":
+            if (
+                self.dias_lactacao is not None
+                or self.dias_ate_parto is None
+                or any(
+                    value is not None
+                    for value in (
+                        self.energia_leite_mcal_dia,
+                        self.leite_corrigido_kg_dia,
+                    )
+                )
+            ):
+                raise ValueError(
+                    "Seca exige dias ate parto, sem DEL nem energia/leite de lactacao."
+                )
+            return self
+        if self.dias_lactacao is None or self.dias_ate_parto is not None:
+            raise ValueError("Lactacao exige DEL, sem dias ate parto.")
         if (self.energia_leite_mcal_dia is None) == (
             self.leite_corrigido_kg_dia is None
         ):
@@ -187,3 +220,4 @@ class MixingRequest(DTO):
 
 
 InferenciaRequest.model_rebuild()
+ItemEntrada.model_rebuild()
