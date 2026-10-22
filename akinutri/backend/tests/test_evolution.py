@@ -258,6 +258,9 @@ def test_shadow_prices_match_perturbed_objective():
     assert result["shadow_prices"]["equalities"][0][
         "marginal_brl_per_rhs_unit"
     ] == pytest.approx(1)
+    assert result["shadow_prices"]["equalities"][0]["binding"] is True
+    for row in result["shadow_prices"]["inequalities"]:
+        assert row["binding"] == (abs(row["slack"]) <= base["numeric_tolerance"])
     perturbed = solve(
         base, profile, [ingredient], [{"minimo_kg_ms": 0, "maximo_kg_ms": 40}], 24.001
     )

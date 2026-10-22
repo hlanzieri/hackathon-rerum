@@ -44,8 +44,8 @@ export async function api(path, method = 'GET', body, options = {}) {
         : `API indisponível (HTTP ${response.status}).`,
     );
   }
-  if (!response.ok)
-    throw new Error(
+  if (!response.ok) {
+    const error = new Error(
       Array.isArray(data?.detail)
         ? data.detail
             .map(
@@ -57,6 +57,10 @@ export async function api(path, method = 'GET', body, options = {}) {
           ? data.detail
           : `Erro na API (HTTP ${response.status}).`,
     );
+    error.status = response.status;
+    error.data = data;
+    throw error;
+  }
   return data;
 }
 export const number = (v, digits = 2) =>

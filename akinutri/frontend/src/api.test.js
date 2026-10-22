@@ -29,3 +29,19 @@ test('invalid successful response is not accepted as diet data', async () => {
     'A API retornou uma resposta inválida.',
   );
 });
+
+test.each([400, 422, 500])(
+  'preserves structured HTTP %s errors for the assistant',
+  async (status) => {
+    const data = { detail: [{ loc: ['body', 'grupo_id'], msg: 'Field required' }] };
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({ ok: false, status, json: async () => data }),
+    );
+    await expect(api('/formular', 'POST', {})).rejects.toMatchObject({
+      status,
+      data,
+      message: 'body.grupo_id: Field required',
+    });
+  },
+);

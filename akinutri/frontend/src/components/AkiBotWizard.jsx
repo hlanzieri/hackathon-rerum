@@ -17,6 +17,9 @@ const validNumber = (value, min, max = Infinity) =>
   Number.isFinite(Number(value)) &&
   Number(value) >= min &&
   Number(value) <= max;
+const validInteger = (value, min, max) =>
+  validNumber(value, min, max) && Number.isInteger(Number(value));
+const cfCeiling = { tabela: 0.85, laboratorio: 1, usuario: 0.7 };
 const standard = (name) => /silagem.*milho|farelo.*soja|milho.*mo[ií]do/i.test(name);
 const nutrientKeys = ['ms_pct', 'pb_pct', 'fdn_pct', 'amido_pct', 'el_mcal_kg', 'ca_pct', 'p_pct'];
 export function defaultLactationIds(ingredients) {
@@ -30,6 +33,78 @@ export function defaultLactationIds(ingredients) {
       );
     return candidates.length ? [candidates[0].id] : [];
   });
+}
+
+// The API resolves the persisted lot and composition by ID (DTO extra="forbid").
+export function buildInferenceRequest({
+  loteId,
+  groupId,
+  intake,
+  particle,
+  dryCorn,
+  compositionSource,
+  compositionCf,
+  estimate,
+  selected,
+  rows,
+  mode,
+}) {
+  if (!validInteger(loteId, 1, Infinity) || !validInteger(groupId, 1, Infinity))
+    throw new Error('Selecione um lote e um grupo válidos.');
+  if (
+    !['formular', 'verificar'].includes(mode) ||
+    !validNumber(intake, 3, 40) ||
+    !Object.hasOwn(cfCeiling, compositionSource) ||
+    !validNumber(compositionCf, -1, cfCeiling[compositionSource])
+  )
+    throw new Error('Revise consumo, objetivo, origem e CF da composição.');
+  return {
+    lote_id: loteId,
+    grupo_id: Number(groupId),
+    consumo_ms_kg: Number(intake),
+    sistema: 'tmr',
+    particula_adequada: particle,
+    milho_seco_predominante: dryCorn,
+    evidence: { composicao: { source: compositionSource, cf: Number(compositionCf) } },
+    estimativa_cms: estimate,
+    itens: selected.map((i) => ({
+      insumo_id: i.id,
+      preco_kg_mn: Number(rows[i.id].preco_kg_mn),
+      quantidade_kg_mn: mode === 'verificar' ? Number(rows[i.id].quantidade_kg_mn) : 0,
+      minimo_kg_ms: 0,
+      maximo_kg_ms: i.categoria === 'mineral' ? 0.5 : 40,
+    })),
+  };
+}
+
+// Only explains backend facts; no nutritional inference or local optimization.
+export function analysisFeedback(result) {
+  if (result.status === 'dados_insuficientes') {
+    const pending = result.insumos_incompletos?.length
+      ? result.insumos_incompletos
+      : result.missing_composition || [];
+    if (pending.length)
+      return pending
+        .map(
+          (item) =>
+            `Não foi possível rodar a análise porque o insumo ${item.nome} está sem os dados de ${(item.nutrientes_faltantes || item.nutrientes || []).join('/')} cadastrados. Deseja atualizar o cadastro do insumo ou removê-lo da simulação?`,
+        )
+        .join(' ');
+    return (
+      result.mensagem ||
+      result.message ||
+      'Dados insuficientes. Revise os parâmetros e a origem da composição.'
+    );
+  }
+  if (['inviavel', 'falha_solver'].includes(result.status)) {
+    const constraints = result.bottleneck?.constraints || [];
+    return constraints.length
+      ? `Não foi possível encontrar uma combinação viável para a meta de produção informada. Restrições em conflito identificadas pelo motor: ${constraints.map((c) => c.id).join(', ')}. Revise os limites do lote ou os insumos disponíveis. ${result.bottleneck.message || ''}`
+      : result.mensagem ||
+          result.message ||
+          'O solver não concluiu a otimização. Tente novamente ou revise os dados informados.';
+  }
+  return null;
 }
 
 export default function AkiBotWizard({ workspace: w, onComplete }) {
@@ -74,9 +149,9 @@ export default function AkiBotWizard({ workspace: w, onComplete }) {
     (g) =>
       g.ativo !== false &&
       ['lactacao', 'seca'].includes(g.fase) &&
-      validNumber(g.numero_animais, 1) &&
+      validInteger(g.numero_animais, 1, 100000) &&
       validNumber(g.peso_medio_kg, 200, 1000) &&
-      validNumber(g.del_medio, g.fase === 'lactacao' ? 1 : 0) &&
+      validNumber(g.del_medio, g.fase === 'lactacao' ? 1 : 0, 700) &&
       validNumber(
         g.producao_media_l_dia,
         g.fase === 'lactacao' ? 0.01 : 0,
@@ -138,17 +213,17 @@ export default function AkiBotWizard({ workspace: w, onComplete }) {
     selected.every((i) => validNumber(rows[i.id].quantidade_kg_mn, 0, 200));
   const canAdvance = [
     Boolean(group) &&
-      validNumber(age, 18, 240) &&
-      validNumber(calvingOrder, 1, 15) &&
+      validInteger(age, 18, 240) &&
+      validInteger(calvingOrder, 1, 15) &&
       (!growing ||
         (validNumber(maintenancePb, 0.001, 5) &&
           validNumber(maintenanceEnergy, 0.001, 40) &&
           maintenanceSource.trim().length > 0)) &&
       profile !== null &&
       Boolean(breedId) &&
-      (group.fase !== 'seca' || validNumber(daysToCalving, 1, 100)),
+      (group.fase !== 'seca' || validInteger(daysToCalving, 1, 100)),
     validNumber(intake, 3, 40),
-    ingredientsValid,
+    ingredientsValid && validNumber(compositionCf, -1, cfCeiling[compositionSource]),
     mode === 'formular' ? Boolean(group) : quantitiesValid,
     true,
   ][step];
@@ -161,7 +236,7 @@ export default function AkiBotWizard({ workspace: w, onComplete }) {
         dias_lactacao: scenario.lote.estado === 'seca' ? null : scenario.lote.dias_lactacao,
         dias_ate_parto: scenario.lote.estado === 'seca' ? scenario.lote.dias_ate_parto : null,
         estado: scenario.lote.estado,
-        raca: w.racas.find((r) => r.id === scenario.lote.raca_id)?.nome || 'Não informada',
+        raca: w.racas.find((r) => r.id === Number(scenario.lote.raca_id))?.nome || 'Não informada',
         escore_corporal: group.ecc_medio,
         fracao_multiparas: group.fracao_multiparas,
         ...(scenario.lote.estado === 'seca'
@@ -180,7 +255,11 @@ export default function AkiBotWizard({ workspace: w, onComplete }) {
       setEstimate(result.inputs);
       setManual(false);
     } catch (e) {
-      setError(e.message);
+      setError(
+        analysisFeedback(
+          e.data?.detail && typeof e.data.detail === 'object' ? e.data.detail : e.data || {},
+        ) || e.message,
+      );
     } finally {
       setBusy(false);
     }
@@ -190,7 +269,7 @@ export default function AkiBotWizard({ workspace: w, onComplete }) {
       busy ||
       !group ||
       !ingredientsValid ||
-      !validNumber(compositionCf, -1, 1) ||
+      !validNumber(compositionCf, -1, cfCeiling[compositionSource]) ||
       !validNumber(intake, 3, 40) ||
       (mode === 'formular' ? !group : !quantitiesValid)
     )
@@ -198,33 +277,42 @@ export default function AkiBotWizard({ workspace: w, onComplete }) {
     setBusy(true);
     setError('');
     try {
+      if (!validInteger(age, 18, 240) || !validInteger(calvingOrder, 1, 15))
+        throw new Error('Idade e ordem de parição devem ser números inteiros válidos.');
       if (!savedLote.current) savedLote.current = await api('/lotes', 'POST', scenario.lote);
-      const request = {
-        lote_id: savedLote.current.id,
-        grupo_id: Number(groupId),
-        consumo_ms_kg: Number(intake),
-        sistema: 'tmr',
-        particula_adequada: particle,
-        milho_seco_predominante: dryCorn,
-        evidence: { composicao: { source: compositionSource, cf: Number(compositionCf) } },
-        estimativa_cms: estimate,
-        itens: selected.map((i) => ({
-          insumo_id: i.id,
-          preco_kg_mn: Number(rows[i.id].preco_kg_mn),
-          quantidade_kg_mn: mode === 'verificar' ? Number(rows[i.id].quantidade_kg_mn) : 0,
-          minimo_kg_ms: 0,
-          maximo_kg_ms: i.categoria === 'mineral' ? 0.5 : 40,
-        })),
-      };
+      const request = buildInferenceRequest({
+        loteId: savedLote.current.id,
+        groupId,
+        intake,
+        particle,
+        dryCorn,
+        compositionSource,
+        compositionCf,
+        estimate,
+        selected,
+        rows,
+        mode,
+      });
       const signature = JSON.stringify({ mode, request });
       const response =
         submitted.current?.signature === signature
           ? submitted.current.response
           : await api(`/${mode}`, 'POST', request);
+      const feedback = analysisFeedback(response);
+      if (feedback) {
+        setError(feedback);
+        return;
+      }
       submitted.current = { signature, response };
+      if (!Number.isInteger(response.session_id) || response.session_id <= 0)
+        throw new Error('A API não retornou uma sessão válida para a análise.');
       await onComplete(response.session_id);
     } catch (e) {
-      setError(e.message);
+      setError(
+        analysisFeedback(
+          e.data?.detail && typeof e.data.detail === 'object' ? e.data.detail : e.data || {},
+        ) || e.message,
+      );
     } finally {
       setBusy(false);
     }
@@ -640,9 +728,22 @@ export default function AkiBotWizard({ workspace: w, onComplete }) {
           </>
         )}
       </fieldset>
+      {busy && (
+        <p role="status" aria-live="polite">
+          {step === 4
+            ? 'Calculando otimização via SciPy HiGHS...'
+            : 'Consultando estimativa de consumo na API...'}
+        </p>
+      )}
       {error && (
         <p role="alert" className="error">
           {error}
+        </p>
+      )}
+      {error.includes('cadastrados') && (
+        <p>
+          <a href="/dashboard/insumos">Atualizar cadastro dos insumos</a> ou volte ao passo de
+          insumos para removê-los da simulação.
         </p>
       )}
       <footer>

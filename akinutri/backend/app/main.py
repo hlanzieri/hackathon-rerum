@@ -496,6 +496,32 @@ def infer(data, mode, db, *, created_at=None):
                 }
                 for i, q in zip(ingredients, quantities)
             ]
+    if (
+        mode == "verificar"
+        and result["status"] == "dados_insuficientes"
+        and result["totals"] is not None
+    ):
+        # Report the active ingredient behind missing totals, just as formulation does.
+        nutrient_labels = {
+            "pb_pct": "PB",
+            "fdn_pct": "FDN",
+            "amido_pct": "Amido",
+            "el_mcal_kg": "EL",
+            "ca_pct": "Cálcio",
+            "p_pct": "Fósforo",
+        }
+        result["insumos_incompletos"] = [
+            {
+                "insumo_id": ingredient["id"],
+                "nome": ingredient["nome"],
+                "nutrientes_faltantes": [
+                    label for key, label in nutrient_labels.items()
+                    if ingredient.get(key) is None
+                ],
+            }
+            for ingredient, quantity in zip(ingredients, quantities)
+            if quantity > 0 and any(ingredient.get(key) is None for key in nutrient_labels)
+        ]
     attach_reasoning(result, base, chain, profile, evidence)
     snapshot = {
         "request": data.model_dump(),

@@ -354,6 +354,7 @@ export default function TracoPanel({
               <thead>
                 <tr>
                   <th scope="col">Restrição</th>
+                  <th scope="col">Vinculante</th>
                   <th scope="col">Folga / resíduo</th>
                   <th scope="col">Marginal R$ / unidade RHS</th>
                 </tr>
@@ -363,6 +364,7 @@ export default function TracoPanel({
                   (row) => (
                     <tr key={row.constraint_id}>
                       <th scope="row">{row.constraint_id}</th>
+                      <td>{row.binding == null ? '—' : row.binding ? 'Sim' : 'Não'}</td>
                       <td>{number(row.slack ?? row.residual, 6)}</td>
                       <td>{number(row.marginal_brl_per_rhs_unit, 6)}</td>
                     </tr>

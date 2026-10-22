@@ -3,7 +3,7 @@ import React from 'react';
 import { afterEach, beforeEach, expect, test, vi } from 'vitest';
 import { cleanup, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import AkiBotWizard, { defaultLactationIds } from './AkiBotWizard';
+import AkiBotWizard, { defaultLactationIds, analysisFeedback } from './AkiBotWizard';
 import { api } from '../api';
 vi.mock('../api', () => ({ api: vi.fn(), number: (v) => String(v) }));
 const workspace = {
@@ -157,4 +157,58 @@ test('group is required first and changing it clears consumption and saved conte
   await user.click(screen.getByRole('button', { name: 'Voltar' }));
   await user.selectOptions(screen.getByLabelText('Grupo de produção'), '');
   expect(screen.getByRole('button', { name: 'Avançar' }).disabled).toBe(true);
+});
+
+test('explains incomplete composition and conflicts using only backend facts', () => {
+  expect(
+    analysisFeedback({
+      status: 'dados_insuficientes',
+      insumos_incompletos: [{ nome: 'Silagem', nutrientes_faltantes: ['Cálcio', 'Fósforo', 'PB'] }],
+    }),
+  ).toContain('Silagem está sem os dados de Cálcio/Fósforo/PB');
+  expect(
+    analysisFeedback({
+      status: 'inviavel',
+      bottleneck: { constraints: [{ id: 'CA-MIN' }, { id: 'P-MAX' }] },
+    }),
+  ).toContain('CA-MIN, P-MAX');
+  expect(analysisFeedback({ status: 'falha_solver', message: 'Erro numérico' })).toBe(
+    'Erro numérico',
+  );
+  expect(analysisFeedback({ status: 'otimo' })).toBeNull();
+});
+
+test('incomplete result remains in assistant and can retry the engine', async () => {
+  const user = userEvent.setup();
+  const complete = vi.fn();
+  api.mockImplementation(async (path) =>
+    path === '/lotes'
+      ? { id: 9 }
+      : {
+          session_id: 42,
+          status: 'dados_insuficientes',
+          insumos_incompletos: [{ nome: 'Silagem', nutrientes_faltantes: ['Cálcio'] }],
+        },
+  );
+  await start(user, complete);
+  await advance(user);
+  await user.click(screen.getByRole('button', { name: 'Usar Insumos Padrão de Lactação' }));
+  await advance(user);
+  await advance(user);
+  await user.click(screen.getByRole('button', { name: /Processar Análise/ }));
+  expect(screen.getByRole('alert').textContent).toContain('Silagem está sem os dados de Cálcio');
+  expect(complete).not.toHaveBeenCalled();
+  await user.click(screen.getByRole('button', { name: /Processar Análise/ }));
+  expect(api.mock.calls.filter(([path]) => path === '/formular')).toHaveLength(2);
+});
+
+test('CF above source ceiling prevents advancing to request', async () => {
+  const user = userEvent.setup();
+  await start(user);
+  await advance(user);
+  await user.click(screen.getByRole('button', { name: 'Usar Insumos Padrão de Lactação' }));
+  await user.clear(screen.getByLabelText('CF da composição'));
+  await user.type(screen.getByLabelText('CF da composição'), '1');
+  expect(screen.getByRole('button', { name: 'Avançar' }).disabled).toBe(true);
+  expect(api).not.toHaveBeenCalled();
 });

@@ -47,3 +47,25 @@ Novas regressões estão em backend/tests/test_consolidacao.py: compatibilidade 
 Execute `./tools/verify.ps1` ou `.venv/bin/python tools/verify.py`. A validação usa SQLite temporário com limites de tempo e não altera o banco operacional.
 
 A consolidação de software não certifica eficácia nutricional, impacto em campo ou nota da banca. A revisão especializada da base continua pendente.
+
+## Resultado da validação e aplicação local
+
+Execução integral concluída com código 0:
+
+| Verificação | Resultado |
+|---|---|
+| Black sequencial | 31 arquivos, nenhuma alteração pendente |
+| pytest | 137 aprovados em 79,63 segundos |
+| Prettier | Aprovado |
+| Vitest | 55 aprovados em 11 arquivos |
+| Assets locais / Vite | Preparados; build de produção aprovado |
+
+Evidência: [registro completo](evidencias/consolidacao-checks.log).
+
+O banco operacional recebeu a migração e o seed após backup em `backups/consolidacao-20261021-a3ff67b0.db`. As 10 sessões anteriores mantiveram snapshot e resultado exatamente iguais e passaram novamente na auditoria. As senhas existentes foram comparadas antes/depois e preservadas; a senha padrão da conta fictícia foi verificada. O catálogo recebeu as seis referências completas; PRAGMA foreign_key_check não encontrou pendências.
+
+A conferência com TestClient usando a configuração real confirmou login JWT, cargo/fazenda, API sem login retornando 401, leitura dos seis alimentos e navegação GET /login, /dashboard e /dashboard/akibot retornando 200. As 4 sessões visíveis para a conta padrão foram abertas com auditoria aprovada. Registros: [banco](evidencias/consolidacao-banco.json) e [conferência local](evidencias/consolidacao-smoke.json). Não houve nova inspeção visual em navegador nesta revisão; foram usados testes de componentes, navegação HTTP e build.
+
+Limitações de bibliotecas: permanece a depreciação Starlette/AnyIO. Na inicialização, Passlib 1.7.4 registra um aviso sobre a ausência de bcrypt.__about__ no bcrypt 4.3.0; a biblioteca captura essa falha de metadados. Hashing, hashes existentes e login foram verificados. Não foi aplicado monkeypatch para ocultar o aviso nem downgrade do bcrypt.
+
+Reinicie uma instância que já esteja em execução com `./start.ps1` para carregar o novo código e o build. A migração e a população do banco já foram aplicadas nesta entrega; repetir o seed mantém os dados existentes conforme a política descrita acima.

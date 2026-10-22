@@ -301,6 +301,7 @@ def solve(
             {
                 "constraint_id": label,
                 "slack": float(slack),
+                "binding": abs(float(slack)) <= base["numeric_tolerance"],
                 "marginal_brl_per_rhs_unit": float(marginal),
             }
             for label, slack, marginal in zip(
@@ -311,6 +312,7 @@ def solve(
             {
                 "constraint_id": label,
                 "residual": float(residual),
+                "binding": abs(float(residual)) <= base["numeric_tolerance"],
                 "marginal_brl_per_rhs_unit": float(marginal),
             }
             for label, residual, marginal in zip(
