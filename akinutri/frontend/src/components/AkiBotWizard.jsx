@@ -638,16 +638,26 @@ export default function AkiBotWizard({ workspace: w, onComplete }) {
             </button>
             {w.insumos.map((i) => (
               <div className="aki-ingredient" key={i.id}>
-                <label>
+                <label className="min-w-0">
                   <input
                     type="checkbox"
                     checked={rows[i.id].selected}
                     onChange={(e) => update(i.id, 'selected', e.target.checked)}
                   />
-                  {i.nome}
+                  <span
+                    className="block min-w-0 truncate whitespace-nowrap overflow-hidden text-ellipsis"
+                    title={i.nome}
+                  >
+                    {i.nome}
+                  </span>
                 </label>
                 <label>
-                  Preço de {i.nome} · R$/kg MN
+                  <span
+                    className="block min-w-0 truncate whitespace-nowrap overflow-hidden text-ellipsis"
+                    title={`Preço de ${i.nome} · R$/kg MN`}
+                  >
+                    Preço de {i.nome} · R$/kg MN
+                  </span>
                   <input
                     type="number"
                     min="0"
@@ -679,8 +689,13 @@ export default function AkiBotWizard({ workspace: w, onComplete }) {
             ) : (
               <>
                 {selected.map((i) => (
-                  <label key={i.id}>
-                    Quantidade de {i.nome} · kg MN/animal/dia
+                  <label key={i.id} className="min-w-0">
+                    <span
+                      className="block min-w-0 truncate whitespace-nowrap overflow-hidden text-ellipsis"
+                      title={`Quantidade de ${i.nome} · kg MN/animal/dia`}
+                    >
+                      Quantidade de {i.nome} · kg MN/animal/dia
+                    </span>
                     <input
                       type="number"
                       min="0"

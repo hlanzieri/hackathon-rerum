@@ -77,7 +77,7 @@ O comando imprime um JSON com `usuario_id`, `grupos`, `lotes`, `insumos_privados
 | Nome | Dr. Carlos Eduardo de Moraes |
 | Cargo / fazenda | Zootecnista / Fazenda Ouro Verde |
 
-São preparados **4 lotes/grupos e 5 insumos privados**, totalizando **115 animais**: alta lactação (45), baixa lactação (25), secas (15) e recria (30). Secas e recria ficam com TMR desativado. Os quatro alimentos completos usam exatamente a tabela fornecida para o pitch; o Feno de Teste mantém Ca/P ausentes para demonstrar `dados_insuficientes`. A origem/atribuição informada fica registrada em `fonte`.
+São preparados **4 lotes/grupos e 5 insumos privados**, totalizando **115 animais**: alta lactação (45), baixa lactação (25), secas (15) e recria (30). Secas e recria ficam com TMR desativado. Os cinco alimentos da demonstração têm composição completa; o Feno de Teste usa Ca 0,40%, P 0,20%, PB 12%, FDN 70% e amido 0,0%. A origem/atribuição informada fica registrada em `fonte`.
 
 O script pode ser repetido: reutiliza lotes/grupos, substitui os insumos privados dessa conta e mantém snapshots auditados e dados das outras contas. Se a senha dessa conta diferir de `senha123`, redefine-a para a credencial de demonstração e revoga suas sessões de login. **Não execute esta seed sobre uma conta de uso real que deva manter seus cadastros atuais.** Antes de modificar um banco existente, cria backup consistente em `backups/pre-golden-seed-*.db`. O catálogo compartilhado não é removido: a tela de insumos poderá mostrar mais de cinco entradas.
 
@@ -134,7 +134,7 @@ Foi conferido o fluxo em **Windows, Python 3.12.14 e Node 22.13.0**, com depend�
 2. No AkiBot, confira os quatro grupos e escolha **Lote 1 - Alta Lactação**. Para o roteiro já conferido, informe CMS manual de **24 kg MS/animal/dia**, selecione silagem, milho, soja e núcleo completos, sem o feno de teste, e formule.
 3. Confira o custo, inclusão MS/MN, CF e preços-sombra. A verificação local com a tabela da seed encontrou solução ótima; hardware, alterações nos dados ou limites podem mudar o resultado/tempo.
 4. Use o resultado válido para abrir **Batida do Vagão**. A seed prepara cadastros; não cria uma nova formulação nem carrega automaticamente uma sessão na UI.
-5. Para demonstrar auditoria, adicione **Feno de Teste (Incompleto)** e confirme a mensagem de Ca/P ausentes. Não use esse insumo na demonstração de sucesso.
+5. **Feno de Teste** tem composição completa e pode ser usado na demonstração de sucesso.
 6. Recria e secas sem TMR ficam fora do escopo de formulação atual. Não use esses lotes como cenário de otimização bem-sucedida.
 7. Depois de instalar dependências e gerar o build, confirme a execução sem internet antes do evento.
 

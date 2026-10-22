@@ -269,8 +269,13 @@ export default function PriceScenarioPanel({ result, snapshot, onOpen, onSaved }
                   </p>
                   {kind === 'indisponivel' && (
                     <p>
-                      <strong>{answer.target.nome}</strong> foi removido do cardápio, incluindo os
-                      limites de inclusão desse insumo.
+                      <strong
+                        className="ingredient-name inline-block min-w-0 truncate whitespace-nowrap overflow-hidden text-ellipsis align-bottom"
+                        title={answer.target.nome}
+                      >
+                        {answer.target.nome}
+                      </strong>{' '}
+                      foi removido do cardápio, incluindo os limites de inclusão desse insumo.
                     </p>
                   )}
                   <div className="table-scroll">
@@ -294,7 +299,14 @@ export default function PriceScenarioPanel({ result, snapshot, onOpen, onSaved }
                             0;
                           return (
                             <tr key={i.id}>
-                              <th scope="row">{i.nome}</th>
+                              <th scope="row">
+                                <span
+                                  className="ingredient-name block min-w-0 truncate whitespace-nowrap overflow-hidden text-ellipsis"
+                                  title={i.nome}
+                                >
+                                  {i.nome}
+                                </span>
+                              </th>
                               <td>{number(previous)}</td>
                               <td>{number(current)}</td>
                               <td>

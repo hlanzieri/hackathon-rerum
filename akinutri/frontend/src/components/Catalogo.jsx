@@ -85,7 +85,12 @@ export default function Catalogo({ insumos, reload }) {
             {insumos.map((i) => (
               <tr key={i.id}>
                 <td>
-                  <strong>{displayText(i.nome)}</strong>
+                  <strong
+                    className="ingredient-name block min-w-0 truncate whitespace-nowrap overflow-hidden text-ellipsis"
+                    title={displayText(i.nome)}
+                  >
+                    {displayText(i.nome)}
+                  </strong>
                   <small>{i.categoria}</small>
                 </td>
                 {['ms_pct', 'pb_pct', 'fdn_pct', 'amido_pct', 'el_mcal_kg', 'ca_pct', 'p_pct'].map(

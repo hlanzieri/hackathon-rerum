@@ -41,7 +41,12 @@ export default function InsumosTable({ insumos, rows, setRows, mode }) {
                 </label>
               </td>
               <th scope="row">
-                <strong>{displayText(i.nome)}</strong>
+                <strong
+                  className="ingredient-name block min-w-0 truncate whitespace-nowrap overflow-hidden text-ellipsis"
+                  title={displayText(i.nome)}
+                >
+                  {displayText(i.nome)}
+                </strong>
                 <small>{i.categoria}</small>
               </th>
               <td>

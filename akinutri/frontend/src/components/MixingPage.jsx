@@ -178,7 +178,14 @@ export default function MixingPage({ history, initialSession }) {
                 {report.items.map((item, index) => (
                   <tr key={item.insumo_id}>
                     <td>{index + 1}</td>
-                    <th scope="row">{displayText(item.nome)}</th>
+                    <th scope="row">
+                      <span
+                        className="ingredient-name block min-w-0 truncate whitespace-nowrap overflow-hidden text-ellipsis"
+                        title={displayText(item.nome)}
+                      >
+                        {displayText(item.nome)}
+                      </span>
+                    </th>
                     <td className="batch-weight">{number(item.kg_mn_batida, 3)}</td>
                     <td>{number(item.kg_mn_dia, 3)}</td>
                     <td className="no-print">

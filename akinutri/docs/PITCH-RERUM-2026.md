@@ -13,7 +13,7 @@ O script foi executado duas vezes no SQLite configurado em `backend/akinutri.db`
 - Baixa lactação: 25 animais, 600 kg, DEL 220, 15 L/dia, ordem 3, TMR ativado.
 - Secas: 15 animais, 700 kg, DEL 0, produção zero, TMR desativado, 45 dias até o parto como pressuposto explícito do cadastro.
 - Recria: 30 animais, 350 kg, DEL 0, produção zero, TMR desativado; cadastro permitido e análise bloqueada pelo escopo atual.
-- Cinco insumos privados: quatro composições completas e Feno de Teste com Ca/P ausentes. Conferência campo a campo com a tabela enviada pelo usuário.
+- Cinco insumos privados com composição completa; Feno de Teste usa Ca 0,40%, P 0,20%, PB 12%, FDN 70% e amido 0,0%.
 
 Cada execução cria um backup SQLite consistente em `backups/pre-golden-seed-*.db` antes da alteração. A limpeza dos insumos tem filtro explícito por usuário. Lotes/grupos necessários são reutilizados; extras sem referências são removidos. Referências de auditoria são preservadas. Os quatro snapshots anteriores dessa conta continuam intactos. O catálogo compartilhado permanece disponível e não é apagado.
 

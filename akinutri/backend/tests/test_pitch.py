@@ -119,22 +119,21 @@ def test_seed_repeats_without_cross_account_changes_and_preserves_audit(client):
         ).all()
         assert len(ingredients) == 5
         for ingredient in ingredients:
-            if ingredient.nome.startswith("Feno de Teste"):
-                assert ingredient.ca_pct is None and ingredient.p_pct is None
-                assert ingredient.ms_pct == 85
-            else:
-                assert all(
-                    getattr(ingredient, key) is not None
-                    for key in (
-                        "ms_pct",
-                        "pb_pct",
-                        "fdn_pct",
-                        "amido_pct",
-                        "el_mcal_kg",
-                        "ca_pct",
-                        "p_pct",
-                    )
+            assert all(
+                getattr(ingredient, key) is not None
+                for key in (
+                    "ms_pct",
+                    "pb_pct",
+                    "fdn_pct",
+                    "amido_pct",
+                    "el_mcal_kg",
+                    "ca_pct",
+                    "p_pct",
                 )
+            )
+        hay = next(i for i in ingredients if i.nome == "Feno de Teste")
+        assert (hay.ms_pct, hay.pb_pct, hay.fdn_pct, hay.amido_pct) == (85, 12, 70, 0)
+        assert (hay.ca_pct, hay.p_pct) == (0.4, 0.2)
 
 
 def test_incomplete_source_rejected_before_seed_mutates(client):

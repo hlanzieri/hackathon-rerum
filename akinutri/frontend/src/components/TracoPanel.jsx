@@ -129,8 +129,13 @@ export default function TracoPanel({
             {pendingIngredients.map((item) => {
               const missing = item.nutrientes_faltantes || item.nutrientes || [];
               return (
-                <li key={item.insumo_id}>
-                  <strong>{displayText(item.nome)}</strong>
+                <li key={item.insumo_id} className="min-w-0">
+                  <strong
+                    className="ingredient-name block min-w-0 truncate whitespace-nowrap overflow-hidden text-ellipsis"
+                    title={displayText(item.nome)}
+                  >
+                    {displayText(item.nome)}
+                  </strong>
                   <span>Faltam: {missing.join(', ')}</span>
                   <div className="missing-actions">
                     <button
@@ -171,8 +176,13 @@ export default function TracoPanel({
             aria-labelledby="missing-data-title"
             onSubmit={submitMissing}
           >
-            <h3 id="missing-data-title">
-              Completar composição · {displayText(editingIngredient.nome)}
+            <h3 id="missing-data-title" className="min-w-0">
+              <span
+                className="block min-w-0 truncate whitespace-nowrap overflow-hidden text-ellipsis"
+                title={`Completar composição · ${displayText(editingIngredient.nome)}`}
+              >
+                Completar composição · {displayText(editingIngredient.nome)}
+              </span>
             </h3>
             {(editingIngredient.nutrientes_faltantes || editingIngredient.nutrientes || []).map(
               (nutrient) => {
@@ -258,7 +268,14 @@ export default function TracoPanel({
                   .filter((i) => i.quantidade_kg_ms > 0.00001)
                   .map((i) => (
                     <tr key={i.insumo_id}>
-                      <td>{displayText(i.nome)}</td>
+                      <td>
+                        <span
+                          className="ingredient-name block min-w-0 truncate whitespace-nowrap overflow-hidden text-ellipsis"
+                          title={displayText(i.nome)}
+                        >
+                          {displayText(i.nome)}
+                        </span>
+                      </td>
                       <td>{number(i.quantidade_kg_mn, 3)}</td>
                       <td>{number(i.quantidade_kg_ms, 3)}</td>
                       <td>{money(i.custo)}</td>

@@ -88,16 +88,17 @@ INSUMOS_SEED_OFICIAL = [
         "categoria": "mineral",
     },
     {
-        "nome": "Feno de Teste (Incompleto)",
+        "nome": "Feno de Teste",
         "categoria": "volumoso",
         "ms_pct": 85.0,
-        "pb_pct": 9.0,
-        "fdn_pct": 68.0,
-        "amido_pct": 1.0,
+        "pb_pct": 12.0,
+        "fdn_pct": 70.0,
+        "amido_pct": 0.0,
         "el_mcal_kg": 1.1,
-        "calcio_pct": None,
-        "fosforo_pct": None,
-        "preco_kg_mn": 0.8,
+        "calcio_pct": 0.40,
+        "fosforo_pct": 0.20,
+        "preco_kg_mn": 0.80,
+        "fonte": "Composição ilustrativa completa para a demonstração RERUM 2026.",
     },
 ]
 NAMES = {item["nome"] for item in INSUMOS_SEED_OFICIAL[:4]}
@@ -235,24 +236,8 @@ def seed_apresentacao(db, compositions=None):
     db.execute(delete(InsumoAlimentar).where(InsumoAlimentar.usuario_id == owner))
     for values in compositions:
         db.add(InsumoAlimentar(usuario_id=owner, **values))
-    db.add(
-        InsumoAlimentar(
-            usuario_id=owner,
-            **InsumoCreate(
-                nome="Feno de Teste (Incompleto)",
-                categoria="volumoso",
-                ms_pct=85,
-                pb_pct=9,
-                fdn_pct=68,
-                amido_pct=1,
-                el_mcal_kg=1.1,
-                ca_pct=None,
-                p_pct=None,
-                preco_kg_mn=0.80,
-                fonte="Fixture intencional de auditoria; não usar como laudo de alimento.",
-            ).model_dump(),
-        )
-    )
+    incomplete_feed = InsumoCreate.model_validate(INSUMOS_SEED_OFICIAL[4])
+    db.add(InsumoAlimentar(usuario_id=owner, **incomplete_feed.model_dump()))
     db.flush()
     summary = {
         "usuario_id": owner,
