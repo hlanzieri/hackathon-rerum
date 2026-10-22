@@ -387,13 +387,13 @@ export default function TracoPanel({
           </div>
         ))}
       </details>
-      <ExplanationPanel key={result.session_id} result={result} />
+      <ExplanationPanel key={`explanation-${result.session_id}`} result={result} />
       <p className="audit-note">
         SHA-256 da base: <code>{result.knowledge_sha256}</code>
       </p>
       <p className="notice">{displayText(result.notice)}</p>
       <PriceScenarioPanel
-        key={result.session_id}
+        key={`scenario-${result.session_id}`}
         result={result}
         snapshot={snapshot}
         onOpen={onScenarioOpen}

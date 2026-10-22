@@ -216,9 +216,9 @@ def test_mixing_totals_and_user_order(client):
     assert response.status_code == 200
     data = response.json()
     assert data["items"][0]["insumo_id"] == active[-1]
-    assert data["total_kg_mn_dia"] == pytest.approx(
-        sum(i["quantidade_kg_mn"] for i in formula["items"]) * 25
-    )
+    from app.reports import round_to_scale
+    expected = sum(round_to_scale(i["quantidade_kg_mn"] * 25 / 2, data["resolucao_balanca_kg"]) for i in formula["items"])
+    assert data["total_kg_mn_dia"] == pytest.approx(expected * 2)
     assert data["total_kg_mn_batida"] * 2 == pytest.approx(data["total_kg_mn_dia"])
     assert sum(i["kg_mn_batida"] for i in data["items"]) == pytest.approx(
         data["total_kg_mn_batida"]

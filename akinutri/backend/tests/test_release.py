@@ -136,3 +136,23 @@ def test_formulation_requires_group_and_comparison_rejects_different_groups(clie
         },
     )
     assert response.status_code == 409
+
+
+@pytest.mark.parametrize("scenario_index", [0, 1, 2])
+def test_formulation_from_scratch_without_ration_quantities(client, scenario_index):
+    from conftest import SCENARIOS
+    payload = request_for(client, SCENARIOS[scenario_index])
+    assert all("quantidade_kg_mn" not in item for item in payload["itens"])
+    response = client.post("/api/formular", json=payload)
+    assert response.status_code == 200, response.text
+    result = response.json()
+    assert result["status"] == "atende_perfil_demo"
+    assert result["items"] and result["shadow_prices"]
+    assert client.get(f"/api/sessoes/{result['session_id']}").status_code == 200
+
+
+def test_empty_verification_is_rejected_even_outside_supported_profile(client):
+    payload = request_for(client)
+    payload["particula_adequada"] = False
+    response = client.post("/api/verificar", json=payload)
+    assert response.status_code == 422

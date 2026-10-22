@@ -53,8 +53,9 @@ async function advance(user) {
 async function start(user, onComplete = vi.fn()) {
   render(<AkiBotWizard workspace={workspace} onComplete={onComplete} />);
   expect(screen.getByRole('button', { name: 'Avançar' }).disabled).toBe(true);
-  await user.click(screen.getByRole('button', { name: /Alta Produção/ }));
+  await user.selectOptions(screen.getByLabelText('Grupo de produção'), '7');
   await advance(user);
+  await user.type(screen.getByLabelText('CMS · kg MS/animal/dia'), '24');
 }
 test('formulates via local contracts after NASEM and group selection', async () => {
   const user = userEvent.setup();
@@ -69,8 +70,7 @@ test('formulates via local contracts after NASEM and group selection', async () 
   await advance(user);
   await user.click(screen.getByRole('button', { name: 'Usar Insumos Padrão de Lactação' }));
   await advance(user);
-  expect(screen.getByRole('button', { name: 'Avançar' }).disabled).toBe(true);
-  await user.selectOptions(screen.getByLabelText('Grupo de produção'), '7');
+  expect(screen.getByRole('button', { name: 'Avançar' }).disabled).toBe(false);
   await advance(user);
   await user.click(screen.getByRole('button', { name: /Processar Análise/ }));
   expect(api).toHaveBeenCalledWith(
@@ -115,7 +115,7 @@ test('verification requires quantities, preserves manual CMS and price, and perm
     estimativa_cms: null,
     itens: [{ insumo_id: 1, preco_kg_mn: 0.5, quantidade_kg_mn: 35 }],
   });
-  expect(payload).not.toHaveProperty('grupo_id');
+  expect(payload.grupo_id).toBe(7);
 });
 test('unavailable NASEM estimate displays backend explanation and retains profile intake', async () => {
   const user = userEvent.setup();
@@ -137,7 +137,6 @@ test('retry after result loading failure reopens saved session without another f
   await advance(user);
   await user.click(screen.getByRole('button', { name: 'Usar Insumos Padrão de Lactação' }));
   await advance(user);
-  await user.selectOptions(screen.getByLabelText('Grupo de produção'), '7');
   await advance(user);
   await user.click(screen.getByRole('button', { name: /Processar Análise/ }));
   expect(screen.getByRole('alert').textContent).toBe('Falha ao abrir resultado');
@@ -146,20 +145,16 @@ test('retry after result loading failure reopens saved session without another f
   expect(complete).toHaveBeenCalledTimes(2);
 });
 
-test('requesting a new profile estimate clears the previous group context', async () => {
+test('group is required first and changing it clears consumption and saved context', async () => {
   const user = userEvent.setup();
-  api.mockImplementation(async (path, method, inputs) => ({ cms_kg_dia: 23, inputs }));
-  await start(user);
-  await user.click(screen.getByRole('button', { name: 'Usar Sugestão Automática NASEM 2021' }));
-  await advance(user);
-  await user.click(screen.getByRole('button', { name: 'Usar Insumos Padrão de Lactação' }));
-  await advance(user);
+  render(<AkiBotWizard workspace={workspace} onComplete={vi.fn()} />);
+  expect(screen.getByRole('button', { name: 'Avançar' }).disabled).toBe(true);
+  expect(screen.queryByRole('spinbutton')).toBeNull();
   await user.selectOptions(screen.getByLabelText('Grupo de produção'), '7');
-  await user.click(screen.getByRole('button', { name: 'Voltar' }));
-  await user.click(screen.getByRole('button', { name: 'Voltar' }));
-  await user.click(screen.getByRole('button', { name: 'Usar Sugestão Automática NASEM 2021' }));
+  expect(screen.getByText(/20 animais/)).toBeTruthy();
   await advance(user);
-  await advance(user);
-  expect(screen.getByLabelText('Grupo de produção').value).toBe('');
+  await user.type(screen.getByLabelText('CMS · kg MS/animal/dia'), '22');
+  await user.click(screen.getByRole('button', { name: 'Voltar' }));
+  await user.selectOptions(screen.getByLabelText('Grupo de produção'), '');
   expect(screen.getByRole('button', { name: 'Avançar' }).disabled).toBe(true);
 });

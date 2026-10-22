@@ -257,4 +257,6 @@ def test_health_and_catalog_conflict(client):
     assert client.get("/api/health").json()["engine"] == "deterministic"
     ingredient = client.get("/api/insumos").json()[0]
     ingredient.pop("id")
+    # A public reference may be copied into the user's private catalogue.
+    assert client.post("/api/insumos", json=ingredient).status_code == 201
     assert client.post("/api/insumos", json=ingredient).status_code == 409

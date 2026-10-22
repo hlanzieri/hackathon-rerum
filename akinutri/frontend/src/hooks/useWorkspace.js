@@ -162,7 +162,12 @@ export default function useWorkspace() {
         .filter((i) => rows[i.id]?.selected)
         .map((i) => {
           const row = rows[i.id];
-          const keys = ['quantidade_kg_mn', 'minimo_kg_ms', 'maximo_kg_ms', 'preco_kg_mn'];
+          const keys = [
+            ...(mode === 'verificar' ? ['quantidade_kg_mn'] : []),
+            'minimo_kg_ms',
+            'maximo_kg_ms',
+            'preco_kg_mn',
+          ];
           if (keys.some((key) => row[key] === '' || !Number.isFinite(Number(row[key]))))
             throw new Error(`Preencha os valores de ${i.nome}; campo vazio não significa zero.`);
           return {
@@ -252,13 +257,10 @@ export default function useWorkspace() {
                 quantidade_kg_mn:
                   calculatedItem?.quantidade_kg_mn ?? savedItem?.quantidade_kg_mn ?? 0,
                 preco_kg_mn:
-                  savedItem?.preco_kg_mn ??
-                  savedIngredient?.preco_kg_mn ??
-                  ingredient.preco_kg_mn,
+                  savedItem?.preco_kg_mn ?? savedIngredient?.preco_kg_mn ?? ingredient.preco_kg_mn,
                 minimo_kg_ms: savedItem?.minimo_kg_ms ?? 0,
                 maximo_kg_ms:
-                  savedItem?.maximo_kg_ms ??
-                  (ingredient.categoria === 'mineral' ? 0.5 : 40),
+                  savedItem?.maximo_kg_ms ?? (ingredient.categoria === 'mineral' ? 0.5 : 40),
               },
             ];
           }),

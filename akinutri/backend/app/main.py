@@ -191,6 +191,10 @@ def checked_base(record):
 
 
 def infer(data, mode, db, *, created_at=None):
+    # Quantity is an input only for evaluation; formulation starts with free LP
+    # variables and must not depend on a pre-existing ration.
+    if mode == "verificar" and not any(i.quantidade_kg_mn > 0 for i in data.itens):
+        raise HTTPException(422, "Informe ao menos uma quantidade positiva para verificar a dieta.")
     lote = require(db, Lote, data.lote_id)
     group_context = None
     if data.grupo_id is not None:

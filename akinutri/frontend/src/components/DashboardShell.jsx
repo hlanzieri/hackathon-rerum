@@ -1,4 +1,4 @@
-import React, { lazy, Suspense, useEffect, useState } from 'react';
+import React, { lazy, Suspense, useEffect, useState, useRef } from 'react';
 import {
   Leaf,
   LayoutDashboard,
@@ -31,8 +31,8 @@ const KnowledgePage = lazy(() => import('./KnowledgePage'));
 const AnimaisPage = lazy(() => import('./AnimaisPage'));
 const HistoryPage = lazy(() => import('./HistoryPage'));
 const tabs = [
-  ['akibot', 'AkiBot · Assistente', Bot],
   ['animais', 'Animais e GP', UsersRound],
+  ['akibot', 'AkiBot · Assistente', Bot],
   ['workspace', 'Formulação', LayoutDashboard],
   ['comparacao', 'Comparação A/B', GitCompareArrows],
   ['batida', 'Batida do vagão', Truck],
@@ -81,6 +81,13 @@ export default function DashboardShell({ tab, session, onLogout, authError }) {
     document.getElementById('route-focus')?.focus();
   }, [tab]);
   const workspace = useWorkspace();
+  const previousTab = useRef(tab);
+  useEffect(() => {
+    if (previousTab.current === 'animais' && tab !== 'animais') {
+      workspace.refresh().catch((error) => workspace.setError(error.message));
+    }
+    previousTab.current = tab;
+  }, [tab, workspace.refresh]);
   const statusMotion = useVisibleMotion();
   const [batchSession, setBatchSession] = useState(null);
   const [collapsed, setCollapsed] = useState(false);
@@ -137,20 +144,22 @@ export default function DashboardShell({ tab, session, onLogout, authError }) {
           <span>Recolher navegação</span>
         </button>
         <nav id="workspace-navigation">
-          {tabs.map(([id, label, Icon]) => (
-            <a
-              key={id}
-              href={paths[id]}
-              className={`nav-item ${tab === id ? 'active' : ''}`}
-              aria-current={tab === id ? 'page' : undefined}
-              title={label}
-              aria-label={label}
-            >
-              <Icon size={19} aria-hidden="true" />
-              <span>{label}</span>
-              {tab === id && <span className="nav-active-dot" />}
-            </a>
-          ))}
+          {tabs
+            .filter(([id]) => id !== 'resultado' || workspace.result || tab === 'resultado')
+            .map(([id, label, Icon]) => (
+              <a
+                key={id}
+                href={paths[id]}
+                className={`nav-item ${tab === id ? 'active' : ''}`}
+                aria-current={tab === id ? 'page' : undefined}
+                title={label}
+                aria-label={label}
+              >
+                <Icon size={19} aria-hidden="true" />
+                <span>{label}</span>
+                {tab === id && <span className="nav-active-dot" />}
+              </a>
+            ))}
         </nav>
         <div className="sidebar-bottom">
           <div className="session-card">
@@ -220,7 +229,7 @@ export default function DashboardShell({ tab, session, onLogout, authError }) {
               {authError}
             </p>
           )}
-          {tab !== 'akibot' && <DashboardMetrics workspace={workspace} />}
+          {tab === 'workspace' && <DashboardMetrics workspace={workspace} />}
           {workspace.error && (
             <div role="alert" className="error">
               {workspace.error}

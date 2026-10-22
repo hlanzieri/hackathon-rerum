@@ -4,13 +4,8 @@ import { scenarios } from './LoteForm';
 import './AkiBotWizard.css';
 import { QuestionWhy } from './ExplanationPanel';
 
-const labels = [
-  '🐄 Vacas em Lactação - Alta Produção (35 L/dia)',
-  '🐄 Vacas em Lactação - Média Produção (15 L/dia)',
-  '🌾 Vacas Secas / Pré-Parto',
-];
 const titles = [
-  'Perfil do lote',
+  'Grupo de produção',
   'Consumo de matéria seca',
   'Insumos da fazenda',
   'Objetivo do cálculo',
@@ -47,6 +42,8 @@ export default function AkiBotWizard({ workspace: w, onComplete }) {
   const [particle, setParticle] = useState(true);
   const [dryCorn, setDryCorn] = useState(true);
   const [profile, setProfile] = useState(null);
+  const [breedId, setBreedId] = useState(w.racas[0]?.id);
+  const [daysToCalving, setDaysToCalving] = useState(45);
   const [intake, setIntake] = useState('');
   const [manual, setManual] = useState(false);
   const [estimate, setEstimate] = useState(null);
@@ -65,12 +62,11 @@ export default function AkiBotWizard({ workspace: w, onComplete }) {
   useEffect(() => {
     panel.current.querySelector('h3')?.focus();
   }, [step]);
-  const scenario = scenarios[profile];
   const selected = w.insumos.filter((i) => rows[i.id]?.selected);
   const groups = w.grupos.filter(
     (g) =>
       g.ativo !== false &&
-      g.fase === scenario?.lote.estado &&
+      ['lactacao', 'seca'].includes(g.fase) &&
       validNumber(g.numero_animais, 1) &&
       validNumber(g.peso_medio_kg, 200, 1000) &&
       validNumber(g.del_medio, g.fase === 'lactacao' ? 1 : 0) &&
@@ -83,6 +79,25 @@ export default function AkiBotWizard({ workspace: w, onComplete }) {
       validNumber(g.fracao_multiparas, 0, 1),
   );
   const group = groups.find((g) => String(g.id) === groupId);
+  const template = scenarios[profile];
+  const scenario =
+    template && group
+      ? {
+          ...template,
+          lote: {
+            ...template.lote,
+            raca_id: Number(breedId),
+            dias_ate_parto: group.fase === 'seca' ? Number(daysToCalving) : null,
+            nome: group.nome,
+            quantidade: group.numero_animais,
+            estado: group.fase,
+            peso_kg: group.peso_medio_kg,
+            dias_lactacao: group.fase === 'lactacao' ? Math.trunc(group.del_medio) : null,
+            producao_l_dia: group.producao_media_l_dia,
+          },
+        }
+      : template;
+
   const update = (id, key, value) =>
     setRows((old) => ({ ...old, [id]: { ...old[id], [key]: value } }));
   function includeMinerals() {
@@ -108,14 +123,16 @@ export default function AkiBotWizard({ workspace: w, onComplete }) {
     selected.some((i) => Number(rows[i.id].quantidade_kg_mn) > 0) &&
     selected.every((i) => validNumber(rows[i.id].quantidade_kg_mn, 0, 200));
   const canAdvance = [
-    profile !== null,
+    Boolean(group) &&
+      profile !== null &&
+      Boolean(breedId) &&
+      (group.fase !== 'seca' || validNumber(daysToCalving, 1, 100)),
     validNumber(intake, 3, 40),
     ingredientsValid,
     mode === 'formular' ? Boolean(group) : quantitiesValid,
     true,
   ][step];
   async function suggest() {
-    setGroupId('');
     setBusy(true);
     setError('');
     try {
@@ -124,8 +141,8 @@ export default function AkiBotWizard({ workspace: w, onComplete }) {
         dias_lactacao: scenario.lote.dias_lactacao || 1,
         estado: scenario.lote.estado,
         raca: w.racas.find((r) => r.id === scenario.lote.raca_id)?.nome || 'Não informada',
-        escore_corporal: 3,
-        fracao_multiparas: 1,
+        escore_corporal: group.ecc_medio,
+        fracao_multiparas: group.fracao_multiparas,
         leite_corrigido_kg_dia: scenario.lote.producao_l_dia || 1,
         energia_referencia_mcal_kg: 0.7,
       });
@@ -146,6 +163,7 @@ export default function AkiBotWizard({ workspace: w, onComplete }) {
   async function process() {
     if (
       busy ||
+      !group ||
       !ingredientsValid ||
       !validNumber(compositionCf, -1, 1) ||
       !validNumber(intake, 3, 40) ||
@@ -158,7 +176,7 @@ export default function AkiBotWizard({ workspace: w, onComplete }) {
       if (!savedLote.current) savedLote.current = await api('/lotes', 'POST', scenario.lote);
       const request = {
         lote_id: savedLote.current.id,
-        ...(mode === 'formular' ? { grupo_id: Number(groupId) } : {}),
+        grupo_id: Number(groupId),
         consumo_ms_kg: Number(intake),
         sistema: 'tmr',
         particula_adequada: particle,
@@ -186,38 +204,17 @@ export default function AkiBotWizard({ workspace: w, onComplete }) {
       setBusy(false);
     }
   }
-  async function selectGroup(id) {
+  function selectGroup(id) {
     setGroupId(id);
-    if (!id) {
-      if (estimate && groupId) {
-        setEstimate(null);
-        setManual(true);
-      }
-      return;
-    }
-    if (!estimate) return;
     const selectedGroup = groups.find((g) => String(g.id) === id);
-    setBusy(true);
+    const index = selectedGroup?.fase === 'seca' ? 2 : 0;
+    setProfile(selectedGroup ? index : null);
+    setIntake('');
+    setManual(true);
+    setEstimate(null);
+    savedLote.current = null;
+    submitted.current = null;
     setError('');
-    try {
-      const result = await api('/estimar-cms', 'POST', {
-        ...estimate,
-        peso_kg: selectedGroup.peso_medio_kg,
-        dias_lactacao: Math.max(1, Math.trunc(selectedGroup.del_medio)),
-        estado: selectedGroup.fase,
-        escore_corporal: selectedGroup.ecc_medio,
-        fracao_multiparas: selectedGroup.fracao_multiparas,
-      });
-      if (!validNumber(result.cms_kg_dia ?? '', 3, 40))
-        throw new Error(result.message || 'CMS indisponível para o grupo.');
-      setIntake(result.cms_kg_dia);
-      setEstimate(result.inputs);
-    } catch (e) {
-      setGroupId('');
-      setError(`${e.message} Volte ao passo de consumo para ajustar manualmente.`);
-    } finally {
-      setBusy(false);
-    }
   }
   const choice = (label, active, action) => (
     <button type="button" className="aki-choice" aria-pressed={active} onClick={action}>
@@ -231,10 +228,13 @@ export default function AkiBotWizard({ workspace: w, onComplete }) {
         <h2 id="aki-title">AkiBot · Assistente guiado</h2>
         <span className="aki-step-count">Passo {step + 1} de 5</span>
       </header>
-      <p>Selecione as opções do seu lote e prepare a análise nutricional.</p>
+      <p>
+        Selecione o grupo e responda aos passos. A dieta é calculada exclusivamente pelo backend
+        SciPy/HiGHS.
+      </p>
       <progress aria-label="Progresso do assistente" value={step + 1} max="5" />
       <h3 tabIndex="-1">{titles[step]}</h3>
-      {step === 0 && (
+      {step === 1 && (
         <>
           <QuestionWhy fact="dias_ate_parto" />
           <QuestionWhy
@@ -243,8 +243,8 @@ export default function AkiBotWizard({ workspace: w, onComplete }) {
           />
         </>
       )}
-      <fieldset disabled={busy}>
-        {step === 0 && (
+      <fieldset disabled={busy || (step > 0 && !group)}>
+        {step === 1 && (
           <div>
             <label>
               <input
@@ -300,38 +300,86 @@ export default function AkiBotWizard({ workspace: w, onComplete }) {
         )}
         {step === 0 && (
           <>
-            {labels.map((label, index) => (
-              <React.Fragment key={label}>
-                {choice(label, profile === index, () => {
-                  setProfile(index);
-                  setIntake(scenarios[index].intake);
-                  setEstimate(null);
-                  setManual(false);
-                  setGroupId('');
-                  savedLote.current = null;
-                  submitted.current = null;
-                  setError('');
-                })}
-              </React.Fragment>
-            ))}
-            {scenario && (
+            <p>Olá! Escolha o grupo de produção para iniciar a conversa.</p>
+            <label>
+              Grupo de produção
+              <select value={groupId} onChange={(e) => selectGroup(e.target.value)}>
+                <option value="">Selecione um grupo</option>
+                {w.grupos
+                  .filter((g) => g.ativo !== false)
+                  .map((g) => (
+                    <option
+                      key={g.id}
+                      value={g.id}
+                      disabled={!groups.some((valid) => valid.id === g.id)}
+                    >
+                      {g.nome} · {g.fase}
+                      {!groups.some((valid) => valid.id === g.id)
+                        ? ' · parâmetros pendentes ou fase fora do escopo'
+                        : ''}
+                    </option>
+                  ))}
+              </select>
+            </label>
+            <p>
+              <a href="/dashboard/animais">Cadastrar ou completar grupo</a>
+            </p>
+            {group && (
               <p>
-                {scenario.lote.peso_kg} kg · DEL {scenario.lote.dias_lactacao ?? 'não se aplica'} ·{' '}
-                {scenario.lote.producao_l_dia} L/dia
+                {group.numero_animais} animais · {group.peso_medio_kg} kg · DEL {group.del_medio} ·{' '}
+                {group.producao_media_l_dia} L/dia
               </p>
+            )}
+            {group && (
+              <label>
+                Raça do lote
+                <select
+                  value={breedId}
+                  onChange={(e) => {
+                    setBreedId(e.target.value);
+                    setEstimate(null);
+                    savedLote.current = null;
+                    submitted.current = null;
+                  }}
+                >
+                  {w.racas.map((r) => (
+                    <option key={r.id} value={r.id}>
+                      {r.nome}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
+            {group?.fase === 'seca' && (
+              <label>
+                Dias até o parto
+                <input
+                  type="number"
+                  min="1"
+                  max="100"
+                  value={daysToCalving}
+                  onChange={(e) => {
+                    setDaysToCalving(e.target.value);
+                    savedLote.current = null;
+                    submitted.current = null;
+                  }}
+                />
+              </label>
             )}
             {profile === 2 && (
               <p>
-                Perfil seco distante do parto (45 dias). O motor atual não cobre pré-parto próximo.
+                O motor atual cobre período seco distante do parto; pré-parto próximo será
+                identificado como fora do escopo.
               </p>
             )}
           </>
         )}
         {step === 1 && (
           <>
-            <p>Sugestão do perfil: {scenario.intake} kg MS/animal/dia.</p>
+            <p>Informe o consumo ou solicite uma estimativa para os dados do grupo.</p>
             <p>
-              O cálculo NASEM usa ECC 3, 100% multíparas e hipótese de leite corrigido de{' '}
+              O cálculo NASEM usa ECC {group.ecc_medio}, fração de multíparas{' '}
+              {group.fracao_multiparas} e hipótese explícita de leite corrigido de{' '}
               {scenario.lote.producao_l_dia} kg/dia a 0,7 Mcal/kg para lactação. Esses valores são
               pressupostos do perfil.
             </p>
@@ -425,27 +473,7 @@ export default function AkiBotWizard({ workspace: w, onComplete }) {
             })}
             {mode === 'formular' ? (
               <>
-                <label>
-                  Grupo de produção
-                  <select value={groupId} onChange={(e) => selectGroup(e.target.value)}>
-                    <option value="">Selecione um grupo compatível</option>
-                    {groups.map((g) => (
-                      <option key={g.id} value={g.id}>
-                        {g.nome}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <p>
-                  O motor usa os parâmetros reais do grupo na formulação. Configure grupos em
-                  Animais e GP se necessário.
-                </p>
-                {group && (
-                  <p>
-                    {group.peso_medio_kg} kg · DEL {group.del_medio} · {group.producao_media_l_dia}{' '}
-                    L/dia
-                  </p>
-                )}
+                <p>Grupo selecionado: {group?.nome}. Para trocar, volte ao primeiro passo.</p>
               </>
             ) : (
               <>
@@ -470,7 +498,7 @@ export default function AkiBotWizard({ workspace: w, onComplete }) {
         {step === 4 && (
           <>
             <p>
-              <strong>{labels[profile]}</strong>
+              <strong>{group?.nome}</strong>
             </p>
             <p>
               {scenario.lote.peso_kg} kg · DEL {scenario.lote.dias_lactacao ?? 'não se aplica'} ·{' '}
@@ -493,7 +521,10 @@ export default function AkiBotWizard({ workspace: w, onComplete }) {
                 </li>
               ))}
             </ul>
-            <p>Será registrado um lote com o perfil selecionado. Preços valem para esta análise.</p>
+            <p>
+              Será registrado um lote com os dados do grupo selecionado. Preços valem para esta
+              análise.
+            </p>
           </>
         )}
       </fieldset>
