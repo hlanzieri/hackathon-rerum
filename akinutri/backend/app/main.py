@@ -52,6 +52,7 @@ from .auth import (
     get_scoped_db,
     get_current_user,
     check_request_origin,
+    protect_api_routes,
 )
 from .lifecycle import router as lifecycle_router
 
@@ -70,7 +71,7 @@ app = FastAPI(
     title="AkiNutri — Sistema Especialista",
     version="0.2.0",
     lifespan=lifespan,
-    dependencies=[Depends(check_request_origin)],
+    dependencies=[Depends(check_request_origin), Depends(protect_api_routes)],
     docs_url=None,
     redoc_url=None,
 )
@@ -141,8 +142,23 @@ def lotes(db: Session = Depends(get_scoped_db)):
 
 @app.post("/api/lotes", response_model=LoteRead, status_code=201)
 def create_lote(data: LoteCreate, db: Session = Depends(get_scoped_db)):
-    require(db, Raca, data.raca_id)
-    lote = Lote(**data.model_dump())
+    race = (
+        require(db, Raca, data.raca_id)
+        if data.raca_id is not None
+        else next(
+            (
+                r
+                for r in db.scalars(select(Raca))
+                if r.nome.casefold() == data.raca.casefold()
+            ),
+            None,
+        )
+    )
+    if race is None:
+        raise HTTPException(422, "Raca nao cadastrada.")
+    if data.raca is not None and data.raca.casefold() != race.nome.casefold():
+        raise HTTPException(422, "Nome e identificador da raca divergem.")
+    lote = Lote(**{**data.model_dump(exclude={"raca"}), "raca_id": race.id})
     db.add(lote)
     db.commit()
     return lote
@@ -198,6 +214,10 @@ def infer(data, mode, db, *, created_at=None):
             422, "Informe ao menos uma quantidade positiva para verificar a dieta."
         )
     lote = require(db, Lote, data.lote_id)
+    if not lote.tmr_habilitado and data.sistema == "tmr":
+        raise HTTPException(
+            422, "O lote nao possui TMR habilitado; revise o manejo informado."
+        )
     group_context = None
     if data.grupo_id is not None:
         group = require(db, GrupoProducao, data.grupo_id)
@@ -497,6 +517,9 @@ def infer(data, mode, db, *, created_at=None):
         base_id=base_record.id,
         modo=mode,
         snapshot=snapshot,
+        base_versao=base_record.versao,
+        base_hash_sha256=base_record.sha256,
+        cf_global=result.get("global_cf"),
         **({"criada_em": created_at} if created_at else {}),
     )
     db.add(sessao)
@@ -562,6 +585,12 @@ def sessions(db: Session = Depends(get_scoped_db)):
 def session_detail(id: int, db: Session = Depends(get_scoped_db)):
     s = require(db, SessaoInferencia, id)
     r = db.scalar(select(ResultadoDieta).where(ResultadoDieta.sessao_id == id))
+    if s.base_versao is not None and (
+        s.base_versao != s.snapshot["base"]["version"]
+        or s.base_hash_sha256 != s.snapshot["base_sha256"]
+        or s.cf_global != r.conteudo.get("global_cf")
+    ):
+        raise HTTPException(409, "Metadados relacionais divergem do snapshot auditado.")
     try:
         integrity = verify_session(s.snapshot, r.conteudo)
     except ValueError as error:
@@ -571,6 +600,14 @@ def session_detail(id: int, db: Session = Depends(get_scoped_db)):
         "result": r.conteudo,
         "modo": s.modo,
         "integrity": integrity,
+        "metadata": {
+            "usuario_id": s.usuario_id,
+            "lote_id": s.lote_id,
+            "base_versao": s.base_versao or s.snapshot["base"]["version"],
+            "base_hash_sha256": s.base_hash_sha256 or s.snapshot["base_sha256"],
+            "cf_global": s.cf_global if s.base_versao else r.conteudo.get("global_cf"),
+            "criado_em": s.criada_em.isoformat() + "Z",
+        },
     }
 
 

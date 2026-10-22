@@ -56,7 +56,7 @@ Na raiz `akinutri`, inicie a API local com `./start.sh` (Linux/macOS) ou `.\star
 
 ### Contas e autenticação
 
-O cadastro em `/register` usa `POST /api/auth/register` com `nome`, `email` e `senha`; exige senha com ao menos 8 caracteres e rejeita e-mail já utilizado. Após salvar o hash bcrypt, autentica a nova conta automaticamente. O login em `POST /api/auth/login` também compara senhas com bcrypt. Ambos retornam `access_token` / `token_type=bearer` e também emitem JWT em cookie `HttpOnly`, `SameSite=Lax`, com validade de uma hora (30 dias se “Manter conectado” estiver marcado no login). O segredo de assinatura não tem valor padrão: configure `AKINUTRI_JWT_SECRET` com pelo menos 32 bytes aleatórios antes de iniciar o backend. Por exemplo, em Linux/macOS:
+O cadastro em `/register` usa `POST /api/auth/register` com `nome`, `email`, `senha`, `cargo` (produtor/zootecnista) e `fazenda_nome`; exige senha com ao menos 8 caracteres e rejeita e-mail já utilizado. Após salvar o hash bcrypt via Passlib, autentica a nova conta automaticamente. O login em `POST /api/auth/login` verifica o hash via Passlib/bcrypt, inclusive hashes bcrypt existentes. Ambos retornam `access_token` / `token_type=bearer` e também emitem JWT em cookie `HttpOnly`, `SameSite=Lax`, com validade de uma hora (30 dias se “Manter conectado” estiver marcado no login). O segredo de assinatura não tem valor padrão: configure `AKINUTRI_JWT_SECRET` com pelo menos 32 bytes aleatórios antes de iniciar o backend. Por exemplo, em Linux/macOS:
 
 ```bash
 export AKINUTRI_JWT_SECRET="$(openssl rand -hex 32)"
@@ -91,11 +91,11 @@ Pop-Location
 .\start.ps1
 ```
 
-A senha padrão da conta fictícia é `senha123`, conforme o cenário solicitado. `AKINUTRI_SEED_PASSWORD` permite definir outra senha para a seed. Nas próximas execuções, contas, senhas, lotes, insumos e sessões existentes são preservados. Para redefinir explicitamente somente a senha da conta da seed e revogar suas sessões, execute `python -m app.seed --reset-password` no ambiente virtual. A exigência de 8 caracteres permanece nos cadastros comuns.
+A senha padrão da conta fictícia é `senha123`, conforme o cenário solicitado. `AKINUTRI_SEED_PASSWORD` permite definir outra senha para a seed. Nas próximas execuções, contas, senhas, lotes e sessões existentes são preservados. Somente campos nutricionais ausentes nas antigas entradas reconhecidas da seed fictícia são completados com os valores fornecidos; dados personalizados não são preenchidos automaticamente. Para redefinir explicitamente somente a senha da conta da seed e revogar suas sessões, execute `python -m app.seed --reset-password` no ambiente virtual. A exigência de 8 caracteres permanece nos cadastros comuns.
 
 Conta: `carlos@fazendaouroverde.com.br`, Dr. Carlos Eduardo de Moraes, zootecnista da Fazenda Ouro Verde fictícia. São criados três lotes (45 Holandesas, 30 Girolando e 15 vacas secas), seis insumos particulares e três análises históricas calculadas e auditadas pelo motor. As duas sessões do primeiro lote podem ser comparadas em A/B.
 
-Os valores bromatológicos e preços recebidos são identificados como ilustrativos, sem alegar laudo ou cotação real. Cálcio/fósforo ausentes permanecem ausentes, e o núcleo não é apresentado como formulação aniônica. Por isso, as análises de histórico usam o catálogo sintético completo já versionado, identificado em seus snapshots. Não há conversão implícita de leite bruto em leite corrigido nem extrapolação para o pré-parto fora do escopo.
+Os valores bromatológicos e preços recebidos são identificados como ilustrativos, sem alegar laudo ou cotação real. Os seis insumos desta seed têm composição explícita, incluindo Ca/P e os zeros fornecidos para o núcleo. Dados desconhecidos de outros cadastros continuam ausentes. O nome do núcleo não certifica uma formulação aniônica. As análises históricas preservam o catálogo e os valores congelados em seus snapshots. Não há conversão implícita de leite bruto em leite corrigido nem extrapolação para o pré-parto fora do escopo.
 
 Nesta preparação, o banco recebeu backup em `backups/` antes da migração. As credenciais geradas estão em `seed-access.local.txt`, ignorado pelo Git.
 
@@ -292,3 +292,11 @@ SHA-256: **Hash de Validação de Integridade e Rastreabilidade do Conteúdo da 
 - Composição usa média dos CF ponderada pelos kg MS dos insumos realmente utilizados. Insumo com quantidade zero não participa. O CF global permanece limitado pelas premissas, regras, ajustes e consumo; resultados inviáveis/bloqueados não recebem CF diagnóstico. Não se altera a álgebra MYCIN das regras para apresentar uma média como probabilidade.
 
 A revisão zootécnica permanece pendente. Essas mudanças não garantem nota de banca ou eficácia comercial. Referência do domínio original de CMS: https://www.ncbi.nlm.nih.gov/books/NBK600610/. Os coeficientes adicionais e os pisos de queijo vieram da solicitação da equipe, sem atribuição bibliográfica fictícia.
+
+## Consolidação relacional e seed completo
+
+Consulte [o relatório de consolidação](docs/CONSOLIDACAO-FINAL.md) para o contrato dos campos, migração, conta fictícia, fonte dos seis alimentos e evidências de testes.
+
+Todas as rotas `/api/*`, inclusive `/api/health` e caminhos desconhecidos, exigem autenticação, exceto `/api/auth/login` e `/api/auth/register`. Um caminho desconhecido retorna JSON 401 sem sessão e JSON 404 com sessão; nunca recebe HTML da SPA. Preflight CORS continua atendido pelo middleware. `/login`, `/register`, `/dashboard` e suas rotas de navegação são servidas pelo fallback para `index.html`.
+
+A conta fictícia é criada por `python -m app.seed`, nunca recriada silenciosamente no startup. O catálogo global completo é carregado automaticamente; uma conta privada com alimento homônimo não impede a criação da referência global. Usuários comuns podem ler o catálogo global, mas apenas editar suas cópias privadas.

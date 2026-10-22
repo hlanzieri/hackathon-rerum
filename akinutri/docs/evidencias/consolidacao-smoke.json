@@ -1,0 +1,14 @@
+{
+  "login": "aprovado",
+  "perfil": "zootecnista",
+  "fazenda": "Fazenda Ouro Verde",
+  "paginas": {
+    "/login": 200,
+    "/dashboard": 200,
+    "/dashboard/akibot": 200
+  },
+  "api_sem_login": 401,
+  "referencias_novas_visiveis": 6,
+  "sessoes_da_conta_auditadas": 4,
+  "versao_base": "0.2.0+recalibracao.1"
+}

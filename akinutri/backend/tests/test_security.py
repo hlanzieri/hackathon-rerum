@@ -233,9 +233,11 @@ def test_clean_spa_routes_support_refresh(client, path):
 
 def test_spa_fallback_does_not_return_html_for_missing_api_or_assets(client):
     response = client.get("/api/does-not-exist")
-    assert response.status_code == 404
+    assert response.status_code == 401
     assert response.headers["content-type"].startswith("application/json")
     assert client.get("/assets/missing.js").status_code == 404
+    account(client)
+    assert client.get("/api/does-not-exist").status_code == 404
     assert client.get("/api").status_code == 404
 
 

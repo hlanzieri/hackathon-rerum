@@ -97,6 +97,14 @@ export default function LoteForm({ value, onChange, racas, save, busy }) {
         {num('Idade média · meses', 'idade_meses', 18, 240)}
         {num('Ordem de parição', 'ordem_paricao', 1, 15)}
         <label>
+          <input
+            type="checkbox"
+            checked={value.tmr_habilitado !== false}
+            onChange={(e) => set('tmr_habilitado', e.target.checked)}
+          />
+          TMR habilitado no lote
+        </label>
+        <label>
           Estado produtivo
           <select
             value={value.estado}

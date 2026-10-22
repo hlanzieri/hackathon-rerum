@@ -45,7 +45,13 @@ export default function RegisterPage({ onLogin } = {}) {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nome, email, senha }),
+        body: JSON.stringify({
+          nome,
+          email,
+          senha,
+          cargo: form.get('cargo'),
+          fazenda_nome: form.get('fazenda_nome').trim(),
+        }),
       });
       let data;
       try {
@@ -146,6 +152,23 @@ export default function RegisterPage({ onLogin } = {}) {
               type="email"
             />
 
+            <label className="register-field-label" htmlFor="register-cargo">
+              Perfil
+            </label>
+            <select id="register-cargo" name="cargo" aria-label="Perfil" defaultValue="produtor">
+              <option value="produtor">Produtor</option>
+              <option value="zootecnista">Zootecnista</option>
+            </select>
+            <label className="register-field-label" htmlFor="register-fazenda">
+              Nome da fazenda
+            </label>
+            <input
+              id="register-fazenda"
+              name="fazenda_nome"
+              maxLength="180"
+              autoComplete="organization"
+              placeholder="Sua propriedade"
+            />
             <label className="register-field-label" htmlFor="register-password">
               Senha
             </label>

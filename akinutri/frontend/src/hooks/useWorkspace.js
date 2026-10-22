@@ -129,6 +129,7 @@ export default function useWorkspace() {
     if (found) {
       const { id, ...value } = found;
       setLote(value);
+      setManejo((old) => ({ ...old, sistema: value.tmr_habilitado === false ? 'outro' : 'tmr' }));
       setLoteId(id);
       setEditing(false);
     } else {
@@ -142,7 +143,8 @@ export default function useWorkspace() {
     setBusy(true);
     setError('');
     try {
-      const saved = await api('/lotes', 'POST', lote);
+      const { raca, ...editableLot } = lote;
+      const saved = await api('/lotes', 'POST', editableLot);
       setLoteId(saved.id);
       setData((old) => ({ ...old, lotes: [saved, ...old.lotes] }));
       setEditing(false);
@@ -305,6 +307,7 @@ export default function useWorkspace() {
     lote,
     setLote: (value) => {
       setLote(value);
+      if (value.tmr_habilitado === false) setManejo((old) => ({ ...old, sistema: 'outro' }));
       setEstimateInputs(null);
     },
     loteId,

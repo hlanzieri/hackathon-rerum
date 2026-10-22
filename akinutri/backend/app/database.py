@@ -70,6 +70,7 @@ def migrate_ownership(target_engine):
             ("mantenca_pb_kg_dia", "FLOAT"),
             ("mantenca_el_mcal_dia", "FLOAT"),
             ("fonte_mantenca", "VARCHAR(500)"),
+            ("tmr_habilitado", "BOOLEAN NOT NULL DEFAULT 1"),
         ):
             if name not in lot_columns:
                 connection.execute(
@@ -112,11 +113,28 @@ def migrate_ownership(target_engine):
             ("cargo", "VARCHAR(30) NOT NULL DEFAULT 'produtor'"),
             ("fazenda_nome", "VARCHAR(180) NOT NULL DEFAULT ''"),
             ("session_version", "INTEGER NOT NULL DEFAULT 0"),
+            ("conta_demo", "BOOLEAN NOT NULL DEFAULT 0"),
         ):
             if name not in columns:
                 connection.execute(
                     text(f"ALTER TABLE users ADD COLUMN {name} {definition}")
                 )
+        session_columns = {
+            c["name"] for c in inspector.get_columns("sessoes_inferencia")
+        }
+        for name, definition in (
+            ("base_versao", "VARCHAR(50)"),
+            ("base_hash_sha256", "VARCHAR(64)"),
+            ("cf_global", "FLOAT"),
+        ):
+            if name not in session_columns:
+                connection.execute(
+                    text(
+                        f'ALTER TABLE sessoes_inferencia ADD COLUMN "{name}" {definition}'
+                    )
+                )
+        # Historical rows stay untouched: immutable snapshots remain the source
+        # for metadata on legacy sessions with NULL projection columns.
     migrate_scoped_unique_constraints(target_engine)
 
 

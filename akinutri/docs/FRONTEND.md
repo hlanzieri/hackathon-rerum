@@ -22,3 +22,7 @@ O navegador envia o JWT no cabeçalho Authorization, e o backend valida assinatu
 Acessibilidade: rótulos explícitos, controles nativos, botão de mostrar senha, estados de carregamento/erro, skip links no painel e foco nos módulos. A paleta, a densidade e os números tabulares seguem `.interface-design/system.md`. Reduced motion e cleanup de observers/listeners existentes são preservados. Não se afirma certificação WCAG completa, CLS zero ou 60 fps.
 
 A revisão anterior está em `AUTH-VALIDACAO.md`. A continuação com URLs reais e Bearer está em `ROTAS-AUTH.md`.
+
+## Consolidação dos formulários
+
+Cadastro inclui cargo e fazenda, enviados ao backend e recuperados em `/api/auth/me`. Cargo é uma declaração de perfil, não certificação profissional. O lote permite informar TMR; a API rejeita pedido TMR quando o cadastro o desabilita. O catálogo aceita concentrados energéticos/proteicos e conserva a distinção entre dados desconhecidos e zeros explícitos. A navegação SPA mantém suporte a F5 nas rotas autenticadas, com confirmação da sessão pelo backend.

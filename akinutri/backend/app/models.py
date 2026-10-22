@@ -12,7 +12,7 @@ from sqlalchemy import (
     DateTime,
     UniqueConstraint,
 )
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship, synonym
 from .database import Base
 
 
@@ -49,6 +49,18 @@ class Lote(OwnedRecord, Base):
     producao_l_dia: Mapped[float] = mapped_column(Float)
     dias_lactacao: Mapped[int | None] = mapped_column(Integer, nullable=True)
     dias_ate_parto: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    tmr_habilitado: Mapped[bool] = mapped_column(
+        Boolean, default=True, server_default="1"
+    )
+    raca_registro: Mapped["Raca"] = relationship()
+    peso_medio_kg = synonym("peso_kg")
+    estado_produtivo = synonym("estado")
+    producao_litros_dia = synonym("producao_l_dia")
+    dias_em_lactacao = synonym("dias_lactacao")
+
+    @property
+    def raca(self):
+        return self.raca_registro.nome
 
 
 class GrupoProducao(OwnedRecord, Base):
@@ -149,6 +161,8 @@ class InsumoAlimentar(OwnedRecord, Base):
     p_pct: Mapped[float | None] = mapped_column(Float, nullable=True)
     preco_kg_mn: Mapped[float] = mapped_column(Float)
     fonte: Mapped[str] = mapped_column(String(500))
+    calcio_pct = synonym("ca_pct")
+    fosforo_pct = synonym("p_pct")
 
 
 class UserAccount(Base):
@@ -164,9 +178,13 @@ class UserAccount(Base):
         String(180), default="", server_default=""
     )
     session_version: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
+    conta_demo: Mapped[bool] = mapped_column(Boolean, default=False, server_default="0")
     criada_em: Mapped[datetime] = mapped_column(
         DateTime, default=lambda: datetime.now(timezone.utc)
     )
+    nome = synonym("name")
+    senha_hash = synonym("password_hash")
+    criado_em = synonym("criada_em")
 
 
 class BaseConhecimento(Base):
@@ -192,9 +210,14 @@ class SessaoInferencia(OwnedRecord, Base):
     base_id: Mapped[int] = mapped_column(ForeignKey("bases_conhecimento.id"))
     modo: Mapped[str] = mapped_column(String(20))
     snapshot: Mapped[dict] = mapped_column(JSON)
+    base_versao: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    base_hash_sha256: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    cf_global: Mapped[float | None] = mapped_column(Float, nullable=True)
     criada_em: Mapped[datetime] = mapped_column(
         DateTime, default=lambda: datetime.now(timezone.utc)
     )
+    dados_snapshot_json = synonym("snapshot")
+    criado_em = synonym("criada_em")
 
 
 class ResultadoDieta(OwnedRecord, Base):
@@ -215,3 +238,8 @@ class ExplicacaoTraco(OwnedRecord, Base):
     )
     sequencia: Mapped[int] = mapped_column(Integer)
     conteudo: Mapped[dict] = mapped_column(JSON)
+
+
+# Public domain names share the existing tables and tenant predicates.
+Usuario = UserAccount
+Insumo = InsumoAlimentar

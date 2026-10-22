@@ -47,3 +47,7 @@ SHA-256: **Hash de Validação de Integridade e Rastreabilidade do Conteúdo da 
 - Composição usa média dos CF ponderada pelos kg MS dos insumos realmente utilizados. Insumo com quantidade zero não participa. O CF global permanece limitado pelas premissas, regras, ajustes e consumo; resultados inviáveis/bloqueados não recebem CF diagnóstico. Não se altera a álgebra MYCIN das regras para apresentar uma média como probabilidade.
 
 A revisão zootécnica permanece pendente. Essas mudanças não garantem nota de banca ou eficácia comercial. Referência do domínio original de CMS: https://www.ncbi.nlm.nih.gov/books/NBK600610/. Os coeficientes adicionais e os pisos de queijo vieram da solicitação da equipe, sem atribuição bibliográfica fictícia.
+
+## Demonstração da consolidação
+
+Mostrar login da conta fictícia, cargo/fazenda, os seis insumos completos e a fonte declarada. Recarregar `/dashboard` para demonstrar o fallback. Conferir que a API exige JWT, que outra conta não vê dados privados e que o catálogo global é somente leitura. Abrir uma sessão e mostrar os metadados relacionais junto do snapshot auditado. Referências gerais e valores fornecidos pela equipe não equivalem a validação zootécnica individual nem certificam DCAD do núcleo.

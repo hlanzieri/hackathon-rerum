@@ -1,0 +1,11 @@
+{
+  "backup": "C:\\Users\\humbe\\OneDrive\\Documentos\\UFJF\\Semana da Computacao 2026\\hackathon-rerum\\akinutri\\backups\\consolidacao-20261021-a3ff67b0.db",
+  "banco": "C:\\Users\\humbe\\OneDrive\\Documentos\\UFJF\\Semana da Computacao 2026\\hackathon-rerum\\akinutri\\backend\\akinutri.db",
+  "conta": "carlos@fazendaouroverde.com.br",
+  "senha_padrao_confere": true,
+  "senhas_existentes_preservadas": true,
+  "referencias_completas": 6,
+  "sessoes_anteriores_preservadas": 10,
+  "sessoes_auditadas": 10,
+  "integridade_referencial": "aprovada"
+}

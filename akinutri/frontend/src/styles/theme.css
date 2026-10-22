@@ -684,6 +684,7 @@ small {
   font-weight: 650;
 }
 .login-form > input,
+.login-form > select,
 .login-password input {
   min-height: 48px;
   margin-top: 8px;

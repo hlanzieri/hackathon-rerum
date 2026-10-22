@@ -290,7 +290,7 @@ def test_unused_ingredient_has_no_weight_and_negative_used_evidence_blocks(clien
         maximo_kg_ms=0, evidencia_composicao={"source": "usuario", "cf": -0.5}
     )
     result = client.post("/api/formular", json=payload).json()
-    assert result["reasoning"]["composition_evidence"]["cf"] == 1
+    assert result["reasoning"]["composition_evidence"]["cf"] == pytest.approx(1)
     assert payload["itens"][1]["insumo_id"] not in {
         i["insumo_id"] for i in result["reasoning"]["composition_evidence"]["items"]
     }

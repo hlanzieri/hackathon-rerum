@@ -83,8 +83,8 @@ def test_price_and_unavailability_scenarios_save_separate_audited_sessions(clien
     initial_id = initial.json()["session_id"]
     saved = client.get(f"/api/sessoes/{initial_id}").json()
     catalog = client.get("/api/insumos").json()
-    corn = next(i for i in catalog if "Milho seco" in i["nome"])
-    soy = next(i for i in catalog if "Farelo de soja" in i["nome"])
+    corn = next(i for i in catalog if i["nome"] == "Milho Moído Seco")
+    soy = next(i for i in catalog if i["nome"] == "Farelo de Soja 46")
     for target, factor in ((corn, 1.2), (soy, 0.85)):
         scenario = copy.deepcopy(saved["snapshot"]["request"])
         for item in scenario["itens"]:

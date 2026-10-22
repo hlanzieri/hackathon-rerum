@@ -115,7 +115,7 @@ Estados sempre incluem texto, não apenas cor. Layout responsivo, rótulos em ca
 - Não aplicar coeficientes de raça/peso/idade sem fonte e revisão técnica.
 - Antes de adicionar nutriente, estender DTO, composição, cálculo, compilação LP, traço e testes de conversão.
 - Mudanças de esquema em banco existente exigem migração; `create_all` apenas cria tabelas ausentes.
-- Autenticação por bcrypt/JWT em cookie HttpOnly, confirmação em `/api/auth/me` e revogação no logout. Consultas e gravações operacionais recebem escopo de `usuario_id`; o catálogo global é somente leitura. Migração aditiva preserva registros antigos sem proprietário, que permanecem inacessíveis às contas comuns. O SQLite continua exigindo revisão de concorrência antes de ampliar a implantação.
+- Autenticação por Passlib/bcrypt e PyJWT em cookie HttpOnly, confirmação em `/api/auth/me` e revogação no logout. Consultas e gravações operacionais recebem escopo de `usuario_id`; o catálogo global é somente leitura. Migração aditiva preserva registros antigos sem proprietário, que permanecem inacessíveis às contas comuns. O SQLite continua exigindo revisão de concorrência antes de ampliar a implantação.
 
 
 ## Base v0.2.0 - recalibração T2
@@ -140,3 +140,11 @@ SHA-256: **Hash de Validação de Integridade e Rastreabilidade do Conteúdo da 
 - Composição usa média dos CF ponderada pelos kg MS dos insumos realmente utilizados. Insumo com quantidade zero não participa. O CF global permanece limitado pelas premissas, regras, ajustes e consumo; resultados inviáveis/bloqueados não recebem CF diagnóstico. Não se altera a álgebra MYCIN das regras para apresentar uma média como probabilidade.
 
 A revisão zootécnica permanece pendente. Essas mudanças não garantem nota de banca ou eficácia comercial. Referência do domínio original de CMS: https://www.ncbi.nlm.nih.gov/books/NBK600610/. Os coeficientes adicionais e os pisos de queijo vieram da solicitação da equipe, sem atribuição bibliográfica fictícia.
+
+## Projeções relacionais e compatibilidade da consolidação
+
+Os nomes de domínio `Usuario` e `Insumo` compartilham os mapeamentos `UserAccount`/`InsumoAlimentar`, sem criar tabelas duplicadas nem alterar o filtro de tenant. `Lote.raca` é o nome obtido pela relação com `racas`, preservando a FK `raca_id`. Sinônimos de atributos e aliases de entrada aceitam os nomes solicitados; a serialização existente é mantida para compatibilidade.
+
+`tmr_habilitado` é persistido no lote. Novas sessões gravam `base_versao`, `base_hash_sha256` e `cf_global`, além do snapshot integral. Leituras conferem essas projeções contra snapshot/resultado auditados. A migração aditiva não reescreve sessões antigas protegidas: suas colunas novas permanecem nulas, e a API resolve os metadados pelo snapshot congelado. A base mantém o identificador exato da revisão publicada, sem rebatizar resultados antigos como v0.2.0.
+
+A proteção global de dependência fecha o perímetro de `/api/*`; `get_current_user` valida JWT e revogação, enquanto `get_scoped_db` aplica o usuário às consultas/gravações. Os dois endpoints de entrada são as únicas exceções de autenticação. Consulte [o relatório](CONSOLIDACAO-FINAL.md).

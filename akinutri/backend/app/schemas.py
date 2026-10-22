@@ -40,23 +40,40 @@ class InferenceResponse(BaseModel):
 
 class LoteCreate(DTO):
     nome: str = Field(min_length=1, max_length=120)
-    raca_id: int = Field(gt=0)
-    quantidade: int = Field(ge=1, le=100000)
-    peso_kg: float = Field(ge=200, le=1000)
+    raca_id: int | None = Field(default=None, gt=0)
+    raca: str | None = Field(default=None, min_length=1, max_length=80)
+    quantidade: int = Field(default=1, ge=1, le=100000)
+    peso_kg: float = Field(
+        ge=200, le=1000, validation_alias=AliasChoices("peso_kg", "peso_medio_kg")
+    )
     idade_meses: int = Field(ge=18, le=240)
     ordem_paricao: int = Field(ge=1, le=15)
-    estado: Literal["lactacao", "seca"]
+    estado: Literal["lactacao", "seca"] = Field(
+        validation_alias=AliasChoices("estado", "estado_produtivo")
+    )
+    tmr_habilitado: bool = True
     destinacao: Literal["leite", "reproducao", "dupla_aptidao"] = "leite"
     destinacao_economica: Literal["leite_fluido", "queijo_artesanal"] = "leite_fluido"
     mantenca_pb_kg_dia: float | None = Field(default=None, gt=0, le=5)
     mantenca_el_mcal_dia: float | None = Field(default=None, gt=0, le=40)
     fonte_mantenca: str | None = Field(default=None, min_length=1, max_length=500)
-    producao_l_dia: float = Field(ge=0, le=80)
-    dias_lactacao: int | None = Field(default=None, ge=1, le=700)
+    producao_l_dia: float = Field(
+        ge=0,
+        le=80,
+        validation_alias=AliasChoices("producao_l_dia", "producao_litros_dia"),
+    )
+    dias_lactacao: int | None = Field(
+        default=None,
+        ge=1,
+        le=700,
+        validation_alias=AliasChoices("dias_lactacao", "dias_em_lactacao"),
+    )
     dias_ate_parto: int | None = Field(default=None, ge=1, le=100)
 
     @model_validator(mode="after")
     def consistent(self):
+        if self.raca_id is None and self.raca is None:
+            raise ValueError("Informe raca_id ou o nome da raca.")
         if self.estado == "seca" and (
             self.producao_l_dia != 0
             or self.dias_ate_parto is None
@@ -82,14 +99,30 @@ class LoteRead(LoteCreate):
 
 class InsumoCreate(DTO):
     nome: str = Field(min_length=1, max_length=120)
-    categoria: Literal["volumoso", "concentrado", "mineral"]
+    categoria: Literal[
+        "volumoso",
+        "concentrado",
+        "concentrado_energetico",
+        "concentrado_proteico",
+        "mineral",
+    ]
     ms_pct: float = Field(gt=0, le=100)
     pb_pct: float | None = Field(default=None, ge=0, le=100)
     fdn_pct: float | None = Field(default=None, ge=0, le=100)
     amido_pct: float | None = Field(default=None, ge=0, le=100)
     el_mcal_kg: float | None = Field(default=None, ge=0, le=5)
-    ca_pct: float | None = Field(default=None, ge=0, le=100)
-    p_pct: float | None = Field(default=None, ge=0, le=100)
+    ca_pct: float | None = Field(
+        default=None,
+        ge=0,
+        le=100,
+        validation_alias=AliasChoices("ca_pct", "calcio_pct"),
+    )
+    p_pct: float | None = Field(
+        default=None,
+        ge=0,
+        le=100,
+        validation_alias=AliasChoices("p_pct", "fosforo_pct"),
+    )
     preco_kg_mn: float = Field(ge=0, le=10000)
     fonte: str = Field(min_length=1, max_length=500)
 

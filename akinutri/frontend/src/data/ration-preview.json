@@ -18,32 +18,28 @@
   },
   "prices": [
     {
-      "name": "Silagem de milho",
-      "price": 0.32
+      "name": "Silagem de Milho (Boa Qualidade)",
+      "price": 0.38
     },
     {
-      "name": "Feno de capim",
+      "name": "Feno de Capim-Tifton 85",
       "price": 0.95
     },
     {
-      "name": "Milho seco moido",
-      "price": 1.25
+      "name": "Milho Moído Seco",
+      "price": 1.28
     },
     {
-      "name": "Farelo de soja",
-      "price": 2.2
+      "name": "Farelo de Soja 46",
+      "price": 2.15
     },
     {
-      "name": "Farelo de trigo",
-      "price": 1.1
+      "name": "Polpa Cítrica Peletizada",
+      "price": 1.12
     },
     {
-      "name": "Mistura mineral DEMO",
-      "price": 4.0
-    },
-    {
-      "name": "Calcario calcitico DEMO",
-      "price": 0.7
+      "name": "Núcleo Mineral Aniónico / Lactação",
+      "price": 4.5
     }
   ],
   "scenarios": [
@@ -52,40 +48,40 @@
       "status": "atende_perfil_demo",
       "totals": {
         "ms_kg": 20.257749543526774,
-        "pb_pct": 17.0,
-        "fdn_pct": 35.98535010430147,
-        "amido_pct": 25.451047160166574,
+        "pb_pct": 17.000000000000004,
+        "fdn_pct": 35.923175594578325,
+        "amido_pct": 20.0,
         "el_mcal_kg": 1.6,
         "ca_pct": 0.65,
-        "p_pct": 0.32,
-        "fdn_volumoso_pct": 32.134588311690166,
-        "custo_animal_dia": 26.08520686561208
+        "p_pct": 0.3875467230082533,
+        "fdn_volumoso_pct": 30.9779412575028,
+        "custo_animal_dia": 29.88576778719958
       },
       "items": [
         {
-          "name": "Silagem de milho",
-          "kg_mn": 41.331710584289674,
-          "kg_ms": 14.466098704501384
+          "name": "Silagem de Milho (Boa Qualidade)",
+          "kg_mn": 37.06659736074587,
+          "kg_ms": 12.973309076261053
         },
         {
-          "name": "Milho seco moido",
-          "kg_mn": 1.0791681402832982,
-          "kg_ms": 0.9496679634493025
+          "name": "Feno de Capim-Tifton 85",
+          "kg_mn": 0.7101374502732006,
+          "kg_ms": 0.6249209562404165
         },
         {
-          "name": "Farelo de soja",
-          "kg_mn": 5.1263569271337195,
-          "kg_ms": 4.562457665149011
+          "name": "Farelo de Soja 46",
+          "kg_mn": 5.624845373911335,
+          "kg_ms": 5.0061123827810885
         },
         {
-          "name": "Farelo de trigo",
-          "kg_mn": 0.07323020527084133,
-          "kg_ms": 0.06517488269104878
+          "name": "Polpa Cítrica Peletizada",
+          "kg_mn": 1.536963497221118,
+          "kg_ms": 1.3678975125267951
         },
         {
-          "name": "Calcario calcitico DEMO",
-          "kg_mn": 0.21651548256164374,
-          "kg_ms": 0.21435032773602733
+          "name": "Núcleo Mineral Aniónico / Lactação",
+          "kg_mn": 0.2913363425687967,
+          "kg_ms": 0.2855096157174208
         }
       ]
     },
@@ -95,39 +91,39 @@
       "totals": {
         "ms_kg": 20.47087867808268,
         "pb_pct": 17.0,
-        "fdn_pct": 35.98535010430147,
-        "amido_pct": 25.451047160166567,
+        "fdn_pct": 35.923175594578325,
+        "amido_pct": 20.0,
         "el_mcal_kg": 1.6,
-        "ca_pct": 0.6499999999999999,
-        "p_pct": 0.32,
-        "fdn_volumoso_pct": 32.13458831169017,
-        "custo_animal_dia": 26.35964591680255
+        "ca_pct": 0.65,
+        "p_pct": 0.3875467230082534,
+        "fdn_volumoso_pct": 30.977941257502803,
+        "custo_animal_dia": 30.200192042980742
       },
       "items": [
         {
-          "name": "Silagem de milho",
-          "kg_mn": 41.766556107856715,
-          "kg_ms": 14.61829463774985
+          "name": "Silagem de Milho (Boa Qualidade)",
+          "kg_mn": 37.45657018568645,
+          "kg_ms": 13.109799564990258
         },
         {
-          "name": "Milho seco moido",
-          "kg_mn": 1.0905219272024544,
-          "kg_ms": 0.9596592959381599
+          "name": "Feno de Capim-Tifton 85",
+          "kg_mn": 0.7176087135478929,
+          "kg_ms": 0.6314956679221457
         },
         {
-          "name": "Farelo de soja",
-          "kg_mn": 5.180290658171175,
-          "kg_ms": 4.610458685772346
+          "name": "Farelo de Soja 46",
+          "kg_mn": 5.684023636727581,
+          "kg_ms": 5.058781036687547
         },
         {
-          "name": "Farelo de trigo",
-          "kg_mn": 0.07400065068676326,
-          "kg_ms": 0.0658605791112193
+          "name": "Polpa Cítrica Peletizada",
+          "kg_mn": 1.5531336892408645,
+          "kg_ms": 1.3822889834243695
         },
         {
-          "name": "Calcario calcitico DEMO",
-          "kg_mn": 0.21879341364758031,
-          "kg_ms": 0.2166054795111045
+          "name": "Núcleo Mineral Aniónico / Lactação",
+          "kg_mn": 0.2944014541411832,
+          "kg_ms": 0.28851342505835953
         }
       ]
     },
@@ -136,40 +132,40 @@
       "status": "atende_perfil_demo",
       "totals": {
         "ms_kg": 20.684007812638583,
-        "pb_pct": 16.999999999999996,
-        "fdn_pct": 35.98535010430146,
-        "amido_pct": 25.451047160166574,
-        "el_mcal_kg": 1.5999999999999999,
-        "ca_pct": 0.6499999999999999,
-        "p_pct": 0.3199999999999999,
-        "fdn_volumoso_pct": 32.134588311690166,
-        "custo_animal_dia": 26.63408496799301
+        "pb_pct": 17.0,
+        "fdn_pct": 35.923175594578325,
+        "amido_pct": 20.0,
+        "el_mcal_kg": 1.6,
+        "ca_pct": 0.65,
+        "p_pct": 0.3875467230082534,
+        "fdn_volumoso_pct": 30.9779412575028,
+        "custo_animal_dia": 30.5146162987619
       },
       "items": [
         {
-          "name": "Silagem de milho",
-          "kg_mn": 42.20140163142374,
-          "kg_ms": 14.77049057099831
+          "name": "Silagem de Milho (Boa Qualidade)",
+          "kg_mn": 37.84654301062703,
+          "kg_ms": 13.246290053719461
         },
         {
-          "name": "Milho seco moido",
-          "kg_mn": 1.1018757141216153,
-          "kg_ms": 0.9696506284270215
+          "name": "Feno de Capim-Tifton 85",
+          "kg_mn": 0.725079976822585,
+          "kg_ms": 0.6380703796038748
         },
         {
-          "name": "Farelo de soja",
-          "kg_mn": 5.234224389208627,
-          "kg_ms": 4.6584597063956785
+          "name": "Farelo de Soja 46",
+          "kg_mn": 5.743201899543826,
+          "kg_ms": 5.1114496905940054
         },
         {
-          "name": "Farelo de trigo",
-          "kg_mn": 0.07477109610268518,
-          "kg_ms": 0.06654627553138981
+          "name": "Polpa Cítrica Peletizada",
+          "kg_mn": 1.569303881260611,
+          "kg_ms": 1.396680454321944
         },
         {
-          "name": "Calcario calcitico DEMO",
-          "kg_mn": 0.22107134473351686,
-          "kg_ms": 0.2188606312861817
+          "name": "Núcleo Mineral Aniónico / Lactação",
+          "kg_mn": 0.2974665657135696,
+          "kg_ms": 0.2915172343992982
         }
       ]
     },
@@ -177,41 +173,41 @@
       "milk_corrected_kg_day": 23,
       "status": "atende_perfil_demo",
       "totals": {
-        "ms_kg": 20.897136947194483,
-        "pb_pct": 17.0,
-        "fdn_pct": 35.98535010430147,
-        "amido_pct": 25.45104716016658,
-        "el_mcal_kg": 1.6,
-        "ca_pct": 0.65,
-        "p_pct": 0.3199999999999998,
-        "fdn_volumoso_pct": 32.13458831169018,
-        "custo_animal_dia": 26.90852401918348
+        "ms_kg": 20.89713694719449,
+        "pb_pct": 16.999999999999996,
+        "fdn_pct": 35.923175594578325,
+        "amido_pct": 20.0,
+        "el_mcal_kg": 1.5999999999999999,
+        "ca_pct": 0.6499999999999999,
+        "p_pct": 0.3875467230082533,
+        "fdn_volumoso_pct": 30.9779412575028,
+        "custo_animal_dia": 30.829040554543063
       },
       "items": [
         {
-          "name": "Silagem de milho",
-          "kg_mn": 42.636247154990784,
-          "kg_ms": 14.922686504246775
+          "name": "Silagem de Milho (Boa Qualidade)",
+          "kg_mn": 38.236515835567616,
+          "kg_ms": 13.382780542448666
         },
         {
-          "name": "Milho seco moido",
-          "kg_mn": 1.1132295010407738,
-          "kg_ms": 0.979641960915881
+          "name": "Feno de Capim-Tifton 85",
+          "kg_mn": 0.7325512400972772,
+          "kg_ms": 0.644645091285604
         },
         {
-          "name": "Farelo de soja",
-          "kg_mn": 5.288158120246082,
-          "kg_ms": 4.706460727019013
+          "name": "Farelo de Soja 46",
+          "kg_mn": 5.8023801623600715,
+          "kg_ms": 5.164118344500464
         },
         {
-          "name": "Farelo de trigo",
-          "kg_mn": 0.07554154151860328,
-          "kg_ms": 0.06723197195155692
+          "name": "Polpa Cítrica Peletizada",
+          "kg_mn": 1.5854740732803567,
+          "kg_ms": 1.4110719252195176
         },
         {
-          "name": "Calcario calcitico DEMO",
-          "kg_mn": 0.22334927581945346,
-          "kg_ms": 0.22111578306125892
+          "name": "Núcleo Mineral Aniónico / Lactação",
+          "kg_mn": 0.3005316772859561,
+          "kg_ms": 0.29452104374023697
         }
       ]
     },
@@ -219,41 +215,41 @@
       "milk_corrected_kg_day": 24,
       "status": "atende_perfil_demo",
       "totals": {
-        "ms_kg": 21.110266081750385,
-        "pb_pct": 17.0,
-        "fdn_pct": 35.98535010430146,
-        "amido_pct": 25.451047160166574,
-        "el_mcal_kg": 1.6,
-        "ca_pct": 0.65,
-        "p_pct": 0.31999999999999984,
-        "fdn_volumoso_pct": 32.13458831169017,
-        "custo_animal_dia": 27.182963070373944
+        "ms_kg": 21.110266081750392,
+        "pb_pct": 16.999999999999996,
+        "fdn_pct": 35.923175594578325,
+        "amido_pct": 19.999999999999996,
+        "el_mcal_kg": 1.5999999999999999,
+        "ca_pct": 0.6499999999999999,
+        "p_pct": 0.3875467230082533,
+        "fdn_volumoso_pct": 30.977941257502795,
+        "custo_animal_dia": 31.14346481032422
       },
       "items": [
         {
-          "name": "Silagem de milho",
-          "kg_mn": 43.071092678557804,
-          "kg_ms": 15.074882437495232
+          "name": "Silagem de Milho (Boa Qualidade)",
+          "kg_mn": 38.626488660508194,
+          "kg_ms": 13.519271031177869
         },
         {
-          "name": "Milho seco moido",
-          "kg_mn": 1.124583287959932,
-          "kg_ms": 0.9896332934047402
+          "name": "Feno de Capim-Tifton 85",
+          "kg_mn": 0.7400225033719693,
+          "kg_ms": 0.651219802967333
         },
         {
-          "name": "Farelo de soja",
-          "kg_mn": 5.342091851283534,
-          "kg_ms": 4.754461747642345
+          "name": "Farelo de Soja 46",
+          "kg_mn": 5.861558425176316,
+          "kg_ms": 5.2167869984069215
         },
         {
-          "name": "Farelo de trigo",
-          "kg_mn": 0.07631198693452905,
-          "kg_ms": 0.06791766837173085
+          "name": "Polpa Cítrica Peletizada",
+          "kg_mn": 1.601644265300104,
+          "kg_ms": 1.4254633961170924
         },
         {
-          "name": "Calcario calcitico DEMO",
-          "kg_mn": 0.22562720690538998,
-          "kg_ms": 0.22337093483633608
+          "name": "Núcleo Mineral Aniónico / Lactação",
+          "kg_mn": 0.3035967888583424,
+          "kg_ms": 0.29752485308117554
         }
       ]
     },
@@ -261,41 +257,41 @@
       "milk_corrected_kg_day": 25,
       "status": "atende_perfil_demo",
       "totals": {
-        "ms_kg": 21.323395216306295,
+        "ms_kg": 21.3233952163063,
         "pb_pct": 17.0,
-        "fdn_pct": 35.98535010430147,
-        "amido_pct": 25.451047160166574,
+        "fdn_pct": 35.92317559457833,
+        "amido_pct": 20.0,
         "el_mcal_kg": 1.6000000000000003,
         "ca_pct": 0.65,
-        "p_pct": 0.31999999999999995,
-        "fdn_volumoso_pct": 32.13458831169017,
-        "custo_animal_dia": 27.457402121564424
+        "p_pct": 0.38754672300825327,
+        "fdn_volumoso_pct": 30.9779412575028,
+        "custo_animal_dia": 31.457889066105388
       },
       "items": [
         {
-          "name": "Silagem de milho",
-          "kg_mn": 43.50593820212485,
-          "kg_ms": 15.227078370743698
+          "name": "Silagem de Milho (Boa Qualidade)",
+          "kg_mn": 39.01646148544879,
+          "kg_ms": 13.655761519907076
         },
         {
-          "name": "Milho seco moido",
-          "kg_mn": 1.1359370748790905,
-          "kg_ms": 0.9996246258935996
+          "name": "Feno de Capim-Tifton 85",
+          "kg_mn": 0.7474937666466616,
+          "kg_ms": 0.6577945146490621
         },
         {
-          "name": "Farelo de soja",
-          "kg_mn": 5.3960255823209895,
-          "kg_ms": 4.802462768265681
+          "name": "Farelo de Soja 46",
+          "kg_mn": 5.920736687992562,
+          "kg_ms": 5.26945565231338
         },
         {
-          "name": "Farelo de trigo",
-          "kg_mn": 0.07708243235045482,
-          "kg_ms": 0.06860336479190479
+          "name": "Polpa Cítrica Peletizada",
+          "kg_mn": 1.6178144573198507,
+          "kg_ms": 1.4398548670146674
         },
         {
-          "name": "Calcario calcitico DEMO",
-          "kg_mn": 0.22790513799132667,
-          "kg_ms": 0.2256260866114134
+          "name": "Núcleo Mineral Aniónico / Lactação",
+          "kg_mn": 0.3066619004307289,
+          "kg_ms": 0.3005286624221143
         }
       ]
     },
@@ -305,39 +301,39 @@
       "totals": {
         "ms_kg": 21.5365243508622,
         "pb_pct": 17.0,
-        "fdn_pct": 35.98535010430146,
-        "amido_pct": 25.451047160166585,
-        "el_mcal_kg": 1.6000000000000003,
-        "ca_pct": 0.6499999999999999,
-        "p_pct": 0.3199999999999999,
-        "fdn_volumoso_pct": 32.134588311690166,
-        "custo_animal_dia": 27.731841172754894
+        "fdn_pct": 35.923175594578325,
+        "amido_pct": 20.000000000000004,
+        "el_mcal_kg": 1.5999999999999999,
+        "ca_pct": 0.65,
+        "p_pct": 0.3875467230082533,
+        "fdn_volumoso_pct": 30.977941257502803,
+        "custo_animal_dia": 31.77231332188655
       },
       "items": [
         {
-          "name": "Silagem de milho",
-          "kg_mn": 43.94078372569188,
-          "kg_ms": 15.379274303992158
+          "name": "Silagem de Milho (Boa Qualidade)",
+          "kg_mn": 39.406434310389365,
+          "kg_ms": 13.792252008636279
         },
         {
-          "name": "Milho seco moido",
-          "kg_mn": 1.1472908617982538,
-          "kg_ms": 1.0096159583824633
+          "name": "Feno de Capim-Tifton 85",
+          "kg_mn": 0.7549650299213536,
+          "kg_ms": 0.6643692263307912
         },
         {
-          "name": "Farelo de soja",
-          "kg_mn": 5.449959313358443,
-          "kg_ms": 4.850463788889014
+          "name": "Farelo de Soja 46",
+          "kg_mn": 5.9799149508088085,
+          "kg_ms": 5.322124306219839
         },
         {
-          "name": "Farelo de trigo",
-          "kg_mn": 0.07785287776637674,
-          "kg_ms": 0.0692890612120753
+          "name": "Polpa Cítrica Peletizada",
+          "kg_mn": 1.6339846493395946,
+          "kg_ms": 1.4542463379122392
         },
         {
-          "name": "Calcario calcitico DEMO",
-          "kg_mn": 0.2301830690772632,
-          "kg_ms": 0.22788123838649058
+          "name": "Núcleo Mineral Aniónico / Lactação",
+          "kg_mn": 0.3097270120031154,
+          "kg_ms": 0.3035324717630531
         }
       ]
     },
@@ -347,39 +343,39 @@
       "totals": {
         "ms_kg": 21.749653485418108,
         "pb_pct": 17.000000000000004,
-        "fdn_pct": 35.98535010430146,
-        "amido_pct": 25.451047160166574,
-        "el_mcal_kg": 1.6,
-        "ca_pct": 0.65,
-        "p_pct": 0.3200000000000002,
-        "fdn_volumoso_pct": 32.13458831169016,
-        "custo_animal_dia": 28.006280223945367
+        "fdn_pct": 35.92317559457833,
+        "amido_pct": 20.000000000000004,
+        "el_mcal_kg": 1.6000000000000003,
+        "ca_pct": 0.6500000000000001,
+        "p_pct": 0.3875467230082534,
+        "fdn_volumoso_pct": 30.9779412575028,
+        "custo_animal_dia": 32.08673757766771
       },
       "items": [
         {
-          "name": "Silagem de milho",
-          "kg_mn": 44.37562924925892,
-          "kg_ms": 15.53147023724062
+          "name": "Silagem de Milho (Boa Qualidade)",
+          "kg_mn": 39.79640713532995,
+          "kg_ms": 13.928742497365484
         },
         {
-          "name": "Milho seco moido",
-          "kg_mn": 1.1586446487174074,
-          "kg_ms": 1.0196072908713185
+          "name": "Feno de Capim-Tifton 85",
+          "kg_mn": 0.7624362931960459,
+          "kg_ms": 0.6709439380125204
         },
         {
-          "name": "Farelo de soja",
-          "kg_mn": 5.503893044395897,
-          "kg_ms": 4.898464809512348
+          "name": "Farelo de Soja 46",
+          "kg_mn": 6.039093213625055,
+          "kg_ms": 5.374792960126299
         },
         {
-          "name": "Farelo de trigo",
-          "kg_mn": 0.07862332318230635,
-          "kg_ms": 0.06997475763225265
+          "name": "Polpa Cítrica Peletizada",
+          "kg_mn": 1.650154841359342,
+          "kg_ms": 1.4686378088098144
         },
         {
-          "name": "Calcario calcitico DEMO",
-          "kg_mn": 0.23246100016319984,
-          "kg_ms": 0.23013639016156784
+          "name": "Núcleo Mineral Aniónico / Lactação",
+          "kg_mn": 0.31279212357550185,
+          "kg_ms": 0.30653628110399184
         }
       ]
     },
@@ -387,41 +383,41 @@
       "milk_corrected_kg_day": 28,
       "status": "atende_perfil_demo",
       "totals": {
-        "ms_kg": 21.96278261997401,
-        "pb_pct": 17.0,
-        "fdn_pct": 35.98535010430147,
-        "amido_pct": 25.45104716016657,
-        "el_mcal_kg": 1.6,
-        "ca_pct": 0.65,
-        "p_pct": 0.32,
-        "fdn_volumoso_pct": 32.13458831169017,
-        "custo_animal_dia": 28.280719275135834
+        "ms_kg": 21.962782619974007,
+        "pb_pct": 17.000000000000004,
+        "fdn_pct": 35.92317559457833,
+        "amido_pct": 20.0,
+        "el_mcal_kg": 1.6000000000000003,
+        "ca_pct": 0.6500000000000001,
+        "p_pct": 0.38754672300825344,
+        "fdn_volumoso_pct": 30.9779412575028,
+        "custo_animal_dia": 32.401161833448874
       },
       "items": [
         {
-          "name": "Silagem de milho",
-          "kg_mn": 44.81047477282596,
-          "kg_ms": 15.683666170489087
+          "name": "Silagem de Milho (Boa Qualidade)",
+          "kg_mn": 40.18637996027053,
+          "kg_ms": 14.065232986094683
         },
         {
-          "name": "Milho seco moido",
-          "kg_mn": 1.1699984356365658,
-          "kg_ms": 1.029598623360178
+          "name": "Feno de Capim-Tifton 85",
+          "kg_mn": 0.769907556470738,
+          "kg_ms": 0.6775186496942495
         },
         {
-          "name": "Farelo de soja",
-          "kg_mn": 5.557826775433352,
-          "kg_ms": 4.946465830135683
+          "name": "Farelo de Soja 46",
+          "kg_mn": 6.0982714764413,
+          "kg_ms": 5.427461614032756
         },
         {
-          "name": "Farelo de trigo",
-          "kg_mn": 0.07939376859822445,
-          "kg_ms": 0.07066045405241976
+          "name": "Polpa Cítrica Peletizada",
+          "kg_mn": 1.666325033379088,
+          "kg_ms": 1.4830292797073883
         },
         {
-          "name": "Calcario calcitico DEMO",
-          "kg_mn": 0.2347389312491364,
-          "kg_ms": 0.23239154193664505
+          "name": "Núcleo Mineral Aniónico / Lactação",
+          "kg_mn": 0.31585723514788827,
+          "kg_ms": 0.3095400904449305
         }
       ]
     },
@@ -430,40 +426,40 @@
       "status": "atende_perfil_demo",
       "totals": {
         "ms_kg": 22.175911754529913,
-        "pb_pct": 16.999999999999996,
-        "fdn_pct": 35.98535010430147,
-        "amido_pct": 25.451047160166574,
+        "pb_pct": 17.000000000000004,
+        "fdn_pct": 35.923175594578325,
+        "amido_pct": 20.0,
         "el_mcal_kg": 1.6,
-        "ca_pct": 0.6500000000000001,
-        "p_pct": 0.32000000000000006,
-        "fdn_volumoso_pct": 32.134588311690166,
-        "custo_animal_dia": 28.555158326326296
+        "ca_pct": 0.6499999999999999,
+        "p_pct": 0.3875467230082534,
+        "fdn_volumoso_pct": 30.977941257502795,
+        "custo_animal_dia": 32.71558608923003
       },
       "items": [
         {
-          "name": "Silagem de milho",
-          "kg_mn": 45.24532029639298,
-          "kg_ms": 15.835862103737544
+          "name": "Silagem de Milho (Boa Qualidade)",
+          "kg_mn": 40.576352785211114,
+          "kg_ms": 14.201723474823888
         },
         {
-          "name": "Milho seco moido",
-          "kg_mn": 1.1813522225557267,
-          "kg_ms": 1.0395899558490393
+          "name": "Feno de Capim-Tifton 85",
+          "kg_mn": 0.7773788197454303,
+          "kg_ms": 0.6840933613759788
         },
         {
-          "name": "Farelo de soja",
-          "kg_mn": 5.611760506470803,
-          "kg_ms": 4.994466850759014
+          "name": "Farelo de Soja 46",
+          "kg_mn": 6.157449739257546,
+          "kg_ms": 5.480130267939216
         },
         {
-          "name": "Farelo de trigo",
-          "kg_mn": 0.08016421401415022,
-          "kg_ms": 0.0713461504725937
+          "name": "Polpa Cítrica Peletizada",
+          "kg_mn": 1.682495225398832,
+          "kg_ms": 1.4974207506049604
         },
         {
-          "name": "Calcario calcitico DEMO",
-          "kg_mn": 0.237016862335073,
-          "kg_ms": 0.23464669371172228
+          "name": "Núcleo Mineral Aniónico / Lactação",
+          "kg_mn": 0.31892234672027475,
+          "kg_ms": 0.3125438997858693
         }
       ]
     },
@@ -471,41 +467,41 @@
       "milk_corrected_kg_day": 30,
       "status": "atende_perfil_demo",
       "totals": {
-        "ms_kg": 22.389040889085823,
-        "pb_pct": 16.999999999999996,
-        "fdn_pct": 35.98535010430146,
-        "amido_pct": 25.45104716016657,
-        "el_mcal_kg": 1.5999999999999999,
+        "ms_kg": 22.38904088908582,
+        "pb_pct": 17.0,
+        "fdn_pct": 35.92317559457833,
+        "amido_pct": 20.0,
+        "el_mcal_kg": 1.6,
         "ca_pct": 0.65,
-        "p_pct": 0.32,
-        "fdn_volumoso_pct": 32.134588311690166,
-        "custo_animal_dia": 28.82959737751677
+        "p_pct": 0.3875467230082534,
+        "fdn_volumoso_pct": 30.9779412575028,
+        "custo_animal_dia": 33.0300103450112
       },
       "items": [
         {
-          "name": "Silagem de milho",
-          "kg_mn": 45.68016581996003,
-          "kg_ms": 15.988058036986011
+          "name": "Silagem de Milho (Boa Qualidade)",
+          "kg_mn": 40.9663256101517,
+          "kg_ms": 14.338213963553095
         },
         {
-          "name": "Milho seco moido",
-          "kg_mn": 1.192706009474883,
-          "kg_ms": 1.049581288337897
+          "name": "Feno de Capim-Tifton 85",
+          "kg_mn": 0.7848500830201224,
+          "kg_ms": 0.6906680730577076
         },
         {
-          "name": "Farelo de soja",
-          "kg_mn": 5.665694237508259,
-          "kg_ms": 5.04246787138235
+          "name": "Farelo de Soja 46",
+          "kg_mn": 6.216628002073791,
+          "kg_ms": 5.532798921845674
         },
         {
-          "name": "Farelo de trigo",
-          "kg_mn": 0.08093465943007214,
-          "kg_ms": 0.0720318468927642
+          "name": "Polpa Cítrica Peletizada",
+          "kg_mn": 1.69866541741858,
+          "kg_ms": 1.5118122215025362
         },
         {
-          "name": "Calcario calcitico DEMO",
-          "kg_mn": 0.23929479342100957,
-          "kg_ms": 0.2369018454867995
+          "name": "Núcleo Mineral Aniónico / Lactação",
+          "kg_mn": 0.3219874582926612,
+          "kg_ms": 0.31554770912680796
         }
       ]
     },
@@ -515,39 +511,39 @@
       "totals": {
         "ms_kg": 22.602170023641722,
         "pb_pct": 17.0,
-        "fdn_pct": 35.98535010430147,
-        "amido_pct": 25.451047160166567,
+        "fdn_pct": 35.92317559457833,
+        "amido_pct": 19.999999999999996,
         "el_mcal_kg": 1.6,
         "ca_pct": 0.65,
-        "p_pct": 0.32,
-        "fdn_volumoso_pct": 32.134588311690166,
-        "custo_animal_dia": 29.104036428707232
+        "p_pct": 0.3875467230082533,
+        "fdn_volumoso_pct": 30.977941257502795,
+        "custo_animal_dia": 33.344434600792354
       },
       "items": [
         {
-          "name": "Silagem de milho",
-          "kg_mn": 46.115011343527065,
-          "kg_ms": 16.140253970234472
+          "name": "Silagem de Milho (Boa Qualidade)",
+          "kg_mn": 41.35629843509228,
+          "kg_ms": 14.474704452282296
         },
         {
-          "name": "Milho seco moido",
-          "kg_mn": 1.2040597963940392,
-          "kg_ms": 1.0595726208267544
+          "name": "Feno de Capim-Tifton 85",
+          "kg_mn": 0.7923213462948147,
+          "kg_ms": 0.6972427847394368
         },
         {
-          "name": "Farelo de soja",
-          "kg_mn": 5.719627968545711,
-          "kg_ms": 5.090468892005683
+          "name": "Farelo de Soja 46",
+          "kg_mn": 6.275806264890036,
+          "kg_ms": 5.585467575752132
         },
         {
-          "name": "Farelo de trigo",
-          "kg_mn": 0.08170510484599408,
-          "kg_ms": 0.07271754331293473
+          "name": "Polpa Cítrica Peletizada",
+          "kg_mn": 1.7148356094383257,
+          "kg_ms": 1.5262036924001097
         },
         {
-          "name": "Calcario calcitico DEMO",
-          "kg_mn": 0.2415727245069461,
-          "kg_ms": 0.23915699726187664
+          "name": "Núcleo Mineral Aniónico / Lactação",
+          "kg_mn": 0.3250525698650476,
+          "kg_ms": 0.31855151846774665
         }
       ]
     },
@@ -557,39 +553,39 @@
       "totals": {
         "ms_kg": 22.815299158197625,
         "pb_pct": 17.0,
-        "fdn_pct": 35.98535010430146,
-        "amido_pct": 25.45104716016657,
+        "fdn_pct": 35.923175594578325,
+        "amido_pct": 20.000000000000004,
         "el_mcal_kg": 1.6,
-        "ca_pct": 0.65,
-        "p_pct": 0.31999999999999995,
-        "fdn_volumoso_pct": 32.134588311690166,
-        "custo_animal_dia": 29.3784754798977
+        "ca_pct": 0.6500000000000001,
+        "p_pct": 0.3875467230082534,
+        "fdn_volumoso_pct": 30.977941257502803,
+        "custo_animal_dia": 33.65885885657352
       },
       "items": [
         {
-          "name": "Silagem de milho",
-          "kg_mn": 46.54985686709409,
-          "kg_ms": 16.292449903482932
+          "name": "Silagem de Milho (Boa Qualidade)",
+          "kg_mn": 41.74627126003286,
+          "kg_ms": 14.611194941011501
         },
         {
-          "name": "Milho seco moido",
-          "kg_mn": 1.2154135833131998,
-          "kg_ms": 1.0695639533156158
+          "name": "Feno de Capim-Tifton 85",
+          "kg_mn": 0.7997926095695068,
+          "kg_ms": 0.703817496421166
         },
         {
-          "name": "Farelo de soja",
-          "kg_mn": 5.773561699583165,
-          "kg_ms": 5.1384699126290165
+          "name": "Farelo de Soja 46",
+          "kg_mn": 6.334984527706282,
+          "kg_ms": 5.63813622965859
         },
         {
-          "name": "Farelo de trigo",
-          "kg_mn": 0.08247555026191601,
-          "kg_ms": 0.07340323973310525
+          "name": "Polpa Cítrica Peletizada",
+          "kg_mn": 1.7310058014580716,
+          "kg_ms": 1.5405951632976838
         },
         {
-          "name": "Calcario calcitico DEMO",
-          "kg_mn": 0.24385065559288266,
-          "kg_ms": 0.24141214903695385
+          "name": "Núcleo Mineral Aniónico / Lactação",
+          "kg_mn": 0.32811768143743414,
+          "kg_ms": 0.32155532780868545
         }
       ]
     },
@@ -597,41 +593,41 @@
       "milk_corrected_kg_day": 33,
       "status": "atende_perfil_demo",
       "totals": {
-        "ms_kg": 23.028428292753535,
+        "ms_kg": 23.02842829275353,
         "pb_pct": 17.0,
-        "fdn_pct": 35.98535010430147,
-        "amido_pct": 25.451047160166574,
+        "fdn_pct": 35.92317559457833,
+        "amido_pct": 20.0,
         "el_mcal_kg": 1.6,
-        "ca_pct": 0.6499999999999999,
-        "p_pct": 0.3200000000000002,
-        "fdn_volumoso_pct": 32.134588311690166,
-        "custo_animal_dia": 29.65291453108817
+        "ca_pct": 0.65,
+        "p_pct": 0.3875467230082534,
+        "fdn_volumoso_pct": 30.9779412575028,
+        "custo_animal_dia": 33.97328311235468
       },
       "items": [
         {
-          "name": "Silagem de milho",
-          "kg_mn": 46.98470239066113,
-          "kg_ms": 16.444645836731397
+          "name": "Silagem de Milho (Boa Qualidade)",
+          "kg_mn": 42.13624408497344,
+          "kg_ms": 14.747685429740704
         },
         {
-          "name": "Milho seco moido",
-          "kg_mn": 1.2267673702323583,
-          "kg_ms": 1.0795552858044752
+          "name": "Feno de Capim-Tifton 85",
+          "kg_mn": 0.8072638728441991,
+          "kg_ms": 0.7103922081028952
         },
         {
-          "name": "Farelo de soja",
-          "kg_mn": 5.827495430620618,
-          "kg_ms": 5.18647093325235
+          "name": "Farelo de Soja 46",
+          "kg_mn": 6.394162790522527,
+          "kg_ms": 5.6908048835650495
         },
         {
-          "name": "Farelo de trigo",
-          "kg_mn": 0.08324599567784562,
-          "kg_ms": 0.07408893615328259
+          "name": "Polpa Cítrica Peletizada",
+          "kg_mn": 1.747175993477819,
+          "kg_ms": 1.5549866341952587
         },
         {
-          "name": "Calcario calcitico DEMO",
-          "kg_mn": 0.24612858667881926,
-          "kg_ms": 0.24366730081203106
+          "name": "Núcleo Mineral Aniónico / Lactação",
+          "kg_mn": 0.33118279300982045,
+          "kg_ms": 0.3245591371496241
         }
       ]
     },
@@ -639,41 +635,41 @@
       "milk_corrected_kg_day": 34,
       "status": "atende_perfil_demo",
       "totals": {
-        "ms_kg": 23.24155742730943,
-        "pb_pct": 17.0,
-        "fdn_pct": 35.98535010430146,
-        "amido_pct": 25.451047160166574,
+        "ms_kg": 23.241557427309434,
+        "pb_pct": 17.000000000000004,
+        "fdn_pct": 35.92317559457833,
+        "amido_pct": 20.000000000000004,
         "el_mcal_kg": 1.6,
         "ca_pct": 0.65,
-        "p_pct": 0.31999999999999995,
-        "fdn_volumoso_pct": 32.134588311690166,
-        "custo_animal_dia": 29.927353582278634
+        "p_pct": 0.3875467230082534,
+        "fdn_volumoso_pct": 30.977941257502803,
+        "custo_animal_dia": 34.28770736813584
       },
       "items": [
         {
-          "name": "Silagem de milho",
-          "kg_mn": 47.419547914228154,
-          "kg_ms": 16.596841769979854
+          "name": "Silagem de Milho (Boa Qualidade)",
+          "kg_mn": 42.52621690991403,
+          "kg_ms": 14.884175918469909
         },
         {
-          "name": "Milho seco moido",
-          "kg_mn": 1.238121157151519,
-          "kg_ms": 1.0895466182933367
+          "name": "Feno de Capim-Tifton 85",
+          "kg_mn": 0.8147351361188911,
+          "kg_ms": 0.7169669197846242
         },
         {
-          "name": "Farelo de soja",
-          "kg_mn": 5.8814291616580725,
-          "kg_ms": 5.234471953875684
+          "name": "Farelo de Soja 46",
+          "kg_mn": 6.453341053338772,
+          "kg_ms": 5.743473537471507
         },
         {
-          "name": "Farelo de trigo",
-          "kg_mn": 0.08401644109375987,
-          "kg_ms": 0.07477463257344628
+          "name": "Polpa Cítrica Peletizada",
+          "kg_mn": 1.7633461854975647,
+          "kg_ms": 1.5693781050928326
         },
         {
-          "name": "Calcario calcitico DEMO",
-          "kg_mn": 0.2484065177647558,
-          "kg_ms": 0.24592245258710826
+          "name": "Núcleo Mineral Aniónico / Lactação",
+          "kg_mn": 0.33424790458220693,
+          "kg_ms": 0.3275629464905628
         }
       ]
     },
@@ -681,41 +677,41 @@
       "milk_corrected_kg_day": 35,
       "status": "atende_perfil_demo",
       "totals": {
-        "ms_kg": 23.454686561865344,
-        "pb_pct": 17.000000000000004,
-        "fdn_pct": 35.98535010430146,
-        "amido_pct": 25.45104716016658,
-        "el_mcal_kg": 1.6000000000000003,
-        "ca_pct": 0.6499999999999999,
-        "p_pct": 0.3200000000000001,
-        "fdn_volumoso_pct": 32.13458831169016,
-        "custo_animal_dia": 30.20179263346912
+        "ms_kg": 23.454686561865348,
+        "pb_pct": 17.0,
+        "fdn_pct": 35.92317559457833,
+        "amido_pct": 20.0,
+        "el_mcal_kg": 1.6,
+        "ca_pct": 0.65,
+        "p_pct": 0.38754672300825344,
+        "fdn_volumoso_pct": 30.9779412575028,
+        "custo_animal_dia": 34.60213162391701
       },
       "items": [
         {
-          "name": "Silagem de milho",
-          "kg_mn": 47.854393437795196,
-          "kg_ms": 16.749037703228318
+          "name": "Silagem de Milho (Boa Qualidade)",
+          "kg_mn": 42.91618973485462,
+          "kg_ms": 15.020666407199117
         },
         {
-          "name": "Milho seco moido",
-          "kg_mn": 1.2494749440706796,
-          "kg_ms": 1.099537950782198
+          "name": "Feno de Capim-Tifton 85",
+          "kg_mn": 0.8222063993935835,
+          "kg_ms": 0.7235416314663535
         },
         {
-          "name": "Farelo de soja",
-          "kg_mn": 5.935362892695528,
-          "kg_ms": 5.28247297449902
+          "name": "Farelo de Soja 46",
+          "kg_mn": 6.51251931615502,
+          "kg_ms": 5.796142191377968
         },
         {
-          "name": "Farelo de trigo",
-          "kg_mn": 0.08478688650968948,
-          "kg_ms": 0.07546032899362363
+          "name": "Polpa Cítrica Peletizada",
+          "kg_mn": 1.779516377517311,
+          "kg_ms": 1.5837695759904067
         },
         {
-          "name": "Calcario calcitico DEMO",
-          "kg_mn": 0.25068444885069247,
-          "kg_ms": 0.24817760436218553
+          "name": "Núcleo Mineral Aniónico / Lactação",
+          "kg_mn": 0.3373130161545935,
+          "kg_ms": 0.3305667558315017
         }
       ]
     },
@@ -723,41 +719,41 @@
       "milk_corrected_kg_day": 36,
       "status": "atende_perfil_demo",
       "totals": {
-        "ms_kg": 23.667815696421243,
+        "ms_kg": 23.667815696421247,
         "pb_pct": 16.999999999999996,
-        "fdn_pct": 35.98535010430147,
-        "amido_pct": 25.451047160166574,
+        "fdn_pct": 35.923175594578325,
+        "amido_pct": 19.999999999999996,
         "el_mcal_kg": 1.5999999999999999,
-        "ca_pct": 0.65,
-        "p_pct": 0.31999999999999995,
-        "fdn_volumoso_pct": 32.13458831169017,
-        "custo_animal_dia": 30.476231684659574
+        "ca_pct": 0.6500000000000001,
+        "p_pct": 0.3875467230082534,
+        "fdn_volumoso_pct": 30.977941257502795,
+        "custo_animal_dia": 34.916555879698166
       },
       "items": [
         {
-          "name": "Silagem de milho",
-          "kg_mn": 48.28923896136224,
-          "kg_ms": 16.901233636476785
+          "name": "Silagem de Milho (Boa Qualidade)",
+          "kg_mn": 43.30616255979519,
+          "kg_ms": 15.157156895928317
         },
         {
-          "name": "Milho seco moido",
-          "kg_mn": 1.2608287309898336,
-          "kg_ms": 1.1095292832710535
+          "name": "Feno de Capim-Tifton 85",
+          "kg_mn": 0.8296776626682755,
+          "kg_ms": 0.7301163431480825
         },
         {
-          "name": "Farelo de soja",
-          "kg_mn": 5.989296623732979,
-          "kg_ms": 5.330473995122352
+          "name": "Farelo de Soja 46",
+          "kg_mn": 6.571697578971263,
+          "kg_ms": 5.848810845284424
         },
         {
-          "name": "Farelo de trigo",
-          "kg_mn": 0.08555733192560758,
-          "kg_ms": 0.07614602541379074
+          "name": "Polpa Cítrica Peletizada",
+          "kg_mn": 1.7956865695370579,
+          "kg_ms": 1.5981610468879817
         },
         {
-          "name": "Calcario calcitico DEMO",
-          "kg_mn": 0.25296237993662896,
-          "kg_ms": 0.2504327561372627
+          "name": "Núcleo Mineral Aniónico / Lactação",
+          "kg_mn": 0.34037812772697984,
+          "kg_ms": 0.33357056517244027
         }
       ]
     },
@@ -767,39 +763,39 @@
       "totals": {
         "ms_kg": 23.880944830977153,
         "pb_pct": 17.0,
-        "fdn_pct": 35.98535010430146,
-        "amido_pct": 25.45104716016657,
+        "fdn_pct": 35.92317559457833,
+        "amido_pct": 20.000000000000004,
         "el_mcal_kg": 1.6,
         "ca_pct": 0.6499999999999999,
-        "p_pct": 0.31999999999999995,
-        "fdn_volumoso_pct": 32.13458831169017,
-        "custo_animal_dia": 30.75067073585005
+        "p_pct": 0.38754672300825344,
+        "fdn_volumoso_pct": 30.977941257502803,
+        "custo_animal_dia": 35.230980135479335
       },
       "items": [
         {
-          "name": "Silagem de milho",
-          "kg_mn": 48.724084484929286,
-          "kg_ms": 17.05342956972525
+          "name": "Silagem de Milho (Boa Qualidade)",
+          "kg_mn": 43.69613538473578,
+          "kg_ms": 15.293647384657525
         },
         {
-          "name": "Milho seco moido",
-          "kg_mn": 1.2721825179089918,
-          "kg_ms": 1.119520615759913
+          "name": "Feno de Capim-Tifton 85",
+          "kg_mn": 0.837148925942968,
+          "kg_ms": 0.7366910548298118
         },
         {
-          "name": "Farelo de soja",
-          "kg_mn": 6.0432303547704365,
-          "kg_ms": 5.378475015745688
+          "name": "Farelo de Soja 46",
+          "kg_mn": 6.63087584178751,
+          "kg_ms": 5.901479499190884
         },
         {
-          "name": "Farelo de trigo",
-          "kg_mn": 0.0863277773415295,
-          "kg_ms": 0.07683172183396125
+          "name": "Polpa Cítrica Peletizada",
+          "kg_mn": 1.8118567615568026,
+          "kg_ms": 1.6125525177855544
         },
         {
-          "name": "Calcario calcitico DEMO",
-          "kg_mn": 0.2552403110225656,
-          "kg_ms": 0.25268790791233997
+          "name": "Núcleo Mineral Aniónico / Lactação",
+          "kg_mn": 0.3434432392993663,
+          "kg_ms": 0.33657437451337896
         }
       ]
     },
@@ -807,41 +803,41 @@
       "milk_corrected_kg_day": 38,
       "status": "atende_perfil_demo",
       "totals": {
-        "ms_kg": 24.094073965533056,
+        "ms_kg": 24.094073965533052,
         "pb_pct": 17.0,
-        "fdn_pct": 35.98535010430146,
-        "amido_pct": 25.451047160166578,
+        "fdn_pct": 35.92317559457833,
+        "amido_pct": 20.000000000000004,
         "el_mcal_kg": 1.6000000000000003,
-        "ca_pct": 0.65,
-        "p_pct": 0.32,
-        "fdn_volumoso_pct": 32.13458831169016,
-        "custo_animal_dia": 31.02510978704052
+        "ca_pct": 0.6499999999999999,
+        "p_pct": 0.3875467230082534,
+        "fdn_volumoso_pct": 30.9779412575028,
+        "custo_animal_dia": 35.54540439126048
       },
       "items": [
         {
-          "name": "Silagem de milho",
-          "kg_mn": 49.158930008496306,
-          "kg_ms": 17.205625502973707
+          "name": "Silagem de Milho (Boa Qualidade)",
+          "kg_mn": 44.086108209676354,
+          "kg_ms": 15.430137873386725
         },
         {
-          "name": "Milho seco moido",
-          "kg_mn": 1.2835363048281552,
-          "kg_ms": 1.1295119482487765
+          "name": "Feno de Capim-Tifton 85",
+          "kg_mn": 0.8446201892176598,
+          "kg_ms": 0.7432657665115405
         },
         {
-          "name": "Farelo de soja",
-          "kg_mn": 6.097164085807888,
-          "kg_ms": 5.426476036369021
+          "name": "Farelo de Soja 46",
+          "kg_mn": 6.690054104603754,
+          "kg_ms": 5.954148153097341
         },
         {
-          "name": "Farelo de trigo",
-          "kg_mn": 0.08709822275745527,
-          "kg_ms": 0.07751741825413519
+          "name": "Polpa Cítrica Peletizada",
+          "kg_mn": 1.8280269535765492,
+          "kg_ms": 1.6269439886831287
         },
         {
-          "name": "Calcario calcitico DEMO",
-          "kg_mn": 0.25751824210850216,
-          "kg_ms": 0.25494305968741715
+          "name": "Núcleo Mineral Aniónico / Lactação",
+          "kg_mn": 0.34650835087175264,
+          "kg_ms": 0.3395781838543176
         }
       ]
     },
@@ -849,41 +845,41 @@
       "milk_corrected_kg_day": 39,
       "status": "atende_perfil_demo",
       "totals": {
-        "ms_kg": 24.307203100088966,
-        "pb_pct": 16.999999999999996,
-        "fdn_pct": 35.98535010430147,
-        "amido_pct": 25.451047160166574,
-        "el_mcal_kg": 1.6,
+        "ms_kg": 24.30720310008897,
+        "pb_pct": 17.0,
+        "fdn_pct": 35.923175594578325,
+        "amido_pct": 20.0,
+        "el_mcal_kg": 1.5999999999999999,
         "ca_pct": 0.65,
-        "p_pct": 0.3199999999999999,
-        "fdn_volumoso_pct": 32.13458831169018,
-        "custo_animal_dia": 31.299548838230994
+        "p_pct": 0.3875467230082533,
+        "fdn_volumoso_pct": 30.9779412575028,
+        "custo_animal_dia": 35.85982864704166
       },
       "items": [
         {
-          "name": "Silagem de milho",
-          "kg_mn": 49.59377553206337,
-          "kg_ms": 17.35782143622218
+          "name": "Silagem de Milho (Boa Qualidade)",
+          "kg_mn": 44.47608103461695,
+          "kg_ms": 15.566628362115935
         },
         {
-          "name": "Milho seco moido",
-          "kg_mn": 1.294890091747309,
-          "kg_ms": 1.139503280737632
+          "name": "Feno de Capim-Tifton 85",
+          "kg_mn": 0.8520914524923523,
+          "kg_ms": 0.74984047819327
         },
         {
-          "name": "Farelo de soja",
-          "kg_mn": 6.151097816845344,
-          "kg_ms": 5.474477056992356
+          "name": "Farelo de Soja 46",
+          "kg_mn": 6.749232367420003,
+          "kg_ms": 6.006816807003803
         },
         {
-          "name": "Farelo de trigo",
-          "kg_mn": 0.08786866817337337,
-          "kg_ms": 0.0782031146743023
+          "name": "Polpa Cítrica Peletizada",
+          "kg_mn": 1.8441971455962958,
+          "kg_ms": 1.6413354595807033
         },
         {
-          "name": "Calcario calcitico DEMO",
-          "kg_mn": 0.25979617319443876,
-          "kg_ms": 0.2571982114624944
+          "name": "Núcleo Mineral Aniónico / Lactação",
+          "kg_mn": 0.34957346244413934,
+          "kg_ms": 0.34258199319525656
         }
       ]
     },
@@ -891,41 +887,41 @@
       "milk_corrected_kg_day": 40,
       "status": "atende_perfil_demo",
       "totals": {
-        "ms_kg": 24.520332234644858,
-        "pb_pct": 17.0,
-        "fdn_pct": 35.98535010430147,
-        "amido_pct": 25.451047160166574,
-        "el_mcal_kg": 1.6000000000000003,
-        "ca_pct": 0.6500000000000001,
-        "p_pct": 0.3199999999999999,
-        "fdn_volumoso_pct": 32.13458831169018,
-        "custo_animal_dia": 31.57398788942145
+        "ms_kg": 24.520332234644865,
+        "pb_pct": 17.000000000000004,
+        "fdn_pct": 35.92317559457833,
+        "amido_pct": 20.0,
+        "el_mcal_kg": 1.6,
+        "ca_pct": 0.65,
+        "p_pct": 0.3875467230082534,
+        "fdn_volumoso_pct": 30.9779412575028,
+        "custo_animal_dia": 36.174252902822815
       },
       "items": [
         {
-          "name": "Silagem de milho",
-          "kg_mn": 50.02862105563039,
-          "kg_ms": 17.510017369470635
+          "name": "Silagem de Milho (Boa Qualidade)",
+          "kg_mn": 44.86605385955753,
+          "kg_ms": 15.703118850845135
         },
         {
-          "name": "Milho seco moido",
-          "kg_mn": 1.3062438786664674,
-          "kg_ms": 1.1494946132264914
+          "name": "Feno de Capim-Tifton 85",
+          "kg_mn": 0.8595627157670445,
+          "kg_ms": 0.7564151898749991
         },
         {
-          "name": "Farelo de soja",
-          "kg_mn": 6.205031547882797,
-          "kg_ms": 5.5224780776156885
+          "name": "Farelo de Soja 46",
+          "kg_mn": 6.8084106302362475,
+          "kg_ms": 6.059485460910261
         },
         {
-          "name": "Farelo de trigo",
-          "kg_mn": 0.08863911358929528,
-          "kg_ms": 0.07888881109447281
+          "name": "Polpa Cítrica Peletizada",
+          "kg_mn": 1.8603673376160397,
+          "kg_ms": 1.6557269304782753
         },
         {
-          "name": "Calcario calcitico DEMO",
-          "kg_mn": 0.26207410428037525,
-          "kg_ms": 0.2594533632375715
+          "name": "Núcleo Mineral Aniónico / Lactação",
+          "kg_mn": 0.35263857401652576,
+          "kg_ms": 0.34558580253619525
         }
       ]
     },
@@ -934,40 +930,40 @@
       "status": "atende_perfil_demo",
       "totals": {
         "ms_kg": 24.733461369200764,
-        "pb_pct": 17.0,
-        "fdn_pct": 35.98535010430146,
-        "amido_pct": 25.451047160166574,
+        "pb_pct": 16.999999999999996,
+        "fdn_pct": 35.92317559457833,
+        "amido_pct": 20.0,
         "el_mcal_kg": 1.6,
-        "ca_pct": 0.6499999999999999,
-        "p_pct": 0.32000000000000006,
-        "fdn_volumoso_pct": 32.134588311690166,
-        "custo_animal_dia": 31.84842694061192
+        "ca_pct": 0.65,
+        "p_pct": 0.3875467230082533,
+        "fdn_volumoso_pct": 30.977941257502803,
+        "custo_animal_dia": 36.48867715860397
       },
       "items": [
         {
-          "name": "Silagem de milho",
-          "kg_mn": 50.46346657919741,
-          "kg_ms": 17.662213302719092
+          "name": "Silagem de Milho (Boa Qualidade)",
+          "kg_mn": 45.2560266844981,
+          "kg_ms": 15.839609339574336
         },
         {
-          "name": "Milho seco moido",
-          "kg_mn": 1.3175976655856259,
-          "kg_ms": 1.1594859457153506
+          "name": "Feno de Capim-Tifton 85",
+          "kg_mn": 0.8670339790417363,
+          "kg_ms": 0.762989901556728
         },
         {
-          "name": "Farelo de soja",
-          "kg_mn": 6.2589652789202495,
-          "kg_ms": 5.570479098239022
+          "name": "Farelo de Soja 46",
+          "kg_mn": 6.86758889305249,
+          "kg_ms": 6.1121541148167156
         },
         {
-          "name": "Farelo de trigo",
-          "kg_mn": 0.08940955900522489,
-          "kg_ms": 0.07957450751465016
+          "name": "Polpa Cítrica Peletizada",
+          "kg_mn": 1.8765375296357871,
+          "kg_ms": 1.6701184013758508
         },
         {
-          "name": "Calcario calcitico DEMO",
-          "kg_mn": 0.2643520353663118,
-          "kg_ms": 0.2617085150126487
+          "name": "Núcleo Mineral Aniónico / Lactação",
+          "kg_mn": 0.35570368558891197,
+          "kg_ms": 0.3485896118771338
         }
       ]
     },
@@ -975,41 +971,41 @@
       "milk_corrected_kg_day": 42,
       "status": "atende_perfil_demo",
       "totals": {
-        "ms_kg": 24.94659050375666,
-        "pb_pct": 17.0,
-        "fdn_pct": 35.98535010430147,
-        "amido_pct": 25.451047160166574,
+        "ms_kg": 24.94659050375667,
+        "pb_pct": 16.999999999999996,
+        "fdn_pct": 35.923175594578325,
+        "amido_pct": 19.999999999999996,
         "el_mcal_kg": 1.6,
-        "ca_pct": 0.65,
-        "p_pct": 0.31999999999999984,
-        "fdn_volumoso_pct": 32.13458831169018,
-        "custo_animal_dia": 32.12286599180238
+        "ca_pct": 0.6499999999999999,
+        "p_pct": 0.3875467230082533,
+        "fdn_volumoso_pct": 30.977941257502792,
+        "custo_animal_dia": 36.803101414385125
       },
       "items": [
         {
-          "name": "Silagem de milho",
-          "kg_mn": 50.89831210276445,
-          "kg_ms": 17.814409235967556
+          "name": "Silagem de Milho (Boa Qualidade)",
+          "kg_mn": 45.64599950943868,
+          "kg_ms": 15.97609982830354
         },
         {
-          "name": "Milho seco moido",
-          "kg_mn": 1.3289514525047843,
-          "kg_ms": 1.1694772782042102
+          "name": "Feno de Capim-Tifton 85",
+          "kg_mn": 0.8745052423164285,
+          "kg_ms": 0.769564613238457
         },
         {
-          "name": "Farelo de soja",
-          "kg_mn": 6.312899009957703,
-          "kg_ms": 5.618480118862355
+          "name": "Farelo de Soja 46",
+          "kg_mn": 6.926767155868736,
+          "kg_ms": 6.164822768723175
         },
         {
-          "name": "Farelo de trigo",
-          "kg_mn": 0.09018000442113916,
-          "kg_ms": 0.08026020393481385
+          "name": "Polpa Cítrica Peletizada",
+          "kg_mn": 1.8927077216555346,
+          "kg_ms": 1.6845098722734257
         },
         {
-          "name": "Calcario calcitico DEMO",
-          "kg_mn": 0.26662996645224835,
-          "kg_ms": 0.26396366678772587
+          "name": "Núcleo Mineral Aniónico / Lactação",
+          "kg_mn": 0.35876879716129834,
+          "kg_ms": 0.35159342121807236
         }
       ]
     },
@@ -1017,41 +1013,41 @@
       "milk_corrected_kg_day": 43,
       "status": "atende_perfil_demo",
       "totals": {
-        "ms_kg": 25.159719638312588,
+        "ms_kg": 25.15971963831258,
         "pb_pct": 17.0,
-        "fdn_pct": 35.98535010430146,
-        "amido_pct": 25.45104716016658,
+        "fdn_pct": 35.923175594578325,
+        "amido_pct": 20.0,
         "el_mcal_kg": 1.6,
-        "ca_pct": 0.6499999999999999,
-        "p_pct": 0.32000000000000006,
-        "fdn_volumoso_pct": 32.13458831169016,
-        "custo_animal_dia": 32.39730504299287
+        "ca_pct": 0.65,
+        "p_pct": 0.3875467230082534,
+        "fdn_volumoso_pct": 30.9779412575028,
+        "custo_animal_dia": 37.11752567016631
       },
       "items": [
         {
-          "name": "Silagem de milho",
-          "kg_mn": 51.33315762633149,
-          "kg_ms": 17.966605169216024
+          "name": "Silagem de Milho (Boa Qualidade)",
+          "kg_mn": 46.03597233437928,
+          "kg_ms": 16.112590317032748
         },
         {
-          "name": "Milho seco moido",
-          "kg_mn": 1.3403052394239472,
-          "kg_ms": 1.1794686106930734
+          "name": "Feno de Capim-Tifton 85",
+          "kg_mn": 0.8819765055911211,
+          "kg_ms": 0.7761393249201864
         },
         {
-          "name": "Farelo de soja",
-          "kg_mn": 6.366832740995159,
-          "kg_ms": 5.6664811394856915
+          "name": "Farelo de Soja 46",
+          "kg_mn": 6.9859454186849845,
+          "kg_ms": 6.217491422629636
         },
         {
-          "name": "Farelo de trigo",
-          "kg_mn": 0.09095044983707261,
-          "kg_ms": 0.08094590035499462
+          "name": "Polpa Cítrica Peletizada",
+          "kg_mn": 1.9088779136752794,
+          "kg_ms": 1.6989013431709987
         },
         {
-          "name": "Calcario calcitico DEMO",
-          "kg_mn": 0.2689078975381851,
-          "kg_ms": 0.26621881856280327
+          "name": "Núcleo Mineral Aniónico / Lactação",
+          "kg_mn": 0.3618339087336851,
+          "kg_ms": 0.3545972305590114
         }
       ]
     },
@@ -1059,41 +1055,41 @@
       "milk_corrected_kg_day": 44,
       "status": "atende_perfil_demo",
       "totals": {
-        "ms_kg": 25.372848772868483,
-        "pb_pct": 17.0,
-        "fdn_pct": 35.98535010430147,
-        "amido_pct": 25.45104716016657,
-        "el_mcal_kg": 1.5999999999999999,
-        "ca_pct": 0.65,
-        "p_pct": 0.32000000000000006,
-        "fdn_volumoso_pct": 32.134588311690166,
-        "custo_animal_dia": 32.67174409418333
+        "ms_kg": 25.37284877286848,
+        "pb_pct": 17.000000000000004,
+        "fdn_pct": 35.92317559457833,
+        "amido_pct": 20.000000000000004,
+        "el_mcal_kg": 1.6,
+        "ca_pct": 0.6500000000000001,
+        "p_pct": 0.38754672300825344,
+        "fdn_volumoso_pct": 30.977941257502803,
+        "custo_animal_dia": 37.431949925947464
       },
       "items": [
         {
-          "name": "Silagem de milho",
-          "kg_mn": 51.76800314989853,
-          "kg_ms": 18.118801102464484
+          "name": "Silagem de Milho (Boa Qualidade)",
+          "kg_mn": 46.42594515931986,
+          "kg_ms": 16.24908080576195
         },
         {
-          "name": "Milho seco moido",
-          "kg_mn": 1.3516590263431012,
-          "kg_ms": 1.189459943181929
+          "name": "Feno de Capim-Tifton 85",
+          "kg_mn": 0.889447768865813,
+          "kg_ms": 0.7827140366019154
         },
         {
-          "name": "Farelo de soja",
-          "kg_mn": 6.420766472032612,
-          "kg_ms": 5.714482160109025
+          "name": "Farelo de Soja 46",
+          "kg_mn": 7.045123681501229,
+          "kg_ms": 6.270160076536094
         },
         {
-          "name": "Farelo de trigo",
-          "kg_mn": 0.09172089525299454,
-          "kg_ms": 0.08163159677516514
+          "name": "Polpa Cítrica Peletizada",
+          "kg_mn": 1.9250481056950262,
+          "kg_ms": 1.7132928140685733
         },
         {
-          "name": "Calcario calcitico DEMO",
-          "kg_mn": 0.27118582862412166,
-          "kg_ms": 0.26847397033788045
+          "name": "Núcleo Mineral Aniónico / Lactação",
+          "kg_mn": 0.3648990203060715,
+          "kg_ms": 0.35760103989995007
         }
       ]
     },
@@ -1101,41 +1097,41 @@
       "milk_corrected_kg_day": 45,
       "status": "atende_perfil_demo",
       "totals": {
-        "ms_kg": 25.58597790742439,
+        "ms_kg": 25.58597790742438,
         "pb_pct": 17.0,
-        "fdn_pct": 35.98535010430146,
-        "amido_pct": 25.451047160166578,
-        "el_mcal_kg": 1.6000000000000003,
-        "ca_pct": 0.6499999999999999,
-        "p_pct": 0.32,
-        "fdn_volumoso_pct": 32.134588311690166,
-        "custo_animal_dia": 32.9461831453738
+        "fdn_pct": 35.92317559457833,
+        "amido_pct": 20.000000000000004,
+        "el_mcal_kg": 1.6,
+        "ca_pct": 0.6500000000000001,
+        "p_pct": 0.3875467230082534,
+        "fdn_volumoso_pct": 30.977941257502803,
+        "custo_animal_dia": 37.74637418172861
       },
       "items": [
         {
-          "name": "Silagem de milho",
-          "kg_mn": 52.20284867346555,
-          "kg_ms": 18.270997035712945
+          "name": "Silagem de Milho (Boa Qualidade)",
+          "kg_mn": 46.81591798426043,
+          "kg_ms": 16.38557129449115
         },
         {
-          "name": "Milho seco moido",
-          "kg_mn": 1.363012813262264,
-          "kg_ms": 1.1994512756707925
+          "name": "Feno de Capim-Tifton 85",
+          "kg_mn": 0.8969190321405051,
+          "kg_ms": 0.7892887482836444
         },
         {
-          "name": "Farelo de soja",
-          "kg_mn": 6.474700203070066,
-          "kg_ms": 5.762483180732358
+          "name": "Farelo de Soja 46",
+          "kg_mn": 7.104301944317472,
+          "kg_ms": 6.3228287304425494
         },
         {
-          "name": "Farelo de trigo",
-          "kg_mn": 0.09249134066891646,
-          "kg_ms": 0.08231729319533564
+          "name": "Polpa Cítrica Peletizada",
+          "kg_mn": 1.9412182977147725,
+          "kg_ms": 1.7276842849661476
         },
         {
-          "name": "Calcario calcitico DEMO",
-          "kg_mn": 0.2734637597100582,
-          "kg_ms": 0.27072912211295763
+          "name": "Núcleo Mineral Aniónico / Lactação",
+          "kg_mn": 0.36796413187845783,
+          "kg_ms": 0.3606048492408887
         }
       ]
     }

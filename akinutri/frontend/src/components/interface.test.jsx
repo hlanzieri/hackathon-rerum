@@ -328,6 +328,8 @@ test('register sends account fields and redirects after success', async () => {
   await user.type(screen.getByLabelText('E-mail'), 'pessoa@exemplo.com');
   await user.type(screen.getByLabelText('Senha', { selector: 'input' }), 'senha-segura-123');
   await user.type(screen.getByLabelText('Confirmar senha'), 'senha-segura-123');
+  await user.selectOptions(screen.getByLabelText('Perfil'), 'zootecnista');
+  await user.type(screen.getByLabelText('Nome da fazenda'), 'Fazenda Teste');
   await user.click(screen.getByRole('button', { name: 'Criar conta' }));
   expect(fetch).toHaveBeenCalledWith(
     'http://localhost:8000/api/auth/register',
@@ -338,6 +340,8 @@ test('register sends account fields and redirects after success', async () => {
         nome: 'Pessoa',
         email: 'pessoa@exemplo.com',
         senha: 'senha-segura-123',
+        cargo: 'zootecnista',
+        fazenda_nome: 'Fazenda Teste',
       }),
     }),
   );

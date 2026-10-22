@@ -18,7 +18,7 @@ DEMO_EMAIL = "carlos@fazendaouroverde.com.br"
 
 
 def seed_demo(db, password="senha123", *, reset_password=False):
-    from .seed import seed
+    from .seed import seed, INSUMOS_SEED, SEED_SOURCE, ingredient_values
     from . import main
 
     main.app.state.base_id = seed(db)
@@ -31,14 +31,18 @@ def seed_demo(db, password="senha123", *, reset_password=False):
             name="Dr. Carlos Eduardo de Moraes",
             password_hash=password_hash(password),
             cargo="zootecnista",
-            fazenda_nome="Fazenda Ouro Verde · Juiz de Fora / MG (fictícia)",
+            fazenda_nome="Fazenda Ouro Verde",
+            conta_demo=True,
         )
         db.add(user)
         db.flush()
-    elif not user.fazenda_nome.endswith("(fictícia)"):
+    elif not user.conta_demo and not user.fazenda_nome.endswith("(fictícia)"):
         raise ValueError(
             "Este e-mail já pertence a uma conta que não foi criada pela seed."
         )
+    user.conta_demo = True
+    if user.fazenda_nome.endswith("(fictícia)"):
+        user.fazenda_nome = "Fazenda Ouro Verde"
     if reset_password:
         user.password_hash = password_hash(password)
         user.session_version += 1
@@ -96,7 +100,7 @@ def seed_demo(db, password="senha123", *, reset_password=False):
                     dias_lactacao=days,
                     dias_ate_parto=calving,
                 )
-                lot = Lote(**fields.model_dump())
+                lot = Lote(**fields.model_dump(exclude={"raca"}))
                 db.add(lot)
                 db.flush()
             lots.append(lot)
@@ -118,78 +122,32 @@ def seed_demo(db, password="senha123", *, reset_password=False):
                 db.add(group)
                 db.flush()
             groups.append(group)
-        ingredients = [
-            ("Silagem de Milho · Ouro Verde", "volumoso", 35, 7.8, 46, 31, 1.52, 0.38),
-            (
-                "Feno de Capim-Tifton · Ouro Verde",
-                "volumoso",
-                88,
-                11.2,
-                66,
-                2,
-                1.10,
-                0.95,
-            ),
-            (
-                "Milho Moído Seco · Ouro Verde",
-                "concentrado",
-                88,
-                8.8,
-                11.5,
-                71,
-                2.05,
-                1.28,
-            ),
-            (
-                "Farelo de Soja 46 · Ouro Verde",
-                "concentrado",
-                89,
-                46.5,
-                13.8,
-                3,
-                1.92,
-                2.15,
-            ),
-            (
-                "Polpa Cítrica Peletizada · Ouro Verde",
-                "concentrado",
-                89,
-                6.8,
-                23.5,
-                6,
-                1.75,
-                1.12,
-            ),
-            (
-                "Núcleo Mineral · Ouro Verde",
-                "mineral",
-                98,
-                None,
-                None,
-                None,
-                None,
-                4.50,
-            ),
+        legacy_names = [
+            "Silagem de Milho · Ouro Verde",
+            "Feno de Capim-Tifton · Ouro Verde",
+            "Milho Moído Seco · Ouro Verde",
+            "Farelo de Soja 46 · Ouro Verde",
+            "Polpa Cítrica Peletizada · Ouro Verde",
+            "Núcleo Mineral · Ouro Verde",
         ]
-        for name, category, ms, pb, fdn, starch, energy, price in ingredients:
-            if not db.scalar(
-                select(InsumoAlimentar).where(InsumoAlimentar.nome == name)
-            ):
-                db.add(
-                    InsumoAlimentar(
-                        nome=name,
-                        categoria=category,
-                        ms_pct=ms,
-                        pb_pct=pb,
-                        fdn_pct=fdn,
-                        amido_pct=starch,
-                        el_mcal_kg=energy,
-                        ca_pct=None,
-                        p_pct=None,
-                        preco_kg_mn=price,
-                        fonte="Cenário fictício fornecido. Valores e preços ilustrativos, sem laudo; Ca/P não informados. Validar análise e cotação. Não equivale a indicação de núcleo aniônico.",
-                    )
+        for item, legacy_name in zip(INSUMOS_SEED, legacy_names):
+            values = ingredient_values(item)
+            name = item["nome"] + " · Ouro Verde"
+            existing = db.scalar(
+                select(InsumoAlimentar).where(
+                    InsumoAlimentar.usuario_id == user.id,
+                    InsumoAlimentar.nome.in_([name, legacy_name]),
                 )
+            )
+            if existing is None:
+                db.add(InsumoAlimentar(**{**values, "nome": name}, fonte=SEED_SOURCE))
+            elif existing.fonte.startswith("Cenário fictício fornecido."):
+                # Fill only absent fields of the old explicit demo, preserving
+                # existing values, prices, IDs and all historical snapshots.
+                for key, value in values.items():
+                    if key != "nome" and getattr(existing, key) is None:
+                        setattr(existing, key, value)
+                existing.fonte = SEED_SOURCE
         db.commit()
         # Audited examples use the complete synthetic catalog. Never invent
         # missing mineral composition to force an LP solution.

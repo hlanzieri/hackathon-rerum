@@ -131,6 +131,8 @@ export default function Catalogo({ insumos, reload }) {
                 >
                   <option value="volumoso">Volumoso</option>
                   <option value="concentrado">Concentrado</option>
+                  <option value="concentrado_energetico">Concentrado energético</option>
+                  <option value="concentrado_proteico">Concentrado proteico</option>
                   <option value="mineral">Mineral</option>
                 </select>
               </label>

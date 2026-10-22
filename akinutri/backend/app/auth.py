@@ -1,13 +1,14 @@
 import os
 from datetime import datetime, timedelta, timezone
 
-import bcrypt
 import jwt
+from passlib.context import CryptContext
 from fastapi import APIRouter, Depends, HTTPException, Response, Request, status
 from pydantic import BaseModel, EmailStr, Field, field_validator
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
+from typing import Literal
 
 from .database import get_db
 from .models import UserAccount
@@ -17,7 +18,10 @@ COOKIE_NAME = "access_token"
 ACCESS_TOKEN_LIFETIME = timedelta(hours=1)
 REMEMBERED_TOKEN_LIFETIME = timedelta(days=30)
 COOKIE_SECURE = os.getenv("AKINUTRI_COOKIE_SECURE", "false").lower() == "true"
-DUMMY_PASSWORD_HASH = bcrypt.hashpw(b"not-a-real-password", bcrypt.gensalt(rounds=12))
+PASSWORD_CONTEXT = CryptContext(
+    schemes=["bcrypt"], bcrypt__rounds=12, bcrypt__truncate_error=True
+)
+DUMMY_PASSWORD_HASH = PASSWORD_CONTEXT.hash("not-a-real-password")
 
 
 class LoginRequest(BaseModel):
@@ -42,6 +46,8 @@ class RegisterRequest(BaseModel):
     nome: str = Field(min_length=1, max_length=120)
     email: EmailStr
     senha: str = Field(min_length=8)
+    cargo: Literal["zootecnista", "produtor"] = "produtor"
+    fazenda_nome: str = Field(default="", max_length=180)
 
     @field_validator("nome")
     @classmethod
@@ -68,7 +74,14 @@ def password_hash(password: str) -> str:
     encoded = password.encode("utf-8")
     if len(encoded) > 72:
         raise ValueError("A senha excede o limite suportado pelo bcrypt.")
-    return bcrypt.hashpw(encoded, bcrypt.gensalt(rounds=12)).decode("ascii")
+    return PASSWORD_CONTEXT.hash(password)
+
+
+def password_matches(password: str, stored_hash: str) -> bool:
+    try:
+        return PASSWORD_CONTEXT.verify(password, stored_hash)
+    except (ValueError, TypeError):
+        return False
 
 
 def jwt_secret() -> str:
@@ -114,9 +127,9 @@ def set_auth_cookie(response: Response, user: UserAccount, lifetime: timedelta):
 def login(data: LoginRequest, response: Response, db: Session = Depends(get_db)):
     jwt_secret()
     user = db.scalar(select(UserAccount).where(UserAccount.email == data.email))
-    hash_to_check = user.password_hash.encode("ascii") if user else DUMMY_PASSWORD_HASH
-    password_matches = bcrypt.checkpw(data.password.encode("utf-8"), hash_to_check)
-    if user is None or not password_matches:
+    hash_to_check = user.password_hash if user else DUMMY_PASSWORD_HASH
+    matches = password_matches(data.password, hash_to_check)
+    if user is None or not matches:
         raise HTTPException(status_code=401, detail="E-mail ou senha inválidos.")
 
     lifetime = REMEMBERED_TOKEN_LIFETIME if data.remember else ACCESS_TOKEN_LIFETIME
@@ -132,7 +145,14 @@ def login(data: LoginRequest, response: Response, db: Session = Depends(get_db))
 def register(data: RegisterRequest, response: Response, db: Session = Depends(get_db)):
     jwt_secret()
     try:
-        user = create_user(db, data.email, data.nome, data.senha)
+        user = create_user(
+            db,
+            data.email,
+            data.nome,
+            data.senha,
+            cargo=data.cargo,
+            fazenda_nome=data.fazenda_nome,
+        )
     except ValueError as error:
         raise HTTPException(status_code=409, detail=str(error)) from error
     token = set_auth_cookie(response, user, ACCESS_TOKEN_LIFETIME)
@@ -143,11 +163,23 @@ def register(data: RegisterRequest, response: Response, db: Session = Depends(ge
     }
 
 
-def create_user(db: Session, email: str, name: str, password: str) -> UserAccount:
+def create_user(
+    db: Session,
+    email: str,
+    name: str,
+    password: str,
+    *,
+    cargo="produtor",
+    fazenda_nome=""
+) -> UserAccount:
+    if cargo not in {"produtor", "zootecnista"}:
+        raise ValueError("Cargo invalido.")
     user = UserAccount(
         email=email.strip().lower(),
         name=name.strip(),
         password_hash=password_hash(password),
+        cargo=cargo,
+        fazenda_nome=fazenda_nome.strip(),
     )
     db.add(user)
     try:
@@ -208,6 +240,16 @@ def get_scoped_db(
 ):
     db.info["usuario_id"] = user.id
     return db
+
+
+def protect_api_routes(request: Request, db: Session = Depends(get_db)):
+    """Closed by default, including future and unknown API routes."""
+    path = request.url.path.rstrip("/")
+    if (path == "/api" or path.startswith("/api/")) and path not in {
+        "/api/auth/login",
+        "/api/auth/register",
+    }:
+        return get_current_user(request, db)
 
 
 @router.get("/me")
