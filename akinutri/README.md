@@ -2,57 +2,169 @@
 
 POC local do Hackathon UFJF 2026, Tema T2. React/Vite + FastAPI + SQLite/SQLAlchemy + SciPy/HiGHS. Regras nutricionais explícitas em JSON; nenhum cálculo ou decisão depende de LLM.
 
-## Executar
+## Instalar e executar em outro computador
 
-Os serviços escutam somente em loopback. O frontend usa `http://localhost:5173`, a API `http://localhost:8000` e o banco SQLite é um arquivo local em `backend/akinutri.db`. Não configure endereços públicos, serviços externos ou banco hospedado.
+Execute os comandos a partir da pasta **`akinutri`**, que contém este README, `backend`, `frontend` e os scripts `start.ps1`/`start.sh`. Se o repositório completo foi clonado, entre primeiro em `hackathon-rerum/akinutri`. Caminhos com espaços funcionam quando passados entre aspas.
 
-Copie `.env.example` para `.env` em `akinutri`, e `frontend/.env.example` para `frontend/.env.local`. Substitua `AKINUTRI_JWT_SECRET=CHANGE_ME` por uma chave aleatória local de pelo menos 32 bytes (em Linux/macOS, `openssl rand -hex 32`). O exemplo de segredo é intencionalmente inválido e a API recusa iniciar autenticação até que seja trocado. Esses arquivos locais são ignorados pelo Git.
+### 1. Pré-requisitos e arquivos a transferir
 
-Nesta máquina, dependências e build estão preparados. No PowerShell, dentro de `akinutri`:
+- Python **3.12, 64 bits**, com `pip` e `venv`.
+- Node.js **22**, com npm no `PATH`.
+- Internet para a primeira instalação das dependências Python/npm. Depois da instalação e do build, a execução é local.
+- Uma cópia completa do código, incluindo `frontend/package-lock.json`, `backend/rules`, `.env.example` e `frontend/.env.example`. Ao preparar um ZIP, inclua os arquivos de exemplo que começam com ponto.
+
+**Não copie `.venv` ou `node_modules` de outro computador**: recrie-os com os comandos abaixo. Para uma demonstração nova, também não é necessário copiar `.env`, banco, backups ou arquivos de credenciais da máquina original. Gere um segredo próprio na nova instalação. Se quiser transportar o histórico existente, consulte “Transferir um banco existente” abaixo.
+
+A aplicação escuta somente em loopback: **http://localhost:8000** para interface e API; **http://localhost:5173** apenas no desenvolvimento com Vite. Cada computador executa sua própria instalação. O MVP não oferece acesso por IP da rede, hospedagem pública ou banco remoto. Mantenha as portas padrão para seguir estes comandos e use o mesmo hostname durante o login.
+
+### 2. Instalação no Windows — PowerShell
+
+Confira as versões; se algum comando não existir, instale o requisito e abra um novo terminal antes de continuar:
 
 ```powershell
-.\start.ps1
+py -3.12 --version
+node --version
+npm --version
 ```
 
-Abra **http://localhost:8000**. Swagger: **http://localhost:8000/docs**. `Ctrl+C` encerra o servidor. Apenas um processo pode ocupar a porta 8000.
-
-### Instalação em outra máquina
-
-Requisitos: Python 3.12 e Node.js 22 com npm. Na pasta `akinutri`:
-
-Login para testes:  carlos@fazendaouroverde.com.br / senha123
+Na pasta `akinutri`, crie o ambiente e instale as dependências. Não é necessário ativar a `.venv`:
 
 ```powershell
-if (-not (Test-Path .env)) { Copy-Item .env.example .env }
-if (-not (Test-Path frontend\.env.local)) { Copy-Item frontend\.env.example frontend\.env.local }
 py -3.12 -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r backend\requirements.txt
-Set-Location frontend
+.\.venv\Scripts\python.exe -m pip check
+```
+
+Crie as configurações locais sem sobrescrever arquivos existentes. O último comando troca somente o marcador `CHANGE_ME` por um segredo aleatório de 64 caracteres hexadecimais, sem exibi-lo no terminal:
+
+```powershell
+if (-not (Test-Path -LiteralPath .env)) { Copy-Item .env.example .env }
+if (-not (Test-Path -LiteralPath frontend\.env.local)) { Copy-Item frontend\.env.example frontend\.env.local }
+.\.venv\Scripts\python.exe -c "from pathlib import Path; import secrets; p=Path('.env'); p.write_text(p.read_text(encoding='utf-8-sig').replace('AKINUTRI_JWT_SECRET=CHANGE_ME', 'AKINUTRI_JWT_SECRET='+secrets.token_hex(32)), encoding='utf-8')"
+```
+
+Em uma instalação nova, o `.env` resultante deve manter `AKINUTRI_HOST=localhost`, `AKINUTRI_PORT=8000`, `AKINUTRI_DATABASE_URL=sqlite:///./akinutri.db` e `AKINUTRI_COOKIE_SECURE=false`. O segredo JWT precisa ter ao menos 32 bytes; não deixe `CHANGE_ME`. Variáveis já definidas no terminal têm precedência sobre o arquivo `.env`.
+
+Instale o frontend usando o lockfile e gere a versão de apresentação:
+
+```powershell
+Push-Location frontend
 npm ci
 npm run build
-Set-Location ..
+Pop-Location
+```
+
+Não avance se um comando de instalação/build falhar. O build deve criar `frontend/dist/index.html` e copiar os arquivos locais do Swagger para `frontend/public/vendor`.
+
+### 3. Golden seed da apresentação — Windows
+
+Com o servidor parado, execute a partir de `akinutri`:
+
+```powershell
+Push-Location backend
+..\.venv\Scripts\python.exe seed_apresentacao.py
+Pop-Location
+```
+
+Não é necessário iniciar a API antes: o script cria o SQLite, as tabelas, as raças e a base de regras necessárias. Usa `backend/akinutri.db` por padrão; se `AKINUTRI_DATABASE_URL` apontar para outro arquivo local, esse será o banco alterado. **Esta seed não é executada automaticamente no startup.**
+
+O comando imprime um JSON com `usuario_id`, `grupos`, `lotes`, `insumos_privados` e o caminho de `backup`. A conta é:
+
+| Campo | Valor |
+|---|---|
+| E-mail | `carlos@fazendaouroverde.com.br` |
+| Senha da demonstração | `senha123` |
+| Nome | Dr. Carlos Eduardo de Moraes |
+| Cargo / fazenda | Zootecnista / Fazenda Ouro Verde |
+
+São preparados **4 lotes/grupos e 5 insumos privados**, totalizando **115 animais**: alta lactação (45), baixa lactação (25), secas (15) e recria (30). Secas e recria ficam com TMR desativado. Os quatro alimentos completos usam exatamente a tabela fornecida para o pitch; o Feno de Teste mantém Ca/P ausentes para demonstrar `dados_insuficientes`. A origem/atribuição informada fica registrada em `fonte`.
+
+O script pode ser repetido: reutiliza lotes/grupos, substitui os insumos privados dessa conta e mantém snapshots auditados e dados das outras contas. Se a senha dessa conta diferir de `senha123`, redefine-a para a credencial de demonstração e revoga suas sessões de login. **Não execute esta seed sobre uma conta de uso real que deva manter seus cadastros atuais.** Antes de modificar um banco existente, cria backup consistente em `backups/pre-golden-seed-*.db`. O catálogo compartilhado não é removido: a tela de insumos poderá mostrar mais de cinco entradas.
+
+Para fornecer uma tabela alternativa, use `seed_apresentacao.py --composicoes "caminho/arquivo.json"`. O JSON deve conter os quatro alimentos completos, com os nomes esperados e campos do cadastro; o script valida a lista antes de alterar dados. O feno de teste é criado separadamente. Veja [o script](backend/seed_apresentacao.py) e [o relatório do pitch](docs/PITCH-RERUM-2026.md).
+
+### 4. Inicialização e conferência — Windows
+
+Volte à pasta `akinutri` e execute:
+
+```powershell
 .\start.ps1
 ```
 
-A internet só é necessária para instalar dependências. Não há CDN, fontes externas, telemetria ou API de IA no runtime. O build é servido pelo próprio FastAPI, na mesma origem. O script de build copia também os assets do Swagger UI para servir `/docs` localmente, sem validador externo.
+Mantenha o terminal aberto. Abra **http://localhost:8000/login**, entre com a conta acima e confira os grupos no **AkiBot**. Swagger: **http://localhost:8000/docs**. O build React e o Swagger são servidos pela própria API; não precisa executar `npm run dev` durante a apresentação. `Ctrl+C` encerra o servidor.
 
-Linux/macOS:
+Se o PowerShell bloquear arquivos `.ps1`, use diretamente o Python, sem alterar a política de execução:
+
+```powershell
+Push-Location backend
+..\.venv\Scripts\python.exe -m app
+# Ctrl+C para encerrar; depois:
+Pop-Location
+```
+
+Após instalar tudo uma vez, nas próximas utilizações basta executar `start.ps1`. Repita `npm run build` quando mudar o frontend. Repita a seed somente quando quiser restaurar os dados da conta da apresentação.
+
+### Linux/macOS — instalação, seed e inicialização
+
+Confira `python3.12 --version`, `node --version` e `npm --version`. Na pasta `akinutri`, execute na ordem:
 
 ```bash
-test -f .env || cp .env.example .env
-test -f frontend/.env.local || cp frontend/.env.example frontend/.env.local
 python3.12 -m venv .venv
 .venv/bin/python -m pip install -r backend/requirements.txt
-cd frontend
-npm ci
-npm run build
-cd ../backend
-../.venv/bin/python -m app
+.venv/bin/python -m pip check
+
+test -f .env || cp .env.example .env
+test -f frontend/.env.local || cp frontend/.env.example frontend/.env.local
+.venv/bin/python -c "from pathlib import Path; import secrets; p=Path('.env'); p.write_text(p.read_text(encoding='utf-8-sig').replace('AKINUTRI_JWT_SECRET=CHANGE_ME', 'AKINUTRI_JWT_SECRET='+secrets.token_hex(32)), encoding='utf-8')"
+
+(cd frontend && npm ci && npm run build)
+(cd backend && ../.venv/bin/python seed_apresentacao.py)
+bash ./start.sh
 ```
+
+Interrompa a sequência se qualquer etapa falhar. Abra **http://localhost:8000/login**. Não é preciso usar `sudo` nem ativar a `.venv`; `bash ./start.sh` também evita depender do bit de execução do arquivo. Se a distribuição não incluir o módulo `venv`, instale o suporte correspondente ao Python 3.12 antes de criar o ambiente. Esses comandos são equivalentes aos do Windows; a validação desta revisão foi feita no Windows, sem afirmar teste em todos os sistemas operacionais.
+
+### Validação desta revisão
+
+Foi conferido o fluxo em **Windows, Python 3.12.14 e Node 22.13.0**, com dependências já instaladas e **um SQLite temporário novo**: duas execuções da golden seed, login, quatro grupos/115 animais, formulação de alta lactação, bloqueio do feno incompleto, rotas da SPA e assets locais do Swagger. `pip check` não encontrou dependências quebradas. Os blocos PowerShell abaixo foram verificados pelo parser do PowerShell. Isso não substitui executar o checklist no computador de destino, especialmente após uma instalação nova de dependências.
+
+### Checklist antes do pitch
+
+1. Faça o login pela interface. `/api/health` é protegido: sem sessão, HTTP 401 é esperado e não significa que o servidor caiu.
+2. No AkiBot, confira os quatro grupos e escolha **Lote 1 - Alta Lactação**. Para o roteiro já conferido, informe CMS manual de **24 kg MS/animal/dia**, selecione silagem, milho, soja e núcleo completos, sem o feno de teste, e formule.
+3. Confira o custo, inclusão MS/MN, CF e preços-sombra. A verificação local com a tabela da seed encontrou solução ótima; hardware, alterações nos dados ou limites podem mudar o resultado/tempo.
+4. Use o resultado válido para abrir **Batida do Vagão**. A seed prepara cadastros; não cria uma nova formulação nem carrega automaticamente uma sessão na UI.
+5. Para demonstrar auditoria, adicione **Feno de Teste (Incompleto)** e confirme a mensagem de Ca/P ausentes. Não use esse insumo na demonstração de sucesso.
+6. Recria e secas sem TMR ficam fora do escopo de formulação atual. Não use esses lotes como cenário de otimização bem-sucedida.
+7. Depois de instalar dependências e gerar o build, confirme a execução sem internet antes do evento.
+
+A barra lateral do pitch mostra Painel do Lote, AkiBot, Batida do Vagão, Insumos e Base de conhecimento. As demais rotas continuam acessíveis pelos fluxos existentes ou por URL.
+
+### Problemas comuns
+
+| Sintoma | Verificação / solução |
+|---|---|
+| `python`, `py`, `node` ou `npm` não encontrado | Instale os pré-requisitos e reabra o terminal. No Windows, use `py -3.12`; em Linux/macOS, `python3.12`. |
+| `.venv` copiada não funciona / `ModuleNotFoundError` | Recrie a `.venv` na máquina destino e reinstale `backend/requirements.txt`. Use o executável da `.venv`, não o Python global. |
+| Não foi possível instalar SciPy | Confira Python 3.12 de 64 bits e acesso ao índice de pacotes. Guarde o erro de instalação; não prossiga sem resolver as dependências. |
+| `npm ci` falha / assets do Swagger ausentes | Confira Node/npm e o lockfile. Execute `npm ci` dentro de `frontend`; depois `npm run build`. Não instale apenas dependências de produção: o Vite é necessário ao build. |
+| Autenticação retorna 503 | Verifique `AKINUTRI_JWT_SECRET` no `.env` e possíveis variáveis herdadas do terminal. Troque `CHANGE_ME` e reinicie a API. |
+| Login retorna 401 | Execute a golden seed no mesmo banco usado pela API, confira a credencial e mantenha `localhost` no endereço. Cookies `Secure` precisam estar desativados no HTTP local. |
+| Porta 8000 ocupada | Encerre a instância anterior com `Ctrl+C` ou identifique o processo que usa a porta. Não altere portas aleatoriamente: o frontend de desenvolvimento e as origens permitidas usam as portas documentadas. |
+| Interface mostra 404 / build ausente | Confira `frontend/dist/index.html`. Gere o build e inicie pelo script `start` ou por `python -m app` dentro de `backend`. |
+| Banco vazio ou diferente do esperado | Confira `AKINUTRI_DATABASE_URL`. Caminhos relativos do SQLite são resolvidos a partir de `backend`, não da pasta do terminal. |
+| `database is locked` | Pare as instâncias da aplicação antes da seed; evite o banco aberto simultaneamente em ferramentas de edição/sincronização. Use uma pasta local para a execução. |
+| `dados_insuficientes` | Confira a composição e remova o feno de teste do cenário de sucesso. A trava é intencional. |
+| HTTP 408 | O HiGHS atingiu o limite de 3 s da otimização principal. Confira os limites/insumos e tente novamente; não há garantia de latência em qualquer computador. |
+| Aviso `(trapped) error reading bcrypt version` | Aviso conhecido de Passlib 1.7.4 com bcrypt 4.3.0. Nesta revisão, hash, login e seed funcionaram. Confira o código de saída e o JSON final; não confunda esse aviso com falha de instalação. |
+
+### Transferir um banco existente
+
+Para recriar a demonstração em outro computador, prefira a golden seed sobre um banco novo. Se o objetivo for preservar todo o histórico, pare a aplicação na origem e no destino e transfira um backup SQLite consistente, como o arquivo criado pela seed, para `backend/akinutri.db` no destino. Preserve uma cópia do banco que já existir no destino. Gere o `.env` local e mantenha o mesmo código e arquivos de regras versionadas; não reaplique a golden seed se quiser manter os cadastros atuais. O startup aplica as migrações existentes e carrega a base sem reescrever snapshots históricos.
 
 ### Desenvolvimento
 
-Na raiz `akinutri`, inicie a API local com `./start.sh` (Linux/macOS) ou `.\start.ps1` (PowerShell). Para desenvolvimento do frontend, abra outro terminal, entre em `frontend` e execute `npm run dev`; acesse http://localhost:5173. O frontend chama a API diretamente em `http://localhost:8000`, e o backend aceita CORS apenas das origens locais configuradas. O build deve existir antes de iniciar a API para disponibilizar a interface na porta 8000. Caminhos relativos de SQLite são resolvidos a partir de `backend`, independentemente da pasta de inicialização.
+Mantenha a API local em execução com `start.ps1` ou `bash ./start.sh`. Em outro terminal, dentro de `frontend`, execute `npm run dev` e acesse **http://localhost:5173**. Nesse modo, `frontend/.env.local` aponta para `http://localhost:8000`; o backend aceita apenas as origens locais configuradas. Na apresentação com o build, use a porta 8000 para tudo. Não use `npm run preview` como servidor da aplicação completa.
 
 ### Contas e autenticação
 
@@ -62,7 +174,7 @@ O cadastro em `/register` usa `POST /api/auth/register` com `nome`, `email`, `se
 export AKINUTRI_JWT_SECRET="$(openssl rand -hex 32)"
 ```
 
-Em PowerShell, defina `$env:AKINUTRI_JWT_SECRET` para um valor aleatório forte antes de iniciar o servidor. Em produção, use HTTPS e configure `AKINUTRI_COOKIE_SECURE=true`; em desenvolvimento local HTTP, o padrão `false` permite que o navegador aceite o cookie.
+Em PowerShell, defina `$env:AKINUTRI_JWT_SECRET` para um valor aleatório forte antes de iniciar o servidor. Nesta entrega local via HTTP, mantenha `AKINUTRI_COOKIE_SECURE=false`. Hospedagem pública/HTTPS exige uma implantação própria e não é coberta por estes scripts.
 
 Crie uma conta administrativa pelo terminal do backend; a senha é solicitada sem eco e nunca deve ser passada como argumento:
 
@@ -78,26 +190,13 @@ No Windows, use `..\.venv\Scripts\python.exe -m app.create_user --email pessoa@e
 
 Lotes, formulações, verificações, histórico, comparação, batidas, animais e grupos exigem autenticação. Os dados são filtrados por `usuario_id` nas consultas e vinculados à conta nas gravações. Insumos públicos são compartilhados somente para leitura; alimentos particulares podem ser cadastrados pela conta. Respostas da API usam `Cache-Control: no-store`, e operações com origem externa não autorizada são rejeitadas.
 
-A migração adiciona proprietário e campos de perfil sem reescrever snapshots, resultados ou hashes. Registros históricos sem proprietário permanecem preservados, mas indisponíveis nas contas comuns; não são atribuídos arbitrariamente à seed. As restrições de nomes únicos preexistentes de insumos, grupos e brincos permanecem no banco.
+A migração adiciona proprietário e campos de perfil sem reescrever snapshots, resultados ou hashes. Registros históricos sem proprietário permanecem preservados, mas indisponíveis nas contas comuns; não são atribuídos arbitrariamente à seed. As restrições de nomes únicos de insumos, grupos e brincos são aplicadas por usuário nas migrações existentes.
 
-### Popular a propriedade fictícia
+### Seed histórica alternativa
 
-A seed de referência carregada no início continua separada da propriedade fictícia, que exige uma ação explícita. Na raiz `akinutri`:
+Para o pitch atual, use **`python seed_apresentacao.py`**, conforme a instalação acima. O comando antigo `python -m app.seed` continua disponível dentro de `backend`, mas prepara outra fixture: três lotes, seis insumos privados e análises históricas. Não execute as duas seeds em sequência se quiser manter o conjunto de quatro grupos e cinco insumos da apresentação.
 
-```powershell
-Push-Location backend
-..\.venv\Scripts\python.exe -m app.seed
-Pop-Location
-.\start.ps1
-```
-
-A senha padrão da conta fictícia é `senha123`, conforme o cenário solicitado. `AKINUTRI_SEED_PASSWORD` permite definir outra senha para a seed. Nas próximas execuções, contas, senhas, lotes e sessões existentes são preservados. Somente campos nutricionais ausentes nas antigas entradas reconhecidas da seed fictícia são completados com os valores fornecidos; dados personalizados não são preenchidos automaticamente. Para redefinir explicitamente somente a senha da conta da seed e revogar suas sessões, execute `python -m app.seed --reset-password` no ambiente virtual. A exigência de 8 caracteres permanece nos cadastros comuns.
-
-Conta: `carlos@fazendaouroverde.com.br`, Dr. Carlos Eduardo de Moraes, zootecnista da Fazenda Ouro Verde fictícia. São criados três lotes (45 Holandesas, 30 Girolando e 15 vacas secas), seis insumos particulares e três análises históricas calculadas e auditadas pelo motor. As duas sessões do primeiro lote podem ser comparadas em A/B.
-
-Os valores bromatológicos e preços recebidos são identificados como ilustrativos, sem alegar laudo ou cotação real. Os seis insumos desta seed têm composição explícita, incluindo Ca/P e os zeros fornecidos para o núcleo. Dados desconhecidos de outros cadastros continuam ausentes. O nome do núcleo não certifica uma formulação aniônica. As análises históricas preservam o catálogo e os valores congelados em seus snapshots. Não há conversão implícita de leite bruto em leite corrigido nem extrapolação para o pré-parto fora do escopo.
-
-Nesta preparação, o banco recebeu backup em `backups/` antes da migração. As credenciais geradas estão em `seed-access.local.txt`, ignorado pelo Git.
+A seed histórica aceita `AKINUTRI_SEED_PASSWORD` e `--reset-password`; a golden seed atual usa a credencial de demonstração solicitada e tem suas próprias regras de restauração documentadas acima. Nenhuma das duas é disparada automaticamente ao iniciar o servidor.
 
 ### URLs reais
 
@@ -117,7 +216,7 @@ A comparação A/B continua exigindo o mesmo contexto e preços; a simulação d
 
 ### Histórico do ciclo de vida e grupos de produção
 
-Na aba **Animais e GP** (`/dashboard/animais`), cadastre grupos nas fases Bezerril, Recria, Lactação ou Seca, depois cadastre animais com data de nascimento, identificação e grupo inicial. A movimentação registra a data de entrada em cada novo grupo e encerra o período anterior no dia precedente. Grupos e animais podem ser arquivados; os registros históricos são preservados.
+Na rota **Animais e GP** (`/dashboard/animais`, oculta na barra lateral do pitch), cadastre grupos nas fases Bezerril, Recria, Lactação ou Seca, depois cadastre animais com data de nascimento, identificação e grupo inicial. A movimentação registra a data de entrada em cada novo grupo e encerra o período anterior no dia precedente. Grupos e animais podem ser arquivados; os registros históricos são preservados.
 
 Para ativar uma dieta, selecione uma formulação LP concluída e verificada, o GP e a data de início. Uma dieta nova encerra a dieta anterior do mesmo grupo no dia precedente. No perfil do animal, a linha do tempo cruza seus períodos de movimentação com as dietas ativas, mostra os ingredientes e custos diários dos snapshots registrados e acumula o custo pelo número de dias em cada período. Períodos sem dieta registrada aparecem explicitamente e têm custo nutricional contabilizado como zero; o histórico começa na primeira movimentação cadastrada, sem inferir fases anteriores.
 
@@ -140,7 +239,7 @@ flowchart LR
     API --> DB[(SQLite / SQLAlchemy)]
     JSON[Regras JSON versionadas] --> R[Motor IF/THEN]
     API --> R
-    API --> LP[SciPy / HiGHS dual simplex]
+    API --> LP[SciPy / HiGHS]
     JSON --> LP
     LP --> R
     R --> A[Hashes e verificação do traço]
@@ -179,7 +278,7 @@ limite mínimo × Σ x_i ≤ Σ(teor_i × x_i)
 
 Com consumo fixo, minimizar custo diário equivale a minimizar custo por kg MS. Os teores percentuais são pontos percentuais (17 = 17%); energia é Mcal/kg MS. FDN de volumosos usa FDN apenas dos volumosos no numerador e MS total no denominador. `kg MN = kg MS / fração MS`.
 
-HiGHS usa `highs-ds`, tolerâncias de viabilidade de 1e-9 e limite de execução de 10 s. Há tratamento de falhas numéricas e valores não finitos. A solução é pós-verificada com tolerância do JSON, 1e-6, sem arredondar e sem relaxar restrições silenciosamente.
+A otimização principal usa `method="highs"`, `presolve=True`, tolerâncias de viabilidade de 1e-9 e limite de execução de **3 s**. O diagnóstico de inviabilidade tem orçamento próprio de até 3 s adicionais; timeout da otimização principal retorna HTTP 408. Há tratamento de falhas numéricas e valores não finitos. A solução é pós-verificada com tolerância do JSON, 1e-6, sem arredondar e sem relaxar restrições silenciosamente.
 
 Custos marginais de inclusão são por kg MS adicional no limite. Preços sombra das restrições percentuais são por unidade do lado direito da inequação linear montada, **não** por ponto percentual de nutriente. São derivadas locais; não garantem economia para mudanças grandes ou alterações na base ótima.
 
@@ -224,11 +323,37 @@ Na batida: `kg MN/batida = kg MN/animal/dia × animais / batidas_dia`. Capacidad
 | POST | `/api/comparar` | Comparação contextual A/B |
 | POST | `/api/sessoes/{id}/batida` | Relatório de carregamento |
 
-DTO inválido: 422; ID ausente: 404; conflito de contexto/nome/integridade: 409. Inviabilidade ou falta de cobertura são resultados de domínio, registrados com HTTP 200. Rotas REST desconhecidas não são respondidas com o HTML da interface. A navegação usa caminhos reais, como `/dashboard/comparacao`; favoritos antigos com hash são migrados.
+Seleção vazia de insumos: 400 (`DADOS_INSUFICIENTES`); DTO inválido: 422; timeout da otimização: 408; ID ausente: 404; conflito de contexto/nome/integridade: 409. Inviabilidade ou falta de cobertura são resultados de domínio, registrados com HTTP 200. Rotas REST desconhecidas não são respondidas com o HTML da interface. A navegação usa caminhos reais, como `/dashboard/comparacao`; favoritos antigos com hash são migrados.
 
 ## Testes e qualidade
 
-Validação completa em PowerShell, a partir de `akinutri` (requer `backend/requirements-dev.txt` e as dependências do frontend instaladas):
+Antes de apresentar em outra máquina, confira dependências, testes e build. Na raiz `akinutri`, para instalar também a ferramenta de formatação Python:
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install -r backend\requirements-dev.txt
+```
+
+A suíte backend usa bancos temporários e não deve alterar o SQLite operacional. Uma pasta temporária própria evita conflitos de permissões no diretório padrão:
+
+```powershell
+Push-Location backend
+$akinutriTestTemp = Join-Path (Split-Path (Get-Location) -Parent) ('.test-runs/pytest-' + [guid]::NewGuid().ToString('N'))
+..\.venv\Scripts\python.exe -m pytest -q --basetemp=$akinutriTestTemp
+Pop-Location
+Push-Location frontend
+npm test
+npm run build
+Pop-Location
+```
+
+Em Linux/macOS:
+
+```bash
+(cd backend && ../.venv/bin/python -m pytest -q)
+(cd frontend && npm test && npm run build)
+```
+
+Validação adicional de formatação e qualidade em PowerShell, a partir de `akinutri` (requer as dependências de desenvolvimento instaladas):
 
 ```powershell
 .\tools\verify.ps1
@@ -236,13 +361,7 @@ Validação completa em PowerShell, a partir de `akinutri` (requer `backend/requ
 
 O comando interrompe na primeira falha e verifica Black, testes do backend com bancos isolados, Prettier, testes da interface e build de produção. Veja a [validação final](docs/VALIDACAO-FINAL.md).
 
-Em `backend`:
-
-```powershell
-..\.venv\Scripts\python.exe -m pytest -q
-```
-
-Em `frontend`:
+Para repetir somente os testes da interface e o build, entre em `frontend`:
 
 ```powershell
 npm test
@@ -250,7 +369,7 @@ npm run build
 npm run format:check
 ```
 
-Formatação Python opcional: instale `backend/requirements-dev.txt` e execute `python -m black --check app tests` em `backend`.
+Formatação Python: na raiz `akinutri`, use `.\.venv\Scripts\python.exe tools/check_python_format.py` (Windows) ou `.venv/bin/python tools/check_python_format.py` (Linux/macOS).
 
 Veja [testes](docs/TESTES.md), [arquitetura](docs/ARQUITETURA.md), [skills aplicadas e limitações](docs/SKILLS.md), [contrato visual](.interface-design/system.md) e [apresentação](docs/APRESENTACAO.md).
 
@@ -299,4 +418,4 @@ Consulte [o relatório de consolidação](docs/CONSOLIDACAO-FINAL.md) para o con
 
 Todas as rotas `/api/*`, inclusive `/api/health` e caminhos desconhecidos, exigem autenticação, exceto `/api/auth/login` e `/api/auth/register`. Um caminho desconhecido retorna JSON 401 sem sessão e JSON 404 com sessão; nunca recebe HTML da SPA. Preflight CORS continua atendido pelo middleware. `/login`, `/register`, `/dashboard` e suas rotas de navegação são servidas pelo fallback para `index.html`.
 
-A conta fictícia é criada por `python -m app.seed`, nunca recriada silenciosamente no startup. O catálogo global completo é carregado automaticamente; uma conta privada com alimento homônimo não impede a criação da referência global. Usuários comuns podem ler o catálogo global, mas apenas editar suas cópias privadas.
+A conta da apresentação é preparada por `python seed_apresentacao.py`; a fixture histórica alternativa usa `python -m app.seed`. Nenhuma é executada silenciosamente no startup. O catálogo global completo é carregado automaticamente; uma conta privada com alimento homônimo não impede a criação da referência global. Usuários comuns podem ler o catálogo global, mas apenas editar suas cópias privadas.

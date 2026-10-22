@@ -33,7 +33,7 @@ const HistoryPage = lazy(() => import('./HistoryPage'));
 const tabs = [
   ['animais', 'Animais e GP', UsersRound],
   ['akibot', 'AkiBot · Assistente', Bot],
-  ['workspace', 'Formulação', LayoutDashboard],
+  ['workspace', 'Painel do Lote', LayoutDashboard],
   ['comparacao', 'Comparação A/B', GitCompareArrows],
   ['batida', 'Batida do vagão', Truck],
   ['insumos', 'Insumos', Wheat],
@@ -145,7 +145,7 @@ export default function DashboardShell({ tab, session, onLogout, authError }) {
         </button>
         <nav id="workspace-navigation">
           {tabs
-            .filter(([id]) => id !== 'resultado' || workspace.result || tab === 'resultado')
+            .filter(([id]) => ['workspace', 'akibot', 'batida', 'insumos', 'regras'].includes(id))
             .map(([id, label, Icon]) => (
               <a
                 key={id}

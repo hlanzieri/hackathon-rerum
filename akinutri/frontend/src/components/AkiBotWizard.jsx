@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { Loader2 } from 'lucide-react';
 import { api, number } from '../api';
 import { scenarios } from './LoteForm';
 import './AkiBotWizard.css';
@@ -772,7 +773,8 @@ export default function AkiBotWizard({ workspace: w, onComplete }) {
           </button>
         ) : (
           <button type="button" className="button primary" disabled={busy} onClick={process}>
-            {busy ? 'Processando…' : '🚀 Processar Análise Nutricional'}
+            {busy && <Loader2 className="loading-spinner" size={17} aria-hidden="true" />}
+            {busy ? 'Otimizando via SciPy HiGHS...' : '🚀 Processar Análise Nutricional'}
           </button>
         )}
       </footer>

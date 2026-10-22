@@ -2874,3 +2874,18 @@ td input[type='number'] {
     border: 1px solid #999;
   }
 }
+
+.loading-spinner {
+  animation: loading-spin 1s linear infinite;
+  flex-shrink: 0;
+}
+@keyframes loading-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .loading-spinner {
+    animation: none;
+  }
+}

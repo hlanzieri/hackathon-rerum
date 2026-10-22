@@ -48,7 +48,7 @@ class LoteCreate(DTO):
     )
     idade_meses: int = Field(ge=18, le=240)
     ordem_paricao: int = Field(ge=1, le=15)
-    estado: Literal["lactacao", "seca"] = Field(
+    estado: Literal["lactacao", "seca", "recria"] = Field(
         validation_alias=AliasChoices("estado", "estado_produtivo")
     )
     tmr_habilitado: bool = True
@@ -74,6 +74,12 @@ class LoteCreate(DTO):
     def consistent(self):
         if self.raca_id is None and self.raca is None:
             raise ValueError("Informe raca_id ou o nome da raca.")
+        if self.estado == "recria" and (
+            self.producao_l_dia != 0
+            or self.dias_lactacao is not None
+            or self.dias_ate_parto is not None
+        ):
+            raise ValueError("Recria exige producao zero, sem DEL nem dias ate parto.")
         if self.estado == "seca" and (
             self.producao_l_dia != 0
             or self.dias_ate_parto is None
@@ -133,9 +139,9 @@ class InsumoRead(InsumoCreate):
 
 class ItemEntrada(DTO):
     insumo_id: int = Field(gt=0)
-    quantidade_kg_mn: float = Field(default=0, ge=0, le=200)
-    minimo_kg_ms: float = Field(default=0, ge=0, le=40)
-    maximo_kg_ms: float = Field(default=40, ge=0, le=40)
+    quantidade_kg_mn: float = Field(default=0, ge=0, le=500)
+    minimo_kg_ms: float = Field(default=0, ge=0, le=500)
+    maximo_kg_ms: float = Field(default=40, ge=0, le=500)
     preco_kg_mn: float | None = Field(default=None, ge=0, le=10000)
     evidencia_composicao: "FactEvidence | None" = None
 
@@ -178,6 +184,19 @@ class InferenciaRequest(DTO):
             "insumos_excluidos_explicitamente", "excluir_insumos_incompletos"
         ),
     )
+
+    @model_validator(mode="before")
+    @classmethod
+    def accept_ingredient_ids(cls, value):
+        if isinstance(value, dict) and "insumos_ids" in value:
+            if "itens" in value:
+                raise ValueError("Informe itens ou insumos_ids, nunca ambos.")
+            value = dict(value)
+            ids = value.pop("insumos_ids")
+            if not isinstance(ids, list):
+                raise ValueError("insumos_ids deve ser uma lista de IDs.")
+            value["itens"] = [{"insumo_id": ingredient_id} for ingredient_id in ids]
+        return value
 
     @model_validator(mode="after")
     def unique_items(self):

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Leaf, ArrowUpRight, ShieldCheck, FlaskConical, Activity } from 'lucide-react';
+import { Leaf, ArrowUpRight, ShieldCheck, FlaskConical, Activity, Loader2 } from 'lucide-react';
 import { number } from '../api';
 import LoteForm, { scenarios } from './LoteForm';
 import InsumosTable from './InsumosTable';
@@ -305,14 +305,21 @@ export default function Workspace({ workspace: w, onBatch, onScenarioOpen }) {
                   Number(w.intake) < 3 ||
                   Number(w.intake) > 40
                 }
+                aria-busy={w.busy}
                 onClick={w.run}
               >
                 {w.busy
-                  ? 'Processando…'
+                  ? w.mode === 'formular'
+                    ? 'Otimizando via SciPy HiGHS...'
+                    : 'Verificando dieta...'
                   : w.mode === 'formular'
                     ? 'Formular dieta'
                     : 'Verificar dieta'}
-                <ArrowUpRight size={17} aria-hidden="true" />
+                {w.busy ? (
+                  <Loader2 className="loading-spinner" size={17} aria-hidden="true" />
+                ) : (
+                  <ArrowUpRight size={17} aria-hidden="true" />
+                )}
               </button>
             </div>
             {!w.loteId && <p className="save-hint">Salve ou selecione um lote para executar.</p>}

@@ -1,8 +1,9 @@
 // @vitest-environment jsdom
 import React from 'react';
 import { afterEach, expect, test, vi } from 'vitest';
-import { cleanup, render, screen, fireEvent } from '@testing-library/react';
+import { cleanup, render, screen, fireEvent, act } from '@testing-library/react';
 import App from './App';
+import { navigate } from './navigation';
 afterEach(() => {
   cleanup();
   sessionStorage.clear();
@@ -99,7 +100,7 @@ test.each([
       expect(
         screen.getByRole('link', { name: 'AkiBot · Assistente' }).getAttribute('aria-current'),
       ).toBe('page');
-      fireEvent.click(screen.getByRole('link', { name: 'Histórico de análises' }));
+      act(() => navigate('/dashboard/historico'));
       expect(
         await screen.findByRole('heading', { name: 'O registro de cada decisão.' }),
       ).toBeTruthy();
@@ -168,7 +169,7 @@ test('login restores the protected deep link using a server-issued token', async
   expect(await screen.findByRole('heading', { name: 'O registro de cada decisão.' })).toBeTruthy();
   expect(window.location.pathname).toBe('/dashboard/historico');
   expect(window.location.hash).toBe('');
-  fireEvent.click(screen.getByRole('link', { name: 'Comparação A/B', exact: true }));
+  act(() => navigate('/dashboard/comparacao'));
   expect(window.location.pathname).toBe('/dashboard/comparacao');
   window.history.back();
   expect(await screen.findByRole('heading', { name: 'O registro de cada decisão.' })).toBeTruthy();

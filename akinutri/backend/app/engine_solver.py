@@ -1,6 +1,8 @@
 """LP variables are kg dry matter per animal per day. Prices arrive per kg as-fed."""
 
+import logging
 import math
+from fastapi import HTTPException
 import time
 import numpy as np
 import scipy
@@ -201,10 +203,10 @@ def solve(
             A_eq=eq or None,
             b_eq=rhs or None,
             bounds=bounds,
-            method="highs-ds",
+            method="highs",
             options={
                 "presolve": True,
-                "time_limit": 10.0,
+                "time_limit": 3.0,
                 "dual_feasibility_tolerance": 1e-9,
                 "primal_feasibility_tolerance": 1e-9,
             },
@@ -215,8 +217,20 @@ def solve(
             "message": f"Entradas numericas invalidas: {error}",
             "quantities": None,
         }
+    except Exception:
+        logging.getLogger(__name__).exception("Falha inesperada no HiGHS")
+        return {
+            "status": "falha_solver",
+            "message": "O motor de otimização não concluiu o cálculo. Tente novamente.",
+            "quantities": None,
+        }
+    if result.status == 1:
+        raise HTTPException(
+            408,
+            detail="Tempo de otimização esgotado. Revise os limites ou tente novamente.",
+        )
     meta = {
-        "method": "highs-ds",
+        "method": "highs",
         "scipy_version": scipy.__version__,
         "variable_unit": "kg MS/animal/dia",
         "objective": "min BRL/animal/dia",
@@ -243,9 +257,19 @@ def solve(
     if not result.success:
         bottleneck = None
         if result.status == 2:
-            bottleneck = irreducible_conflict(
-                a, b, eq, rhs, labels, equality_labels, bounds, ingredients
-            )
+            try:
+                bottleneck = irreducible_conflict(
+                    a, b, eq, rhs, labels, equality_labels, bounds, ingredients
+                )
+            except Exception:
+                logging.getLogger(__name__).exception(
+                    "Falha ao diagnosticar inviabilidade"
+                )
+                bottleneck = {
+                    "constraints": [],
+                    "certified_irreducible": False,
+                    "message": "Dieta inviável; diagnóstico detalhado indisponível.",
+                }
         return {
             "bottleneck": bottleneck,
             "status": "inviavel" if result.status == 2 else "falha_solver",

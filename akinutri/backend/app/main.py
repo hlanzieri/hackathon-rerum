@@ -4,7 +4,9 @@ import platform
 import sqlalchemy
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
+from fastapi.exceptions import RequestValidationError
+from fastapi.exception_handlers import request_validation_exception_handler
 from fastapi.openapi.docs import get_swagger_ui_html
 from sqlalchemy import select, desc
 from sqlalchemy.exc import IntegrityError
@@ -75,6 +77,24 @@ app = FastAPI(
     docs_url=None,
     redoc_url=None,
 )
+
+
+@app.exception_handler(RequestValidationError)
+async def inference_validation_error(request, error):
+    body = error.body
+    if request.url.path in {"/api/formular", "/api/verificar"} and isinstance(
+        body, dict
+    ):
+        selected = body.get("itens", body.get("insumos_ids"))
+        if selected == []:
+            return JSONResponse(
+                status_code=400,
+                content={
+                    "code": "DADOS_INSUFICIENTES",
+                    "detail": "Selecione ao menos um insumo para executar a análise.",
+                },
+            )
+    return await request_validation_exception_handler(request, error)
 
 
 @app.get("/docs", include_in_schema=False)
@@ -515,12 +535,14 @@ def infer(data, mode, db, *, created_at=None):
                 "insumo_id": ingredient["id"],
                 "nome": ingredient["nome"],
                 "nutrientes_faltantes": [
-                    label for key, label in nutrient_labels.items()
+                    label
+                    for key, label in nutrient_labels.items()
                     if ingredient.get(key) is None
                 ],
             }
             for ingredient, quantity in zip(ingredients, quantities)
-            if quantity > 0 and any(ingredient.get(key) is None for key in nutrient_labels)
+            if quantity > 0
+            and any(ingredient.get(key) is None for key in nutrient_labels)
         ]
     attach_reasoning(result, base, chain, profile, evidence)
     snapshot = {

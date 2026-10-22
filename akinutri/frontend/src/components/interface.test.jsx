@@ -77,7 +77,7 @@ test('animal and group screen offers lifecycle registration and GP diet controls
   expect(screen.getByRole('heading', { name: 'Novo animal' })).toBeTruthy();
   expect(screen.getByRole('heading', { name: 'Grupos de produção' })).toBeTruthy();
 });
-test('animais path opens the lifecycle module from app navigation', async () => {
+test('animal deep link remains accessible while pitch navigation is limited', async () => {
   vi.stubGlobal(
     'fetch',
     vi.fn().mockImplementation(async (url) => ({
@@ -97,9 +97,15 @@ test('animais path opens the lifecycle module from app navigation', async () => 
   expect(
     await screen.findByRole('heading', { name: 'Novo grupo de produção' }, { timeout: 5000 }),
   ).toBeTruthy();
-  expect(screen.getByRole('link', { name: 'Animais e GP' }).getAttribute('aria-current')).toBe(
-    'page',
-  );
+  expect(screen.queryByRole('link', { name: 'Animais e GP' })).toBeNull();
+  for (const name of [
+    'Painel do Lote',
+    'AkiBot · Assistente',
+    'Batida do vagão',
+    'Insumos',
+    'Base de conhecimento',
+  ])
+    expect(screen.getByRole('link', { name, exact: true })).toBeTruthy();
   window.history.replaceState(null, '', '/');
 });
 test('negative savings is presented as additional cost', () => {

@@ -162,7 +162,9 @@ def test_empty_verification_is_rejected_even_outside_supported_profile(client):
 def test_verification_identifies_missing_minerals_and_protein(client):
     request = request_for(client)
     ingredient_id = request["itens"][0]["insumo_id"]
-    ingredient = next(i for i in client.get("/api/insumos").json() if i["id"] == ingredient_id)
+    ingredient = next(
+        i for i in client.get("/api/insumos").json() if i["id"] == ingredient_id
+    )
     payload = {key: value for key, value in ingredient.items() if key != "id"}
     payload.update(ca_pct=None, p_pct=None, pb_pct=None)
     created = client.post("/api/insumos", json=payload)
@@ -173,5 +175,7 @@ def test_verification_identifies_missing_minerals_and_protein(client):
     assert response.status_code == 200, response.text
     result = response.json()
     assert result["status"] == "dados_insuficientes"
-    pending = next(i for i in result["insumos_incompletos"] if i["insumo_id"] == ingredient_id)
+    pending = next(
+        i for i in result["insumos_incompletos"] if i["insumo_id"] == ingredient_id
+    )
     assert {"Cálcio", "Fósforo", "PB"}.issubset(pending["nutrientes_faltantes"])

@@ -146,7 +146,6 @@ def test_snapshot_remains_after_price_change(client):
     "mutate",
     [
         lambda p: p.update(consumo_ms_kg=0),
-        lambda p: p.update(itens=[]),
         lambda p: p["itens"].append(p["itens"][0].copy()),
         lambda p: p["itens"][0].update(minimo_kg_ms=10, maximo_kg_ms=1),
         lambda p: p["itens"][0].update(quantidade_kg_mn=-1),
