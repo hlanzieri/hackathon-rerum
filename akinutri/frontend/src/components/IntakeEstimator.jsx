@@ -52,7 +52,7 @@ export default function IntakeEstimator({ lote, raca, onApply, group }) {
         distante usa 1,97–2,1% do peso vivo. Pré-parto até 21 dias bloqueado. Leite bruto em litros
         não é leite corrigido.
       </p>
-      <form onSubmit={estimate}>
+      <form onSubmit={estimate} className="intake-estimator-form">
         <div className="form-grid">
           <label>
             ECC · escala 1–5
@@ -144,64 +144,70 @@ export default function IntakeEstimator({ lote, raca, onApply, group }) {
                   />
                 </label>
               )}
-              <label className="span2 checkbox-target">
-                <input
-                  required
-                  type="checkbox"
-                  checked={milkConfirmed}
-                  onChange={(e) => {
-                    setMilkConfirmed(e.target.checked);
-                    setResult(null);
-                  }}
-                />
+            </>
+          )}
+        </div>
+        <div className="intake-estimator-actions">
+          {lote.estado === 'lactacao' && (
+            <label className="intake-confirmation">
+              <input
+                required
+                type="checkbox"
+                checked={milkConfirmed}
+                onChange={(e) => {
+                  setMilkConfirmed(e.target.checked);
+                  setResult(null);
+                }}
+              />
+              <span>
                 Confirmo que o valor informado é{' '}
                 {mode === 'corrected' ? 'leite corrigido' : 'energia diária do leite'} e será usado
                 na equação.
-              </label>
-            </>
+              </span>
+            </label>
+          )}
+          <button
+            className="button secondary"
+            disabled={busy || (lote.estado === 'lactacao' && !milkConfirmed)}
+          >
+            {busy ? 'Calculando…' : 'Calcular sugestão'}
+          </button>
+          {error && (
+            <p role="alert" className="error">
+              {error}
+            </p>
+          )}
+          {result && (
+            <div aria-live="polite" className="estimate-answer">
+              {result.cms_kg_dia != null ? (
+                <>
+                  <strong>
+                    {number(result.cms_kg_dia)} <small>kg MS/animal/dia</small>
+                  </strong>
+                  <button
+                    type="button"
+                    className="button primary"
+                    onClick={() => onApply(result.cms_kg_dia, result.inputs)}
+                    disabled={result.cms_kg_dia < 3 || result.cms_kg_dia > 40}
+                  >
+                    <ArrowDownToLine size={16} />
+                    Aplicar sugestão
+                  </button>
+                  <p>Aplicar altera o consumo alvo; você pode ajustá-lo manualmente depois.</p>
+                </>
+              ) : (
+                <p>{result.message}</p>
+              )}
+              <p>{result.notice}</p>
+              {result.source_url && (
+                <a href={result.source_url} target="_blank" rel="noreferrer">
+                  Fonte e equação NASEM ↗
+                </a>
+              )}
+            </div>
           )}
         </div>
-        <button
-          className="button secondary"
-          disabled={busy || (lote.estado === 'lactacao' && !milkConfirmed)}
-        >
-          {busy ? 'Calculando…' : 'Calcular sugestão'}
-        </button>
       </form>
-      {error && (
-        <p role="alert" className="error">
-          {error}
-        </p>
-      )}
-      {result && (
-        <div aria-live="polite" className="estimate-answer">
-          {result.cms_kg_dia != null ? (
-            <>
-              <strong>
-                {number(result.cms_kg_dia)} <small>kg MS/animal/dia</small>
-              </strong>
-              <button
-                type="button"
-                className="button primary"
-                onClick={() => onApply(result.cms_kg_dia, result.inputs)}
-                disabled={result.cms_kg_dia < 3 || result.cms_kg_dia > 40}
-              >
-                <ArrowDownToLine size={16} />
-                Aplicar sugestão
-              </button>
-              <p>Aplicar altera o consumo alvo; você pode ajustá-lo manualmente depois.</p>
-            </>
-          ) : (
-            <p>{result.message}</p>
-          )}
-          <p>{result.notice}</p>
-          {result.source_url && (
-            <a href={result.source_url} target="_blank" rel="noreferrer">
-              Fonte e equação NASEM ↗
-            </a>
-          )}
-        </div>
-      )}
     </details>
   );
 }
