@@ -1,0 +1,49 @@
+body {
+  margin: 0;
+  background: #f8f6ef;
+}
+
+.portfolio-demo {
+  display: grid;
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+  align-items: start;
+  gap: clamp(24px, 5vw, 64px);
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: clamp(20px, 5vw, 72px);
+}
+
+.portfolio-intro {
+  color: #183426;
+  padding-top: clamp(0px, 5vw, 56px);
+}
+
+.portfolio-brand {
+  font-size: 1.25rem;
+  font-weight: 800;
+}
+
+.portfolio-intro h1 {
+  color: inherit;
+  font-size: clamp(2rem, 4vw, 3.75rem);
+  line-height: 1.08;
+  margin: 0.65em 0 0.45em;
+}
+
+.portfolio-intro p {
+  max-width: 40ch;
+  line-height: 1.55;
+}
+
+.portfolio-intro a {
+  display: inline-block;
+  color: #185838;
+  margin-top: 0.75rem;
+  text-decoration: underline;
+}
+
+@media (max-width: 760px) {
+  .portfolio-demo {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

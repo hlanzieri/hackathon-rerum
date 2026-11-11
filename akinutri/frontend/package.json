@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "node scripts/prepare-docs.mjs && vite --host localhost --port 5173 --strictPort",
     "build": "node scripts/prepare-docs.mjs && vite build",
+    "build:portfolio": "vite build portfolio --base ./ --outDir ../dist-portfolio --emptyOutDir",
     "preview": "vite preview --host localhost --port 5173 --strictPort",
     "test": "vitest run --maxWorkers=1",
     "format": "prettier --write src",

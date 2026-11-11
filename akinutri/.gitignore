@@ -16,3 +16,8 @@ frontend/public/vendor/
 
 seed-access.local.txt
 .test-tmp-*/
+
+# Local packages and temporary databases
+/output/
+/tmp/
+/frontend/dist-portfolio/

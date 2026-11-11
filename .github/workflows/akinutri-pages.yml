@@ -1,0 +1,48 @@
+name: AkiNutri demo
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/akinutri-pages.yml'
+      - 'akinutri/frontend/**'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: akinutri-pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: akinutri/frontend/package-lock.json
+      - run: npm ci
+        working-directory: akinutri/frontend
+      - run: npm run build:portfolio
+        working-directory: akinutri/frontend
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: akinutri/frontend/dist-portfolio
+
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/deploy-pages@v4
+        id: deployment

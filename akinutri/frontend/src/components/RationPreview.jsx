@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { ArrowUpRight, SlidersHorizontal } from 'lucide-react';
 import data from '../data/ration-preview.json';
-import { money, number } from '../api';
+import { money, number } from '../format';
 export default function RationPreview() {
   const [milk, setMilk] = useState(35);
   const row = data.scenarios.find((s) => s.milk_corrected_kg_day === milk);
