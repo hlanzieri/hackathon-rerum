@@ -1,4 +1,39 @@
-# AkiNutri · Nutrição explicável para pecuária leiteira
+# Projeto AkiNutri — Tema T2 (Dietas de Precisão NASEM 2021)
+
+> **Conformidade RERUM 2026:** a aplicação executa **100% OFFLINE em LOCALHOST**, após instalar as dependências. A IA foi utilizada estritamente como ferramenta de codificação e interface (**Vibe Coding**); o motor determinístico em Python executa todas as inferências e otimizações nutricionais. Não há LLM em execução nem dependência de serviço remoto para calcular dietas.
+
+## Entregáveis da banca
+
+[Banco e ERD](DATABASE.md) · [API REST](API_DOCS.md) · [Funcionalidades](FUNCIONALIDADES.md). Empacotamento: `limpar_e_empacotar.ps1` (Windows) ou `bash limpar_e_empacotar.sh` (Linux/macOS). A limpeza ocorre na cópia temporária do pacote, preservando o banco e o ambiente de trabalho.
+
+Requisitos de referência do enunciado: Python 3.10+, Node.js 18+ e SQLite. **Use Python 3.12 e Node 22**, versões validadas neste ambiente: o SciPy 1.15.2 fixado exige Python >= 3.10; dependências de desenvolvimento atuais como jsdom 26 exigem Node >= 18. SQLite acompanha o módulo `sqlite3` do Python; não requer servidor separado.
+
+### Fluxo de desenvolvimento (PowerShell)
+
+Na pasta `akinutri`, crie a `.venv` e configure `.env` conforme as instruções completas abaixo. Com o ambiente ativado, o fluxo é:
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+Push-Location backend
+pip install -r requirements.txt
+Pop-Location
+python backend/seed_apresentacao.py
+Push-Location backend
+uvicorn app.main:app --reload --host localhost --port 8000
+```
+
+Mantenha a API aberta; em outro terminal, na pasta `akinutri`:
+
+```powershell
+Set-Location frontend
+npm install
+npm run dev
+```
+
+Abra `http://localhost:5173`. O frontend chama diretamente a API em `http://localhost:8000`, com CORS local. Se precisar do Swagger antes de iniciar o Vite, execute `node scripts/prepare-docs.mjs` dentro de `frontend` após instalar os pacotes. Para instalação reproduzível, prefira `npm ci` ao `npm install` e siga o fluxo de apresentação abaixo. A configuração do segredo JWT é obrigatória antes do login; a seed prepara dados, mas não configura o segredo.
+
+Testes: no backend com a `.venv`, `python -m pytest -q`; no frontend, `npm test` (equivale a `vitest run --maxWorkers=1`). `npx vitest` abre o modo interativo. Os comandos completos e os cuidados com bancos temporários estão na seção de testes abaixo.
 
 POC local do Hackathon UFJF 2026, Tema T2. React/Vite + FastAPI + SQLite/SQLAlchemy + SciPy/HiGHS. Regras nutricionais explícitas em JSON; nenhum cálculo ou decisão depende de LLM.
 
@@ -419,3 +454,11 @@ Consulte [o relatório de consolidação](docs/CONSOLIDACAO-FINAL.md) para o con
 Todas as rotas `/api/*`, inclusive `/api/health` e caminhos desconhecidos, exigem autenticação, exceto `/api/auth/login` e `/api/auth/register`. Um caminho desconhecido retorna JSON 401 sem sessão e JSON 404 com sessão; nunca recebe HTML da SPA. Preflight CORS continua atendido pelo middleware. `/login`, `/register`, `/dashboard` e suas rotas de navegação são servidas pelo fallback para `index.html`.
 
 A conta da apresentação é preparada por `python seed_apresentacao.py`; a fixture histórica alternativa usa `python -m app.seed`. Nenhuma é executada silenciosamente no startup. O catálogo global completo é carregado automaticamente; uma conta privada com alimento homônimo não impede a criação da referência global. Usuários comuns podem ler o catálogo global, mas apenas editar suas cópias privadas.
+
+
+
+## Verificação dos entregáveis (22/10/2026)
+
+Ambiente: Windows, Python 3.12.14, Node 22.13.0. Nesta revisão passaram **144 testes backend e 61 testes frontend**, além do build de produção e `pip check`. A instalação Python foi conferida com dependências existentes (`pip install -r backend/requirements.txt --no-index`), e a golden seed foi executada em SQLite temporário novo. API `/docs` e página Vite responderam HTTP 200 em portas locais temporárias 18000/15173, encerradas ao fim da verificação. Os testes backend exigiram execução fora do sandbox devido ao bloqueio de sockets internos do TestClient. Instalação inicial em máquina vazia e execução em Linux/macOS não foram repetidas nesta revisão.
+
+O empacotamento exclui ambientes, caches, builds, bancos, backups, credenciais locais, arquivos `.env` reais e ZIPs anteriores; preserva `.env.example`, fontes e lockfile. O ZIP contém a pasta `AkiNutri/`. Os dois scripts usam o mesmo utilitário Python, com limpeza somente da cópia temporária. No Windows, execute `powershell -File .\limpar_e_empacotar.ps1`; em Linux/macOS, `bash ./limpar_e_empacotar.sh` (Python 3 disponível). O script PowerShell foi executado nesta revisão; o shell Bash não foi executado neste ambiente.

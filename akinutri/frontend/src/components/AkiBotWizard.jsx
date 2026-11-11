@@ -3,6 +3,7 @@ import { Loader2 } from 'lucide-react';
 import { api, number } from '../api';
 import { scenarios } from './LoteForm';
 import './AkiBotWizard.css';
+import IntakeEstimator from './IntakeEstimator';
 import { QuestionWhy } from './ExplanationPanel';
 
 const titles = [
@@ -228,43 +229,6 @@ export default function AkiBotWizard({ workspace: w, onComplete }) {
     mode === 'formular' ? Boolean(group) : quantitiesValid,
     true,
   ][step];
-  async function suggest() {
-    setBusy(true);
-    setError('');
-    try {
-      const result = await api('/estimar-cms', 'POST', {
-        peso_kg: scenario.lote.peso_kg,
-        dias_lactacao: scenario.lote.estado === 'seca' ? null : scenario.lote.dias_lactacao,
-        dias_ate_parto: scenario.lote.estado === 'seca' ? scenario.lote.dias_ate_parto : null,
-        estado: scenario.lote.estado,
-        raca: w.racas.find((r) => r.id === Number(scenario.lote.raca_id))?.nome || 'Não informada',
-        escore_corporal: group.ecc_medio,
-        fracao_multiparas: group.fracao_multiparas,
-        ...(scenario.lote.estado === 'seca'
-          ? {}
-          : {
-              leite_corrigido_kg_dia: scenario.lote.producao_l_dia,
-              energia_referencia_mcal_kg: 0.7,
-            }),
-      });
-      if (!validNumber(result.cms_kg_dia ?? '', 3, 40))
-        throw new Error(
-          result.message ||
-            'Estimativa indisponível para este perfil. Ajuste o consumo manualmente.',
-        );
-      setIntake(result.cms_kg_dia);
-      setEstimate(result.inputs);
-      setManual(false);
-    } catch (e) {
-      setError(
-        analysisFeedback(
-          e.data?.detail && typeof e.data.detail === 'object' ? e.data.detail : e.data || {},
-        ) || e.message,
-      );
-    } finally {
-      setBusy(false);
-    }
-  }
   async function process() {
     if (
       busy ||
@@ -578,13 +542,17 @@ export default function AkiBotWizard({ workspace: w, onComplete }) {
         {step === 1 && (
           <>
             <p>Informe o consumo ou solicite uma estimativa para os dados do grupo.</p>
-            <p>
-              O cálculo NASEM usa ECC {group.ecc_medio}, fração de multíparas{' '}
-              {group.fracao_multiparas} e hipótese explícita de leite corrigido de{' '}
-              {scenario.lote.producao_l_dia} kg/dia a 0,7 Mcal/kg para lactação. Esses valores são
-              pressupostos do perfil.
-            </p>
-            {choice('Usar Sugestão Automática NASEM 2021', Boolean(estimate), suggest)}
+            <IntakeEstimator
+              key={groupId}
+              lote={scenario.lote}
+              raca={w.racas.find((r) => r.id === Number(breedId))?.nome || 'Não informada'}
+              group={group}
+              onApply={(value, inputs) => {
+                setIntake(value);
+                setEstimate(inputs);
+                setManual(false);
+              }}
+            />
             {choice('Ajustar Consumo Manualmente', manual, () => {
               setManual(true);
               setEstimate(null);

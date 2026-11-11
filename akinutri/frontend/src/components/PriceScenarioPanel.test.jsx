@@ -152,6 +152,7 @@ test('simulates locally, shows monthly impact and quantities, and opens the save
   expect(api).toHaveBeenCalledWith('/sessoes/11');
   expect(await screen.findByText('R$ 300.00')).toBeTruthy();
   expect(screen.getByRole('table')).toBeTruthy();
+  expect(screen.getByText(/quantidades permaneceram iguais/)).toBeTruthy();
   expect(onSaved).toHaveBeenCalledOnce();
   await user.click(screen.getByRole('button', { name: 'Abrir resultado completo do cenário' }));
   expect(onOpen).toHaveBeenCalledWith(11);

@@ -14,6 +14,8 @@ def solve(
     base, profile, ingredients, items, intake, excluded_ids=None, *, group_context=None
 ):
     excluded_ids = set(excluded_ids or ())
+    # Only an explicit minimum can force ingredient inclusion.
+    bounds = [(item.get("minimo_kg_ms", 0.0), item["maximo_kg_ms"]) for item in items]
     excluded = [
         {"insumo_id": ingredient.get("id", index), "nome": ingredient["nome"]}
         for index, (ingredient, item) in enumerate(zip(ingredients, items))
@@ -67,9 +69,9 @@ def solve(
             "quantities": None,
         }
     if excluded_ids:
-        for ingredient, item in zip(ingredients, items):
+        for ingredient, item, (minimum, _) in zip(ingredients, items, bounds):
             key = ingredient.get("id", item.get("insumo_id"))
-            if key in excluded_ids and item["minimo_kg_ms"] > 0:
+            if key in excluded_ids and minimum > 0:
                 return {
                     "status": "dados_insuficientes",
                     "message": f"{ingredient['nome']}: exclusao conflita com minimo de inclusao positivo.",
@@ -137,7 +139,7 @@ def solve(
         if (
             not isinstance(ms_pct, (int, float))
             or not math.isfinite(ms_pct)
-            or ms_pct <= 0
+            or not 0 < ms_pct <= 100
             or not isinstance(price, (int, float))
             or not math.isfinite(price)
             or price < 0
@@ -176,7 +178,7 @@ def solve(
                 labels.extend([f"{rule['id']}:min", f"{rule['id']}:max"])
             continue
         vector = []
-        for ingredient, item in zip(ingredients, items):
+        for ingredient in ingredients:
             if metric == "fdn_volumoso_pct":
                 value = (
                     ingredient["fdn_pct"]
@@ -184,17 +186,12 @@ def solve(
                     else 0.0
                 )
             else:
-                value = (
-                    ingredient["fdn_pct"]
-                    if metric == "fdn_volumoso_pct"
-                    else ingredient[metric]
-                )
+                value = ingredient[metric]
             vector.append(0.0 if value is None else value)
         # Weighted concentration constraint: sum((nutrient - limit) * x) <= 0.
         a.extend([[low - v for v in vector], [v - high for v in vector]])
         b.extend([0.0, 0.0])
         labels.extend([f"{rule['id']}:min", f"{rule['id']}:max"])
-    bounds = [(item["minimo_kg_ms"], item["maximo_kg_ms"]) for item in items]
     try:
         result = linprog(
             costs,

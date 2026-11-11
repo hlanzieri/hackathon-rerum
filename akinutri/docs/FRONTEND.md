@@ -17,11 +17,11 @@ Links operacionais sem sessão levam ao login; após autenticar, o destino origi
 
 A identidade e a propriedade exibidas vêm do usuário autenticado. A interface não exibe atalhos “Demo produtor”, “Demo consultor”, “Explorar sem preencher”, nem informações sobre localhost ou execução local. Dados científicos e exemplos continuam identificados como demonstrativos quando aplicável.
 
-O navegador envia o JWT no cabeçalho Authorization, e o backend valida assinatura, expiração e revogação. O build usa a mesma origem da página; no desenvolvimento, a origem é configurada por `VITE_API_BASE_URL`. Módulos secundários usam lazy/Suspense; requisições independentes do workspace permanecem em paralelo. O arquivo legado `src/pages/MainPage.jsx` não participa do roteamento.
+O navegador envia o JWT no cabeçalho Authorization, e o backend valida assinatura, expiração e revogação. O build usa a mesma origem da página; no desenvolvimento, a origem é configurada por `VITE_API_BASE_URL`. Módulos secundários usam lazy/Suspense; requisições independentes do workspace permanecem em paralelo.
 
 Acessibilidade: rótulos explícitos, controles nativos, botão de mostrar senha, estados de carregamento/erro, skip links no painel e foco nos módulos. A paleta, a densidade e os números tabulares seguem `.interface-design/system.md`. Reduced motion e cleanup de observers/listeners existentes são preservados. Não se afirma certificação WCAG completa, CLS zero ou 60 fps.
 
-A revisão anterior está em `AUTH-VALIDACAO.md`. A continuação com URLs reais e Bearer está em `ROTAS-AUTH.md`.
+Veja a [documentação de rotas e autenticação](ROTAS-AUTH.md).
 
 ## Consolidação dos formulários
 

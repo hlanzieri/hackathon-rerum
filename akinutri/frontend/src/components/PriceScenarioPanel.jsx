@@ -130,6 +130,22 @@ export default function PriceScenarioPanel({ result, snapshot, onOpen, onSaved }
   const difference = comparable
     ? next.totals.custo_animal_dia - result.totals.custo_animal_dia
     : null;
+  const quantitiesBefore = new Map(
+    result.items?.map((item) => [item.insumo_id, item.quantidade_kg_mn]),
+  );
+  const quantitiesAfter = new Map(
+    next?.items?.map((item) => [item.insumo_id, item.quantidade_kg_mn]),
+  );
+  const rows = comparable
+    ? ingredients.map((ingredient) => {
+        const previous = quantitiesBefore.get(ingredient.id) ?? 0;
+        const current = quantitiesAfter.get(ingredient.id) ?? 0;
+        return { ingredient, previous, current };
+      })
+    : [];
+  const quantitiesChanged = rows.some(
+    ({ previous, current }) => number(current - previous) !== number(0),
+  );
   const choices = [
     ['milho', '🌽 Milho 20% mais caro', !ingredients.some((i) => corn(i.nome))],
     ['soja', '🌱 Soja 15% mais barata', !ingredients.some((i) => soy(i.nome))],
@@ -264,8 +280,10 @@ export default function PriceScenarioPanel({ result, snapshot, onOpen, onSaved }
                     </p>
                   </div>
                   <p>
-                    A diferença combina a mudança de preço e a adaptação da dieta. Projeção para 30
-                    dias com o mesmo número de animais e consumo.
+                    {quantitiesChanged
+                      ? 'As quantidades mudaram com a nova otimização.'
+                      : 'As quantidades permaneceram iguais na precisão exibida.'}{' '}
+                    Projeção para 30 dias com o mesmo número de animais e consumo.
                   </p>
                   {kind === 'indisponivel' && (
                     <p>
@@ -290,38 +308,30 @@ export default function PriceScenarioPanel({ result, snapshot, onOpen, onSaved }
                         </tr>
                       </thead>
                       <tbody>
-                        {ingredients.map((i) => {
-                          const previous =
-                            result.items?.find((item) => item.insumo_id === i.id)
-                              ?.quantidade_kg_mn ?? 0;
-                          const current =
-                            next.items?.find((item) => item.insumo_id === i.id)?.quantidade_kg_mn ??
-                            0;
-                          return (
-                            <tr key={i.id}>
-                              <th scope="row">
-                                <span
-                                  className="ingredient-name block min-w-0 truncate whitespace-nowrap overflow-hidden text-ellipsis"
-                                  title={i.nome}
-                                >
-                                  {i.nome}
-                                </span>
-                              </th>
-                              <td>{number(previous)}</td>
-                              <td>{number(current)}</td>
-                              <td>
-                                {current - previous > 0 ? '+' : ''}
-                                {number(current - previous)}
-                              </td>
-                            </tr>
-                          );
-                        })}
+                        {rows.map(({ ingredient: i, previous, current }) => (
+                          <tr key={i.id}>
+                            <th scope="row">
+                              <span
+                                className="ingredient-name block min-w-0 truncate whitespace-nowrap overflow-hidden text-ellipsis"
+                                title={i.nome}
+                              >
+                                {i.nome}
+                              </span>
+                            </th>
+                            <td>{number(previous)}</td>
+                            <td>{number(current)}</td>
+                            <td>
+                              {current - previous > 0 ? '+' : ''}
+                              {number(current - previous)}
+                            </td>
+                          </tr>
+                        ))}
                       </tbody>
                     </table>
                   </div>
                   <p>
-                    O otimizador redistribui os insumos disponíveis para buscar o menor custo dentro
-                    das restrições nutricionais. Confira abaixo as regras verificadas.
+                    O otimizador recalcula a dieta de menor custo dentro das restrições
+                    nutricionais.
                   </p>
                 </>
               )}

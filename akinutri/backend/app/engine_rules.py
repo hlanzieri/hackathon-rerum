@@ -246,7 +246,13 @@ def adjusted_profile(base, profile, chain):
 
 
 def bounds_for(rule, profile, intake):
-    low, high = profile["limits"][rule["metric"]]
+    metric = rule["metric"]
+    low, high = profile["limits"][metric]
+    # Point targets get a relative tolerance. Published ranges and conflicting
+    # limits from profile adjustments retain their original bounds.
+    if metric in ("pb_pct", "el_mcal_kg") and low == high:
+        tolerance = low * 0.02
+        low, high = low - tolerance, high + tolerance
     scale = intake if rule.get("scale_by_intake") else 1
     return low * scale, high * scale
 

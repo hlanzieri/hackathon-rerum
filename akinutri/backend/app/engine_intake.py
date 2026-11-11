@@ -4,6 +4,7 @@ import math
 import json
 from pathlib import Path
 from .audit import digest
+from .schemas import MAX_CMS_KG_DIA, MIN_CMS_KG_DIA
 
 MODEL = json.loads(
     (
@@ -79,7 +80,7 @@ def estimate_intake(data, *, group_context=None):
         c["early_intercept"] + c["early_parity"] * parity
     ) * math.exp(c["decay"] * data.dias_lactacao)
     estimate = steady * lactation_factor
-    if not math.isfinite(estimate) or estimate <= 0:
+    if not MIN_CMS_KG_DIA <= estimate <= MAX_CMS_KG_DIA:
         result["message"] = (
             "Resultado numerico fora de faixa; revise as entradas e informe CMS manualmente."
         )

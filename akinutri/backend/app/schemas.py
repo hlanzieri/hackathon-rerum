@@ -1,6 +1,9 @@
 from typing import Literal, TypeAlias
 from pydantic import AliasChoices, BaseModel, ConfigDict, Field, model_validator
 
+MIN_CMS_KG_DIA = 3
+MAX_CMS_KG_DIA = 40
+
 InferenceStatus: TypeAlias = Literal[
     "fora_escopo",
     "otimo",
@@ -171,7 +174,7 @@ class InferenciaRequest(DTO):
     evidence: dict[str, FactEvidence] = Field(default_factory=dict)
     lote_id: int = Field(gt=0)
     grupo_id: int | None = Field(default=None, gt=0)
-    consumo_ms_kg: float = Field(ge=3, le=40)
+    consumo_ms_kg: float = Field(ge=MIN_CMS_KG_DIA, le=MAX_CMS_KG_DIA)
     sistema: Literal["tmr", "outro"] = "tmr"
     particula_adequada: bool | None = None
     milho_seco_predominante: bool | None = None

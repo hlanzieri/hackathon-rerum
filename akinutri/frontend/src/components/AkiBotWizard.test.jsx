@@ -57,6 +57,14 @@ async function start(user, onComplete = vi.fn()) {
   await advance(user);
   await user.type(screen.getByLabelText('CMS · kg MS/animal/dia'), '24');
 }
+async function requestIntakeEstimate(user) {
+  await user.click(screen.getByText(/Sugerir consumo/));
+  expect(screen.getByRole('button', { name: /Calcular sugestão/ }).disabled).toBe(true);
+  await user.type(screen.getByLabelText('Leite corrigido · kg/dia'), '33');
+  await user.click(screen.getByRole('checkbox', { name: /Confirmo que o valor/ }));
+  await user.click(screen.getByRole('button', { name: /Calcular sugestão/ }));
+}
+
 test('formulates via local contracts after NASEM and group selection', async () => {
   const user = userEvent.setup();
   const complete = vi.fn();
@@ -66,7 +74,13 @@ test('formulates via local contracts after NASEM and group selection', async () 
     return { session_id: 42 };
   });
   await start(user, complete);
-  await user.click(screen.getByRole('button', { name: 'Usar Sugestão Automática NASEM 2021' }));
+  await requestIntakeEstimate(user);
+  expect(api).toHaveBeenCalledWith(
+    '/estimar-cms',
+    'POST',
+    expect.objectContaining({ leite_corrigido_kg_dia: 33 }),
+  );
+  await user.click(await screen.findByRole('button', { name: 'Aplicar sugestão' }));
   await advance(user);
   await user.click(screen.getByRole('button', { name: 'Usar Insumos Padrão de Lactação' }));
   await advance(user);
@@ -121,8 +135,8 @@ test('unavailable NASEM estimate displays backend explanation and retains profil
   const user = userEvent.setup();
   api.mockResolvedValue({ cms_kg_dia: null, message: 'Fora do escopo NASEM' });
   await start(user);
-  await user.click(screen.getByRole('button', { name: 'Usar Sugestão Automática NASEM 2021' }));
-  expect(screen.getByRole('alert').textContent).toBe('Fora do escopo NASEM');
+  await requestIntakeEstimate(user);
+  expect(await screen.findByText('Fora do escopo NASEM')).toBeTruthy();
   expect(screen.getByRole('button', { name: 'Avançar' }).disabled).toBe(false);
 });
 
